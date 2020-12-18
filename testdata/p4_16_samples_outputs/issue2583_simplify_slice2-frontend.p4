@@ -18,6 +18,7 @@ parser p0(packet_in p, out Header h) {
         transition final;
     }
     state next2 {
+        h.data[7:2] = 6w9;
         h.data[7:2] = 6w3;
         transition final;
     }
