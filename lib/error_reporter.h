@@ -21,6 +21,8 @@ limitations under the License.
 #include "error_catalog.h"
 #include "exceptions.h"
 
+#define INCLUSIVE_MAX_ERROR_MESSAGES 5 /// DRY
+
 /// An action to take when a diagnostic message is triggered.
 enum class DiagnosticAction {
     Ignore,  /// Take no action and continue compilation.
@@ -43,13 +45,17 @@ class ErrorReporter {
 
     /// Output the message and flush the stream
     virtual void emit_message(const ErrorMessage &msg) {
-        *outputstream << msg.toString();
-        outputstream->flush();
+        if (errorCount < INCLUSIVE_MAX_ERROR_MESSAGES) {
+            *outputstream << msg.toString();
+            outputstream->flush();
+        }
     }
 
     virtual void emit_message(const ParserErrorMessage &msg) {
-        *outputstream << msg.toString();
-        outputstream->flush();
+        if (errorCount < INCLUSIVE_MAX_ERROR_MESSAGES) {
+            *outputstream << msg.toString();
+            outputstream->flush();
+        }
     }
 
     /// Check whether an error has already been reported, by keeping track of error type
@@ -140,10 +146,10 @@ class ErrorReporter {
             // emitted errors.
             if (errorCount > 0) return;
 
-            warningCount++;
+            ++warningCount;
             msgType = ErrorMessage::MessageType::Warning;
         } else if (action == DiagnosticAction::Error) {
-            errorCount++;
+            ++errorCount;
             msgType = ErrorMessage::MessageType::Error;
         }
 
@@ -181,12 +187,13 @@ class ErrorReporter {
     /// position information provided by Bison.
     template <typename T>
     void parser_error(const Util::SourceInfo& location, const T& message) {
-        errorCount++;
-        std::stringstream ss;
-        ss << message;
+        if (errorCount++ < INCLUSIVE_MAX_ERROR_MESSAGES) {
+            std::stringstream ss;
+            ss << message;
 
-        ParserErrorMessage msg(location, ss.str());
-        emit_message(msg);
+            ParserErrorMessage msg(location, ss.str());
+            emit_message(msg);
+        }
     }
 
     /**
@@ -199,15 +206,17 @@ class ErrorReporter {
         va_list args;
         va_start(args, fmt);
 
-        errorCount++;
+        if (errorCount++ < INCLUSIVE_MAX_ERROR_MESSAGES) {
 
-        Util::SourcePosition position = sources->getCurrentPosition();
-        position--;
-        cstring message = Util::vprintf_format(fmt, args);
+            Util::SourcePosition position = sources->getCurrentPosition();
+            --position;
+            cstring message = Util::vprintf_format(fmt, args);
 
-        Util::SourceInfo info(sources, position);
-        ParserErrorMessage msg(info, message);
-        emit_message(msg);
+            Util::SourceInfo info(sources, position);
+            ParserErrorMessage msg(info, message);
+            emit_message(msg);
+
+        }
 
         va_end(args);
     }
