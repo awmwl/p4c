@@ -152,17 +152,21 @@ template<class T> std::ostream &operator<<(std::ostream &out, const std::vector<
     out << '[';
     for (auto &el : vec) {
         out << sep << el;
-        sep = ", "; }
+        sep = ", ";
+    }
     out << (sep+1) << ']';
-    return out; }
+    return out;
+}
 
 template<class T> std::ostream &operator<<(std::ostream &out, const std::set<T> &vec) {
     const char *sep = " ";
     out << '(';
     for (auto &el : vec) {
         out << sep << el;
-        sep = ", "; }
+        sep = ", ";
+    }
     out << (sep+1) << ')';
-    return out; }
+    return out;
+}
 
 #endif /* _LIB_LOG_H_ */

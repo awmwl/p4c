@@ -20,6 +20,7 @@ limitations under the License.
 #include "error_helper.h"
 #include "error_catalog.h"
 #include "exceptions.h"
+#include "log.h"
 
 #define INCLUSIVE_MAX_ERROR_MESSAGES 5 /// DRY
 
@@ -42,6 +43,17 @@ class ErrorReporter {
 
     /// Track errors or warnings that have already been issued for a particular source location
     std::set<std::pair<int, const Util::SourceInfo>> errorTracker;
+
+    void suppress_INFO_messages_from_this_point_onward() {
+      static bool suppression_notification_already_emitted { false };
+      if (! suppression_notification_already_emitted) {
+        const std::string suppression_notification { "[Suppressing INFO-level log messages from this point onward.]\n" };
+        std::cerr << suppression_notification;
+        std::cout << suppression_notification;
+        suppression_notification_already_emitted = true;
+      }
+      Log::Detail::verbosity = 0;
+    }
 
     /// Output the message and flush the stream
     virtual void emit_message(const ErrorMessage &msg) {
@@ -150,6 +162,7 @@ class ErrorReporter {
             msgType = ErrorMessage::MessageType::Warning;
         } else if (action == DiagnosticAction::Error) {
             ++errorCount;
+            suppress_INFO_messages_from_this_point_onward();
             msgType = ErrorMessage::MessageType::Error;
         }
 
@@ -194,6 +207,7 @@ class ErrorReporter {
             ParserErrorMessage msg(location, ss.str());
             emit_message(msg);
         }
+        suppress_INFO_messages_from_this_point_onward();
     }
 
     /**
@@ -217,6 +231,7 @@ class ErrorReporter {
             emit_message(msg);
 
         }
+        suppress_INFO_messages_from_this_point_onward();
 
         va_end(args);
     }
