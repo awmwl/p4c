@@ -154,6 +154,22 @@ CompilerOptions::CompilerOptions() : ParserOptions() {
             return true;
         },
         "Unrolling all parser's loops");
+
+    be_silent_after_N_errors = 5;
+
+    registerOption(
+        "--be_silent_after_N_errors", "N",
+        [this](const char* N_as_a_C_string) {
+            const int N { atoi(N_as_a_C_string) };
+
+            if (N < 1)
+                ::warning(ErrorType::WARN_DEPRECATED,
+                    "arg./param. input [%1%] was < 1, so ignoring it.", N);
+            else be_silent_after_N_errors = N;
+
+            return true;
+        },
+        "Set the # of errors after which the compiler should be silent [default: 5]");
 }
 
 bool CompilerOptions::enable_intrinsic_metadata_fix() { return true; }

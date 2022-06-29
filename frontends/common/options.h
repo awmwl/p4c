@@ -77,6 +77,7 @@ class CompilerOptions : public ParserOptions {
     cstring arch = nullptr;
     // If true, unroll all parser loops inside the midend.
     bool loopsUnrolling = false;
+    static unsigned int be_silent_after_N_errors;  //  unsigned to suppress GCC warnings
 
     virtual bool enable_intrinsic_metadata_fix();
 };
