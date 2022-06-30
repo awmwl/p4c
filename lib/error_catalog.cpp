@@ -18,6 +18,8 @@ limitations under the License.
 #include <string>
 #include "error_catalog.h"
 
+unsigned int GLOBAL_be_silent_after_N_errors = 5;  //  doing this "nicely" didn`t work :-(
+
 // -------- Errors -------------
 const int ErrorType::LEGACY_ERROR      =   0;
 const int ErrorType::ERR_UNKNOWN       =   1;

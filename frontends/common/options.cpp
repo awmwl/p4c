@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "options.h"
 #include "frontends/p4/frontend.h"
+#include "lib/error_catalog.h"
 
 CompilerOptions::CompilerOptions() : ParserOptions() {
     registerOption(
@@ -155,7 +156,7 @@ CompilerOptions::CompilerOptions() : ParserOptions() {
         },
         "Unrolling all parser's loops");
 
-    be_silent_after_N_errors = 5;
+    GLOBAL_be_silent_after_N_errors = 5;
 
     registerOption(
         "--be_silent_after_N_errors", "N",
@@ -165,7 +166,7 @@ CompilerOptions::CompilerOptions() : ParserOptions() {
             if (N < 1)
                 ::warning(ErrorType::WARN_DEPRECATED,
                     "arg./param. input [%1%] was < 1, so ignoring it.", N);
-            else be_silent_after_N_errors = N;
+            else GLOBAL_be_silent_after_N_errors = N;
 
             return true;
         },

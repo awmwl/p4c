@@ -21,6 +21,8 @@ limitations under the License.
 #include <string>
 #include "cstring.h"
 
+extern unsigned int GLOBAL_be_silent_after_N_errors;  //  doing this "nicely" didn`t work :-(
+
 /// enumerate supported errors
 /// Backends should extend this class with additional errors in the range 500-999 and
 /// warnings in the range 1500-2141.

@@ -21,7 +21,6 @@ limitations under the License.
 #include "error_catalog.h"
 #include "exceptions.h"
 #include "log.h"
-#include "frontends/common/options.h"
 
 /// An action to take when a diagnostic message is triggered.
 enum class DiagnosticAction {
@@ -56,14 +55,14 @@ class ErrorReporter {
 
     /// Output the message and flush the stream
     virtual void emit_message(const ErrorMessage &msg) {
-        if (errorCount < CompilerOptions::be_silent_after_N_errors) {
+        if (errorCount < GLOBAL_be_silent_after_N_errors) {
             *outputstream << msg.toString();
             outputstream->flush();
         }
     }
 
     virtual void emit_message(const ParserErrorMessage &msg) {
-        if (errorCount < CompilerOptions::be_silent_after_N_errors) {
+        if (errorCount < GLOBAL_be_silent_after_N_errors) {
             *outputstream << msg.toString();
             outputstream->flush();
         }
@@ -199,7 +198,7 @@ class ErrorReporter {
     /// position information provided by Bison.
     template <typename T>
     void parser_error(const Util::SourceInfo& location, const T& message) {
-        if (errorCount++ < CompilerOptions::be_silent_after_N_errors) {
+        if (errorCount++ < GLOBAL_be_silent_after_N_errors) {
             std::stringstream ss;
             ss << message;
 
@@ -219,7 +218,7 @@ class ErrorReporter {
         va_list args;
         va_start(args, fmt);
 
-        if (errorCount++ < CompilerOptions::be_silent_after_N_errors) {
+        if (errorCount++ < GLOBAL_be_silent_after_N_errors) {
 
             Util::SourcePosition position = sources->getCurrentPosition();
             --position;
