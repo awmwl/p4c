@@ -16,7 +16,6 @@ limitations under the License.
 
 #include "hex.h"
 
-#include <assert.h>
 #include <stdint.h>
 
 std::ostream &operator<<(std::ostream &os, const hexvec &h) {

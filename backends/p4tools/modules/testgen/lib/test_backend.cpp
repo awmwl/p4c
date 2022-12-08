@@ -12,7 +12,6 @@
 #include "ir/irutils.h"
 #include "lib/cstring.h"
 #include "lib/exceptions.h"
-#include "lib/log.h"
 #include "lib/null.h"
 #include "lib/timer.h"
 #include "midend/coverage.h"

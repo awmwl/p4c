@@ -25,13 +25,11 @@
 #include "ir/indexed_vector.h"
 #include "ir/irutils.h"
 #include "lib/log.h"
-#include "lib/null.h"
 #include "lib/ordered_map.h"
 #include "lib/source_file.h"
 
 #include "backends/p4tools/modules/testgen/lib/continuation.h"
 #include "backends/p4tools/modules/testgen/lib/packet_vars.h"
-#include "backends/p4tools/modules/testgen/lib/test_spec.h"
 #include "backends/p4tools/modules/testgen/options.h"
 
 namespace P4Tools::P4Testgen {

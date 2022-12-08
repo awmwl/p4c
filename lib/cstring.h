@@ -17,12 +17,14 @@ limitations under the License.
 #ifndef _LIB_CSTRING_H_
 #define _LIB_CSTRING_H_
 
-#include <cstddef>
+#include <stdio.h>
+
 #include <cstring>
 #include <functional>
-#include <iomanip>
 #include <sstream>
 #include <string>
+#include <string_view>
+#include <type_traits>
 
 /**
  * A cstring is a reference to a zero-terminated, immutable, interned string.

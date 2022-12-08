@@ -16,9 +16,14 @@ limitations under the License.
 
 #include "backtrace.h"
 
+#include <features.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
+#include <cstdio>
+#include <exception>
 #include <functional>
+#include <new>
 #include <regex>
 #include <stdexcept>
 #include <system_error>

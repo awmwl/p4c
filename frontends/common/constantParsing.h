@@ -17,6 +17,8 @@ limitations under the License.
 #ifndef _FRONTENDS_COMMON_CONSTANTPARSING_H_
 #define _FRONTENDS_COMMON_CONSTANTPARSING_H_
 
+#include <iosfwd>
+
 #include "lib/cstring.h"
 
 namespace IR {

@@ -1,5 +1,15 @@
 #include "backends/p4tools/common/lib/table_utils.h"
 
+#include <string>
+
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/number.hpp>
+
+#include "ir/indexed_vector.h"
+#include "ir/vector.h"
+#include "lib/exceptions.h"
+#include "lib/null.h"
+
 namespace P4Tools::TableUtils {
 
 void checkTableImmutability(const IR::P4Table *table, TableProperties &properties) {

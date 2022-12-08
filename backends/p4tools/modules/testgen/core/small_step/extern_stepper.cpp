@@ -20,7 +20,6 @@
 #include "ir/vector.h"
 #include "lib/cstring.h"
 #include "lib/exceptions.h"
-#include "lib/log.h"
 
 #include "backends/p4tools/modules/testgen//lib/exceptions.h"
 #include "backends/p4tools/modules/testgen/core/externs.h"

@@ -16,10 +16,19 @@ limitations under the License.
 #ifndef DPDK_CONTROL_PLANE_BFRUNTIME_EXT_H_
 #define DPDK_CONTROL_PLANE_BFRUNTIME_EXT_H_
 
-#include "backends/dpdk/constants.h"
+#include <google/protobuf/any.pb.h>
+
+#include <algorithm>
+#include <optional>
+
 #include "backends/dpdk/options.h"
 #include "control-plane/bfruntime.h"
-#include "p4/config/dpdk/p4info.pb.h"
+#include "lib/cstring.h"
+#include "lib/error.h"
+#include "lib/error_catalog.h"
+#include "lib/json.h"
+#include "p4/config/v1/p4info.pb.h"
+
 namespace P4 {
 
 namespace BFRT {

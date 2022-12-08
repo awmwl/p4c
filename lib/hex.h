@@ -17,6 +17,9 @@ limitations under the License.
 #ifndef _LIB_HEX_H_
 #define _LIB_HEX_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iomanip>
 #include <iostream>
 #include <vector>

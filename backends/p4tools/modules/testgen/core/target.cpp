@@ -9,7 +9,6 @@
 #include "ir/node.h"
 #include "lib/enumerator.h"
 #include "lib/exceptions.h"
-#include "lib/log.h"
 
 #include "backends/p4tools/modules/testgen/core/program_info.h"
 

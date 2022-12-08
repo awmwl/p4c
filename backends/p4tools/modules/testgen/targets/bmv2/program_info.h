@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+#include "ir/declaration.h"
 #include "ir/ir.h"
 #include "lib/cstring.h"
 #include "lib/ordered_map.h"

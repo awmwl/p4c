@@ -17,8 +17,12 @@ limitations under the License.
 #ifndef _P4_FRONTEND_H_
 #define _P4_FRONTEND_H_
 
+#include <iosfwd>
+#include <vector>
+
 #include "../common/options.h"
 #include "ir/ir.h"
+#include "ir/pass_manager.h"
 #include "parseAnnotations.h"
 
 namespace P4 {

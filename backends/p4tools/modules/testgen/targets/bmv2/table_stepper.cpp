@@ -15,7 +15,6 @@
 #include "ir/vector.h"
 #include "lib/cstring.h"
 #include "lib/error.h"
-#include "lib/log.h"
 #include "lib/null.h"
 #include "lib/source_file.h"
 #include "midend/coverage.h"

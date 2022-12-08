@@ -24,18 +24,9 @@ limitations under the License.
 namespace p4configv1 = ::p4::config::v1;
 #undef setbit
 
-#include "frontends/common/constantFolding.h"
 #include "frontends/common/resolveReferences/referenceMap.h"
-#include "frontends/p4/coreLibrary.h"
-#include "frontends/p4/enumInstance.h"
-#include "frontends/p4/evaluator/evaluator.h"
-#include "frontends/p4/methodInstance.h"
-#include "frontends/p4/simplify.h"
 #include "frontends/p4/typeMap.h"
-#include "frontends/p4/unusedDeclarations.h"
 #include "ir/ir.h"
-#include "lib/big_int_util.h"
-#include "lib/json.h"
 #include "options.h"
 
 namespace DPDK {

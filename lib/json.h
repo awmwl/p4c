@@ -17,12 +17,17 @@ limitations under the License.
 #ifndef _LIB_JSON_H_
 #define _LIB_JSON_H_
 
+#include <gtest/gtest.h>
+
+#include <initializer_list>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
 
-#include "gtest/gtest_prod.h"
+#include <boost/multiprecision/cpp_int.hpp>
+
 #include "lib/big_int_util.h"
 #include "lib/castable.h"
 #include "lib/cstring.h"

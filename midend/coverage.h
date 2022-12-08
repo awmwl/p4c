@@ -2,7 +2,6 @@
 #define MIDEND_COVERAGE_H_
 
 #include <set>
-#include <vector>
 
 #include "ir/ir.h"
 #include "ir/visitor.h"

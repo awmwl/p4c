@@ -15,6 +15,18 @@ limitations under the License.
 
 #include "bfruntime_ext.h"
 
+#include <stdint.h>
+
+#include <string>
+#include <vector>
+
+#include "backends/dpdk/constants.h"
+#include "backends/dpdk/options.h"
+#include "lib/cstring.h"
+#include "lib/exceptions.h"
+#include "lib/null.h"
+#include "p4/config/dpdk/p4info.pb.h"
+
 namespace P4 {
 
 namespace BFRT {

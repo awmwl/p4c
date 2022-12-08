@@ -13,7 +13,6 @@
 #include "ir/ir.h"
 #include "ir/vector.h"
 #include "lib/exceptions.h"
-#include "lib/log.h"
 #include "lib/null.h"
 
 namespace P4Tools::RefersToParser {

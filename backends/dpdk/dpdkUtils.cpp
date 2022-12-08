@@ -15,6 +15,14 @@ limitations under the License.
 
 #include "dpdkUtils.h"
 
+#include <string>
+#include <vector>
+
+#include <boost/multiprecision/cpp_int.hpp>
+
+#include "ir/id.h"
+#include "ir/vector.h"
+
 namespace DPDK {
 bool isSimpleExpression(const IR::Expression *e) {
     if (e->is<IR::Member>() || e->is<IR::PathExpression>() || e->is<IR::Constant>() ||

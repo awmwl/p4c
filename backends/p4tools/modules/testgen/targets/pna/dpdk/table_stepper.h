@@ -1,6 +1,7 @@
 #ifndef BACKENDS_P4TOOLS_MODULES_TESTGEN_TARGETS_PNA_DPDK_TABLE_STEPPER_H_
 #define BACKENDS_P4TOOLS_MODULES_TESTGEN_TARGETS_PNA_DPDK_TABLE_STEPPER_H_
 
+#include "backends/p4tools/common/lib/table_utils.h"
 #include "ir/ir.h"
 
 #include "backends/p4tools/modules/testgen/lib/execution_state.h"

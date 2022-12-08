@@ -17,12 +17,32 @@ limitations under the License.
 #ifndef CONTROL_PLANE_P4RUNTIMEARCHHANDLER_H_
 #define CONTROL_PLANE_P4RUNTIMEARCHHANDLER_H_
 
+#include <stdint.h>
+
+#include <list>
 #include <optional>
 #include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "frontends/p4/parameterSubstitution.h"
+#include "ir/declaration.h"
+#include "ir/id.h"
+#include "ir/node.h"
+#include "ir/vector.h"
+#include "lib/big_int_util.h"
+#include "lib/cstring.h"
+#include "lib/error.h"
+#include "lib/error_catalog.h"
+#include "lib/exceptions.h"
+#include "lib/null.h"
+#include "lib/ordered_map.h"
 #include "p4/config/v1/p4info.pb.h"
+#include "p4/config/v1/p4types.pb.h"
+
 #pragma GCC diagnostic pop
 
 #include "frontends/common/resolveReferences/referenceMap.h"

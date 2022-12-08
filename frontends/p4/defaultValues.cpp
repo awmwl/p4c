@@ -16,6 +16,21 @@ limitations under the License.
 
 #include "defaultValues.h"
 
+#include <stddef.h>
+
+#include <string>
+#include <vector>
+
+#include <boost/multiprecision/cpp_int.hpp>
+
+#include "ir/id.h"
+#include "ir/indexed_vector.h"
+#include "ir/vector.h"
+#include "lib/cstring.h"
+#include "lib/error.h"
+#include "lib/error_catalog.h"
+#include "lib/exceptions.h"
+
 namespace P4 {
 
 // static

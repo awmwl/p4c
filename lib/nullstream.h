@@ -17,12 +17,11 @@ limitations under the License.
 #ifndef _LIB_NULLSTREAM_H_
 #define _LIB_NULLSTREAM_H_
 
-#include <iostream>
 #include <ostream>
 #include <streambuf>
+#include <string>
 
 #include "cstring.h"
-#include "error.h"
 
 template <class cT, class traits = std::char_traits<cT>>
 class basic_nullbuf final : public std::basic_streambuf<cT, traits> {

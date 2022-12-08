@@ -18,7 +18,7 @@ limitations under the License.
 #define _LIB_ERROR_CATALOG_H_
 
 #include <map>
-#include <string>
+#include <utility>
 
 #include "cstring.h"
 

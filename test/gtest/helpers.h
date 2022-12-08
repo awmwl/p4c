@@ -21,12 +21,10 @@ limitations under the License.
 #include <string>
 
 #include "frontends/common/options.h"
+#include "frontends/common/parser_options.h"
 #include "frontends/p4/parseAnnotations.h"
-#include "gtest/gtest.h"
-
-namespace IR {
-class P4Program;
-}  // namespace IR
+#include "ir/ir.h"
+#include "lib/compile_context.h"
 
 /// Specifies which standard headers should be included by a GTest.
 enum class P4Headers {

@@ -17,8 +17,8 @@ limitations under the License.
 #ifndef _LIB_BACKTRACE_H_
 #define _LIB_BACKTRACE_H_
 
-#include <exception>
 #include <string>
+#include <utility>
 
 #include "config.h"
 

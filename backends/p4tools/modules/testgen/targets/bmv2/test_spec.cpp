@@ -1,5 +1,8 @@
 #include "backends/p4tools/modules/testgen/targets/bmv2/test_spec.h"
 
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/number.hpp>
+
 #include "backends/p4tools/common/lib/model.h"
 #include "lib/exceptions.h"
 

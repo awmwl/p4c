@@ -29,7 +29,6 @@
 #include "midend/orderArguments.h"
 #include "midend/parserUnroll.h"
 #include "midend/removeLeftSlices.h"
-#include "midend/removeMiss.h"
 #include "midend/removeSelectBooleans.h"
 #include "midend/replaceSelectRange.h"
 #include "midend/simplifyBitwise.h"

@@ -7,7 +7,6 @@
 
 #include "ir/ir.h"
 #include "lib/exceptions.h"
-#include "lib/log.h"
 #include "lib/null.h"
 
 #include "backends/p4tools/modules/testgen/core/small_step/small_step.h"

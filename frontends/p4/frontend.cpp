@@ -17,7 +17,6 @@ limitations under the License.
 #include "frontend.h"
 
 #include <fstream>
-#include <iostream>
 
 #include "../common/options.h"
 #include "frontends/common/resolveReferences/resolveReferences.h"
@@ -40,9 +39,13 @@ limitations under the License.
 #include "dontcareArgs.h"
 #include "evaluator/evaluator.h"
 #include "frontends/common/constantFolding.h"
+#include "frontends/common/resolveReferences/referenceMap.h"
 #include "functionsInlining.h"
 #include "hierarchicalNames.h"
 #include "inlining.h"
+#include "ir/node.h"
+#include "ir/visitor.h"
+#include "lib/cstring.h"
 #include "localizeActions.h"
 #include "moveConstructors.h"
 #include "moveDeclarations.h"

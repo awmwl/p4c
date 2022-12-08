@@ -25,7 +25,6 @@
 #include "backends/p4tools/modules/testgen/lib/execution_state.h"
 #include "backends/p4tools/modules/testgen/lib/packet_vars.h"
 #include "backends/p4tools/modules/testgen/targets/ebpf/concolic.h"
-#include "backends/p4tools/modules/testgen/targets/ebpf/constants.h"
 
 namespace P4Tools::P4Testgen::EBPF {
 

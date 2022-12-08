@@ -19,10 +19,14 @@ limitations under the License.
 #include <gc/gc_cpp.h>
 #include <gc/gc_mark.h>
 #endif /* HAVE_LIBGC */
+#include <stdlib.h>
+
+#include <gc/gc.h>
 #include <sys/mman.h>
 
 #include <cstddef>
 #include <cstring>
+#include <iostream>
 #include <new>
 
 #include "backtrace.h"

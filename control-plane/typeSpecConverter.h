@@ -22,14 +22,8 @@ limitations under the License.
 
 #include "ir/ir.h"
 #include "ir/visitor.h"
+#include "lib/cstring.h"
 #include "p4/config/v1/p4types.pb.h"
-
-namespace p4 {
-
-class P4DataTypeSpec;
-class P4TypeInfo;
-
-}  // namespace p4
 
 namespace P4 {
 

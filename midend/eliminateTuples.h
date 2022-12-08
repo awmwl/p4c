@@ -17,9 +17,20 @@ limitations under the License.
 #ifndef _MIDEND_ELIMINATETUPLES_H_
 #define _MIDEND_ELIMINATETUPLES_H_
 
+#include <set>
+
+#include "frontends/common/resolveReferences/referenceMap.h"
 #include "frontends/common/resolveReferences/resolveReferences.h"
 #include "frontends/p4/typeChecking/typeChecker.h"
+#include "frontends/p4/typeMap.h"
+#include "ir/indexed_vector.h"
 #include "ir/ir.h"
+#include "ir/node.h"
+#include "ir/pass_manager.h"
+#include "ir/visitor.h"
+#include "lib/null.h"
+#include "lib/ordered_map.h"
+#include "lib/safe_vector.h"
 
 namespace P4 {
 

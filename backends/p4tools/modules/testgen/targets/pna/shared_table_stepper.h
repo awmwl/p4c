@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "backends/p4tools/common/lib/table_utils.h"
 #include "ir/ir.h"
 
 #include "backends/p4tools/modules/testgen/core/small_step/table_stepper.h"
