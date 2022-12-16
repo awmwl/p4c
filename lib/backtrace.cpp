@@ -16,11 +16,14 @@ limitations under the License.
 
 #include "backtrace.h"
 
+// features.h does not exist on MacOS builds. It does not seem necessary for compilation there.
+#if !defined(__APPLE__)
 #include <features.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#endif
 
+#include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <exception>
 #include <functional>
 #include <new>
