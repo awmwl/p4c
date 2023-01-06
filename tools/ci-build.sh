@@ -111,8 +111,9 @@ sudo apt-get install -y --no-install-recommends \
   ${P4C_EBPF_DEPS} \
   ${P4C_RUNTIME_DEPS}
 
-if [[ "${DISTRIB_RELEASE}" == "18.04" ]] ; then
-  ccache --set-config cache_dir=.ccache
+if [ "$IN_DOCKER" == "TRUE" ]; then
+  rm -rf /usr/local/etc/ccache.conf
+  ccache --set-config cache_dir=/p4c/.ccache
 fi
 ccache --set-config max_size=1G
 
