@@ -135,8 +135,8 @@ jobs:
         docker build -t p4c --build-arg BASE_IMAGE=ubuntu:18.04 --build-arg IMAGE_TYPE=test --build-arg ENABLE_UNIFIED_COMPILATION=ON .
         ./tools/export_ccache.sh
 
-      # run with sudo (...) --privileged
-      # this is needed to create network namespaces for the ebpf tests.
+      # Run with sudo (...) --privileged
+      # This is needed to create network namespaces for the eBPF tests.
     - name: Run tests (Ubuntu 18.04)
       run: |
         sudo -E docker run --privileged -w /p4c/build -e $CTEST_PARALLEL_LEVEL p4c ctest --output-on-failure --schedule-random
@@ -180,7 +180,7 @@ jobs:
       run: sudo -E ctest --output-on-failure --schedule-random
       working-directory: ./build
 
-  # Build and test p4c on MacOS 11
+  # Build and test p4c on MacOS 11.
   test-mac-os:
     strategy:
       fail-fast: false
