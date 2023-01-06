@@ -28,7 +28,7 @@ jobs:
         fetch-depth: 0
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: test-${{ runner.os }}-gcc
         max-size: 1000M
@@ -61,7 +61,7 @@ jobs:
         fetch-depth: 0
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: test-${{ matrix.unified }}-${{ runner.os }}-gcc
         max-size: 1000M
@@ -96,7 +96,7 @@ jobs:
         submodules: recursive
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: test-${{ runner.os }}-clang
         max-size: 1000M
@@ -125,7 +125,7 @@ jobs:
         fetch-depth: 0
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: test-ubuntu-18.04-gcc
         max-size: 1000M
@@ -164,7 +164,7 @@ jobs:
       run: tools/install_fedora_deps.sh
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: fedora-test-${{ runner.os }}
         max-size: 1000M
@@ -193,7 +193,7 @@ jobs:
         submodules: recursive
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: test-${{ runner.os }}
         max-size: 1000M
