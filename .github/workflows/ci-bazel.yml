@@ -28,9 +28,9 @@ jobs:
         path: "~/.cache/bazel"
         # Create cash entry for every run (by using unique key derived from commit hash).
         # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
-        key: ${{ runner.os }}-${{ github.event.pull_request.number }}-bazel-build-direct
+        key: ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-direct
         restore-keys: |
-          ${{ runner.os }}-${{ github.event.pull_request.number }}-bazel-build-direct
+          ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-direct
 
     - name: Install bazelisk
       run: |
@@ -60,9 +60,9 @@ jobs:
         path: "~/.cache/bazel"
         # Create cash entry for every run (by using unique key derived from commit hash).
         # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
-        key: ${{ runner.os }}-${{ github.event.pull_request.number }}-bazel-build-indirect
+        key: ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-indirect
         restore-keys: |
-          ${{ runner.os }}-${{ github.event.pull_request.number }}-bazel-build-indirect
+          ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-indirect
 
     - name: Install bazelisk
       run: |
