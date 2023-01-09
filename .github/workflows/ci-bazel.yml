@@ -6,9 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  # The CACHE_ID is 1 if the run happens on the main branch or the pull request was newly opened.
+  # Otherwise, the ID corresponds to the pull request ID.
+  # We have to use this boolean syntax because Github actions do not support ternary expressions.
+  CACHE_ID: ${{ github.event_name == 'pull_request' && (github.event.action != 'opened' && github.event.pull_request.number) && '' }}
+
 # Cancel any preceding run on the pull request.
 concurrency:
-  group: bazel-${{ github.event.pull_request.number || github.ref }}
+  group: bazel-${{ env.CACHE_ID }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -28,9 +34,9 @@ jobs:
         path: "~/.cache/bazel"
         # Create cash entry for every run (by using unique key derived from commit hash).
         # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
-        key: ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-direct
+        key: ${{ runner.os }}-${{ env.CACHE_ID }}-bazel-build-direct
         restore-keys: |
-          ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-direct
+          ${{ runner.os }}-${{ env.CACHE_ID }}-bazel-build-direct
 
     - name: Install bazelisk
       run: |
@@ -60,9 +66,9 @@ jobs:
         path: "~/.cache/bazel"
         # Create cash entry for every run (by using unique key derived from commit hash).
         # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
-        key: ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-indirect
+        key: ${{ runner.os }}-${{ env.CACHE_ID }}-bazel-build-indirect
         restore-keys: |
-          ${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}-bazel-build-indirect
+          ${{ runner.os }}-${{ env.CACHE_ID }}-bazel-build-indirect
 
     - name: Install bazelisk
       run: |

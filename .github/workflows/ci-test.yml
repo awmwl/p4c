@@ -6,9 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  # The CACHE_ID is 1 if the run happens on the main branch or the pull request was newly opened.
+  # Otherwise, the ID corresponds to the pull request ID.
+  # We have to use this boolean syntax because Github actions do not support ternary expressions.
+  CACHE_ID: ${{ github.event_name == 'pull_request' && (github.event.action != 'opened' && github.event.pull_request.number) && '' }}
+
 # Cancel any preceding run on the pull request.
 concurrency:
-  group: test-${{ github.event.pull_request.number || github.ref }}
+  group: test-${{ env.CACHE_ID }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -30,7 +36,7 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: test-${{ runner.os }}-gcc
+        key: test-${{ runner.os }}-gcc-${{ env.CACHE_ID }}
         max-size: 1000M
         append-timestamp: false
 
@@ -64,8 +70,9 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: test-${{ matrix.unified }}-${{ runner.os }}-gcc
+        key: test-${{ matrix.unified }}-${{ runner.os }}-gcc-${{ env.CACHE_ID }}
         max-size: 1000M
+        append-timestamp: false
 
     - name: Build (Ubuntu 20.04, GCC)
       run: |
@@ -99,8 +106,9 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: test-${{ runner.os }}-clang
+        key: test-${{ runner.os }}-clang-${{ env.CACHE_ID }}
         max-size: 1000M
+        append-timestamp: false
 
     - name: Build (Ubuntu 20.04, Clang, Sanitizers)
       run: |
@@ -128,8 +136,9 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: test-ubuntu-18.04-gcc
+        key: test-ubuntu-18.04-gcc-${{ env.CACHE_ID }}
         max-size: 1000M
+        append-timestamp: false
 
     - name: Build (Ubuntu 18.04, GCC)
       run: |
@@ -167,8 +176,9 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: fedora-test-${{ runner.os }}
+        key: fedora-test-${{ runner.os }}-${{ env.CACHE_ID }}
         max-size: 1000M
+        append-timestamp: false
 
     - name: Build p4c (Fedora Linux)
       run: |
@@ -196,8 +206,9 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: test-${{ runner.os }}
+        key: test-${{ runner.os }}-${{ env.CACHE_ID }}
         max-size: 1000M
+        append-timestamp: false
 
     - name: Install dependencies (MacOS)
       run: |

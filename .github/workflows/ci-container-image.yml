@@ -11,9 +11,15 @@ on:
     # "At minute 15 past every 4th hour from midnight through 23."
     - cron: '15 0-23/4 * * *'
 
+env:
+  # The CACHE_ID is 1 if the run happens on the main branch or the pull request was newly opened.
+  # Otherwise, the ID corresponds to the pull request ID.
+  # We have to use this boolean syntax because Github actions do not support ternary expressions.
+  CACHE_ID: ${{ github.event_name == 'pull_request' && (github.event.action != 'opened' && github.event.pull_request.number) && '' }}
+
 # Cancel any preceding run on the pull request.
 concurrency:
-  group: container-image-${{ github.event.pull_request.number || github.ref }}
+  group: container-image-${{ env.CACHE_ID }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

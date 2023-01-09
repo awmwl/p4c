@@ -7,9 +7,14 @@ on:
     paths:
       - 'Version.txt'
 
+env:
+  # The CACHE_ID is 1 if the run happens on the main branch or the pull request was newly opened.
+  # Otherwise, the ID corresponds to the pull request ID.
+  # We have to use this boolean syntax because Github actions do not support ternary expressions.
+  CACHE_ID: ${{ github.event_name == 'pull_request' && (github.event.action != 'opened' && github.event.pull_request.number) && '' }}
 # Cancel any preceding run on the pull request.
 concurrency:
-  group: release-${{ github.event.pull_request.number || github.ref }}
+  group: release-${{ env.CACHE_ID }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
