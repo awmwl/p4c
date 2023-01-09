@@ -32,6 +32,7 @@ jobs:
       with:
         key: test-${{ runner.os }}-gcc
         max-size: 1000M
+        append-timestamp: false
 
     - name: Build (Ubuntu 22.04, GCC)
       run: |

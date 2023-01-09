@@ -20,12 +20,6 @@ jobs:
         submodules: recursive
     - uses: actions/setup-python@v4
 
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: apply-linters-${{ runner.os }}
-        max-size: 1000M
-
     # TODO: This check is disabled because git on the Github serves behaves differently. Unclear why.
     # - name: Check submodule ref points.
     #   run: |

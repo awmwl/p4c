@@ -45,8 +45,9 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: test-ptf-${{ runner.os }}
+          key: test-ptf-${{ runner.os }}-${{ github.event.pull_request.number || github.ref }}
           max-size: 1000M
+          append-timestamp: false
 
       - name: Build (Ubuntu 20.04)
         run: |
