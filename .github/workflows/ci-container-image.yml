@@ -19,7 +19,7 @@ env:
 
 # Cancel any preceding run on the pull request.
 concurrency:
-  group: container-image-${{ env.CACHE_ID }}
+  group: container-image-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
