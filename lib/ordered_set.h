@@ -297,8 +297,8 @@ class ordered_set {
         return tr_iter(it);
     }
     iterator insert(const_iterator pos, T &&v) {
-        auto it = find(v, KeyValueCompare());
-        if (it == end()) {
+        auto it = data_set.find(v, KeyValueCompare());
+        if (it == data_set.end()) {
             Node* new_item = construct(std::move(v));
             auto data_it = data.insert(pos.base, *new_item);
             data_set.insert(*new_item);
