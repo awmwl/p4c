@@ -2,7 +2,7 @@
 #define BACKENDS_P4TOOLS_MODULES_TESTGEN_CORE_EXPLORATION_STRATEGY_RANDOM_ACCESS_STACK_H_
 
 #include <cstdint>
-#include <list>
+#include <deque>
 
 #include <boost/optional/optional.hpp>
 
@@ -37,7 +37,7 @@ class RandomAccessStack : public IncrementalStack {
 
     // Buffer of unexploredBranches. It saves the unexplored branches,
     // so we can restore them if multiPop empties the current unexploredBranches
-    std::list<StepResult> bufferUnexploredBranches;
+    std::deque<StepResult> bufferUnexploredBranches;
 
     // pops multiple levels of an unexploredBranch and handles buffer updates
     StepResult multiPop(UnexploredBranches &unexploredBranches);

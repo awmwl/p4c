@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
 #include <boost/none.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/variant/get.hpp>
@@ -90,7 +92,7 @@ class ExecutionState {
 
     /// The list of zombies that have been created in this state.
     /// These zombies are later fed to the model for completion.
-    std::set<StateVariable> allocatedZombies;
+    boost::container::flat_set<StateVariable> allocatedZombies;
 
     /// The program trace for the current program point (i.e., how we got to the current state).
     std::vector<gsl::not_null<const TraceEvent *>> trace;
@@ -118,7 +120,7 @@ class ExecutionState {
     /// written while this variable is active is tainted. This property must be unset manually to
     /// resume normal operation by setting the property "false". Usually, this is done directly
     /// after the tainted sequence of commands has been executed.
-    std::map<cstring, Continuation::PropertyValue> stateProperties;
+    boost::container::flat_map<cstring, Continuation::PropertyValue> stateProperties;
 
     // Test objects are classes of variables that influence the execution of test frameworks. They
     // are collected during interpreter execution and consumed by the respective test framework. For
@@ -126,7 +128,8 @@ class ExecutionState {
     // which defines control plane match action entries. Once the interpreter has solved for the
     // variables used by these test objects and concretized the values, they can be used to generate
     // a test. Test objects are not constant because they may be manipulated by a target back end.
-    std::map<cstring, std::map<cstring, const TestObject *>> testObjects;
+    boost::container::flat_map<cstring,
+        boost::container::flat_map<cstring, const TestObject*>> testObjects;
 
     /// The parserErrorLabel is set by the parser to indicate the variable corresponding to the
     /// parser error that is set by various built-in functions such as verify or extract.
@@ -250,7 +253,8 @@ class ExecutionState {
 
     /// @returns the map of uninterpreted test objects for a specific test category. For example,
     /// all the table entries saved under "tableconfigs".
-    std::map<cstring, const TestObject *> getTestObjectCategory(cstring category) const;
+    boost::container::flat_map<cstring, const TestObject*>
+        getTestObjectCategory(cstring category) const;
 
     /* =========================================================================================
      *  Trace events.
@@ -429,7 +433,7 @@ class ExecutionState {
      */
  public:
     /// @returns the zombies that were allocated in this state
-    const std::set<StateVariable> &getZombies() const;
+    const boost::container::flat_set<StateVariable>& getZombies() const;
 
     /// @see Utils::getZombieConst.
     /// We also place the zombies in the set of allocated zombies of this state.

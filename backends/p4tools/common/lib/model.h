@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
 
 #include "backends/p4tools/common/lib/formulae.h"
 #include "ir/ir.h"
@@ -34,7 +35,7 @@ class Model : public SymbolicMapType {
 
     /// Adds the given set of variables to the model (if they do not exist already).
     /// If the variable does not exist, it is initialized to a default value.
-    void complete(const std::set<StateVariable> &inputSet);
+    void complete(const boost::container::flat_set<StateVariable>& inputSet);
 
     /// Evaluates a P4 expression in the context of this model.
     ///

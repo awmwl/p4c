@@ -56,7 +56,7 @@ class CompleteVisitor : public Inspector {
 
 void Model::complete(const IR::Expression *expr) { expr->apply(CompleteVisitor(this)); }
 
-void Model::complete(const std::set<StateVariable> &inputSet) {
+void Model::complete(const boost::container::flat_set<StateVariable>& inputSet) {
     auto completionVisitor = CompleteVisitor(this);
     for (const auto &var : inputSet) {
         var->apply(completionVisitor);

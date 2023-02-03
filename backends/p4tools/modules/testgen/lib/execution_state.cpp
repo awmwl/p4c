@@ -194,8 +194,8 @@ const TestObject *ExecutionState::getTestObject(cstring category, cstring object
     return nullptr;
 }
 
-std::map<cstring, const TestObject *> ExecutionState::getTestObjectCategory(
-    cstring category) const {
+boost::container::flat_map<cstring, const TestObject*>
+ExecutionState::getTestObjectCategory(cstring category) const {
     auto it = testObjects.find(category);
     if (it != testObjects.end()) {
         return it->second;
@@ -510,7 +510,9 @@ const IR::Member *ExecutionState::getCurrentParserErrorLabel() const {
  *  Variables and symbolic constants
  * ============================================================================================= */
 
-const std::set<StateVariable> &ExecutionState::getZombies() const { return allocatedZombies; }
+const boost::container::flat_set<StateVariable>& ExecutionState::getZombies() const {
+    return allocatedZombies;
+}
 
 const StateVariable &ExecutionState::createZombieConst(const IR::Type *type, cstring name,
                                                        uint64_t instanceId) {
