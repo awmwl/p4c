@@ -56,7 +56,6 @@ P4C_DEPS="bison \
           libboost-graph-dev \
           libboost-iostreams-dev \
           libfl-dev \
-          libgc-dev \
           pkg-config \
           python3 \
           python3-pip \
@@ -87,7 +86,6 @@ fi
 
 P4C_RUNTIME_DEPS="cpp \
                   ${P4C_RUNTIME_DEPS_BOOST} \
-                  libgc1* \
                   libgmp-dev \
                   python3"
 

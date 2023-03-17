@@ -39,7 +39,6 @@ OPTION (ENABLE_P4TC "Build the P4TC backend" ON)
 OPTION (ENABLE_P4TEST "Build the P4Test backend (required for the full test suite)" ON)
 OPTION (ENABLE_TEST_TOOLS "Build the P4Tools development platform" OFF)
 OPTION (ENABLE_P4C_GRAPHS "Build the p4c-graphs backend" ON)
-OPTION (ENABLE_PROTOBUF_STATIC "Link against Protobuf statically" ON)
 OPTION (ENABLE_GC "Use libgc" ON)
 OPTION (ENABLE_MULTITHREAD "Use multithreading" OFF)
 OPTION (ENABLE_LTO "Enable Link Time Optimization (LTO)" OFF)
@@ -124,7 +123,7 @@ if (BUILD_STATIC_RELEASE)
   # Set the static variable
   set(P4C_STATIC_BUILD STATIC)
   # Do not bring in dynamic libstdcc and libgcc
-  set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,-z,muldefs")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++ -Wl,-z,muldefs")
   add_definitions(-DP4C_STATIC_BUILD)
 endif ()
 
@@ -132,14 +131,11 @@ endif ()
 find_package (PythonInterp 3 REQUIRED)
 find_package (FLEX 2.0 REQUIRED)
 find_package (BISON 3.0 REQUIRED)
-if (ENABLE_PROTOBUF_STATIC)
-  set(SAVED_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-  set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-endif ()
 find_package (Protobuf 3.0.0 REQUIRED)
-if (ENABLE_PROTOBUF_STATIC)
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ${SAVED_CMAKE_FIND_LIBRARY_SUFFIXES})
-endif ()
+# we require -pthread to make std::call_once work, even if we're not using threads...
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # The boost graph headers are optional and only required by the graphs backend
 find_package (Boost QUIET COMPONENTS graph)
 if (Boost_FOUND)
@@ -150,20 +146,66 @@ endif ()
 find_package (Boost REQUIRED COMPONENTS iostreams)
 # otherwise ordered_map code tries to use boost::get (graph)
 add_definitions ("-DBOOST_NO_ARGUMENT_DEPENDENT_LOOKUP")
+
+# Compile with the Boehm garbage collector (https://github.com/ivmai/bdwgc) if requested.
 if (ENABLE_GC)
-  find_package (LibGc 7.4.2 REQUIRED)
+  set(enable_cplusplus ON CACHE BOOL "C++ support")
+  # set(enable_threads OFF CACHE BOOL "Support threads")
+  # We redirect all malloc calls in the program.
+  set(enable_redirect_malloc ON CACHE BOOL "Redirect malloc and friends to GC routines.")
+  set(install_headers OFF CACHE BOOL "Install header and pkg-config metadata files.")
+  set(enable_docs OFF CACHE BOOL "Build and install documentation.")
+  set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
+  add_definitions("-DREDIRECT_REALLOC=GC_REALLOC")
+  add_definitions("-DREDIRECT_FREE=GC_FREE")
+  add_definitions("-DNO_EXECUTE_PERMISSION")
+  add_definitions("-D_REENTRANT")
+  if(APPLE)
+    set(enable_threads OFF CACHE BOOL "Support threads.")
+  endif()
+  # We need to enable position independent code to make the malloc redirect work.
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  if (BUILD_STATIC_RELEASE)
+    set(LIBGC_LIBRARIES
+        ${CMAKE_BINARY_DIR}/tools/bdwgc/libgc.a
+        ${CMAKE_BINARY_DIR}/tools/bdwgc/libgccpp.a
+        ${CMAKE_BINARY_DIR}/tools/bdwgc/libcord.a
+    )
+    set(BUILD_SHARED_LIBS OFF CACHE STRING " " FORCE)
+    set(enable_threads OFF CACHE BOOL "Support threads.")
+  else()
+    add_definitions("-DUSE_COMPILER_TLS")
+    add_definitions("-DPARALLEL_MARK")
+    set(LIBGC_LIBRARIES gc gccpp cord)
+  endif()
+  add_subdirectory(tools/bdwgc)
+  include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/tools/bdwgc/include)
   set (HAVE_LIBGC 1)
+  message("Patching bdwgc.")
+  execute_process(
+    COMMAND git apply ${CMAKE_SOURCE_DIR}/tools/silence_gc_warnings.patch
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/bdwgc/
+  )
+  # add_custom_target(post_bdwgc_patch ALL DEPENDS gc)
+  # add_custom_command(
+  #   TARGET post_bdwgc_patch
+  #   POST_BUILD
+  #   COMMAND git apply --reverse ${CMAKE_SOURCE_DIR}/tools/silence_gc_warnings.patch
+  #   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/bdwgc/
+  #   MAIN_DEPENDENCY gc
+  #   COMMENT "Reverting bdwgc patch."
+  # )
 endif ()
 if (ENABLE_MULTITHREAD)
-  add_definitions(-DMULTITHREAD)
+  add_definitions("-DMULTITHREAD")
+  add_definitions("-DGC_THREADS=1")
+  add_definitions("-DGC_NO_THREAD_REDIRECTS=1")
 endif()
-# we require -pthread to make std::call_once work, even if we're not using threads...
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
+
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${CMAKE_THREAD_LIBS_INIT}")
+
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIRS})
-include_directories(SYSTEM ${LIBGC_INCLUDE_DIR})
 set (HAVE_LIBBOOST_IOSTREAMS 1)
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${Boost_LIBRARIES}")
 if (ENABLE_GC)

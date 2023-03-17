@@ -45,7 +45,7 @@ std::string stringFormat(const char *format, Args... args) {
                       __VA_ARGS__))
 
 /// Converts a Z3 model to a string.
-const char *toString(z3::model m) { return Z3_model_to_string(m.ctx(), m); }
+const char *toString(const z3::model &m) { return Z3_model_to_string(m.ctx(), m); }
 #else
 #define Z3_LOG(...)
 #endif  // NDEBUG
