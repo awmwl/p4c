@@ -91,12 +91,12 @@ include(FetchContent)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 # TODO: Remove this deprecated include eventually.
 include(UnifiedBuild)
+# CMake Utilities to fetch dependencies.
+include(FetchContent)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-# # search in /usr/local first
-# set (CMAKE_FIND_ROOT_PATH "/usr/local/bin" "${CMAKE_FIND_ROOT_PATH}")
 set (P4C_CXX_FLAGS "")
 set (P4C_LIB_DEPS)
-
 
 # Support the legacy unified build option.
 if(ENABLE_UNIFIED_COMPILATION)
@@ -111,28 +111,29 @@ endif()
 if (CMAKE_UNITY_BUILD)
   set(CMAKE_UNITY_BUILD_BATCH_SIZE 10 CACHE UNINITIALIZED "Set the unity build batch size.")
 endif ()
-# set the required options for a static release build
+
+# Set the required options for a static release build.
 if (BUILD_STATIC_RELEASE)
   message(STATUS "Building static release binaries")
   set(BUILD_SHARED_LIBS OFF)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
   # Link Boost statically
-  # See https://cmake.org/cmake/help/latest/module/FindBoost.html for details
+  # See https://cmake.org/cmake/help/latest/module/FindBoost.html for details.
   set(Boost_USE_STATIC_LIBS ON)
   set(Boost_USE_STATIC_RUNTIME OFF)
   # Set the static variable
   set(P4C_STATIC_BUILD STATIC)
-  # Do not bring in dynamic libstdcc and libgcc
+  # Do not bring in dynamic libstdcc and libgcc.
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++ -Wl,-z,muldefs")
   add_definitions(-DP4C_STATIC_BUILD)
 endif ()
 
-# required tools and libraries
+# Required tools and libraries.
 find_package (PythonInterp 3 REQUIRED)
 find_package (FLEX 2.0 REQUIRED)
 find_package (BISON 3.0 REQUIRED)
 find_package (Protobuf 3.0.0 REQUIRED)
-# we require -pthread to make std::call_once work, even if we're not using threads...
+# We require -pthread to make std::call_once work, even if we're not using threads...
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
@@ -144,13 +145,15 @@ else ()
   message (WARNING "Boost graph headers not found, will not build 'graphs' backend")
 endif ()
 find_package (Boost REQUIRED COMPONENTS iostreams)
+set (HAVE_LIBBOOST_IOSTREAMS 1)
 # otherwise ordered_map code tries to use boost::get (graph)
 add_definitions ("-DBOOST_NO_ARGUMENT_DEPENDENT_LOOKUP")
 
 # Compile with the Boehm garbage collector (https://github.com/ivmai/bdwgc) if requested.
 if (ENABLE_GC)
+  # We need to enable position independent code to make the malloc redirect work.
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   set(enable_cplusplus ON CACHE BOOL "C++ support")
-  # set(enable_threads OFF CACHE BOOL "Support threads")
   # We redirect all malloc calls in the program.
   set(enable_redirect_malloc ON CACHE BOOL "Redirect malloc and friends to GC routines.")
   set(install_headers OFF CACHE BOOL "Install header and pkg-config metadata files.")
@@ -158,55 +161,34 @@ if (ENABLE_GC)
   set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
   add_definitions("-DREDIRECT_REALLOC=GC_REALLOC")
   add_definitions("-DREDIRECT_FREE=GC_FREE")
-  add_definitions("-DNO_EXECUTE_PERMISSION")
-  add_definitions("-D_REENTRANT")
-  if(APPLE)
-    set(enable_threads OFF CACHE BOOL "Support threads.")
-  endif()
-  # We need to enable position independent code to make the malloc redirect work.
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-  if (BUILD_STATIC_RELEASE)
-    set(LIBGC_LIBRARIES
-        ${CMAKE_BINARY_DIR}/tools/bdwgc/libgc.a
-        ${CMAKE_BINARY_DIR}/tools/bdwgc/libgccpp.a
-        ${CMAKE_BINARY_DIR}/tools/bdwgc/libcord.a
-    )
-    set(BUILD_SHARED_LIBS OFF CACHE STRING " " FORCE)
+  # Do not use threads for MacOS builds (yet).
+  if(APPLE OR BUILD_STATIC_RELEASE)
     set(enable_threads OFF CACHE BOOL "Support threads.")
   else()
+    add_definitions("-DNO_EXECUTE_PERMISSION")
+    add_definitions("-D_REENTRANT")
     add_definitions("-DUSE_COMPILER_TLS")
     add_definitions("-DPARALLEL_MARK")
-    set(LIBGC_LIBRARIES gc gccpp cord)
   endif()
-  add_subdirectory(tools/bdwgc)
-  include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/tools/bdwgc/include)
+  set(LIBGC_LIBRARIES gc gccpp cord)
+  FetchContent_Declare(
+    bdwgc
+    GIT_REPOSITORY https://github.com/ivmai/bdwgc.git
+    GIT_TAG        441698c68a90caa1670e9b46275c5db12668d171
+  )
+  FetchContent_MakeAvailable(bdwgc)
+  include_directories(SYSTEM ${gc_SOURCE_DIR}/include)
   set (HAVE_LIBGC 1)
   message("Patching bdwgc.")
   execute_process(
     COMMAND git apply ${CMAKE_SOURCE_DIR}/tools/silence_gc_warnings.patch
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/bdwgc/
+    WORKING_DIRECTORY ${gc_SOURCE_DIR}
   )
-  # add_custom_target(post_bdwgc_patch ALL DEPENDS gc)
-  # add_custom_command(
-  #   TARGET post_bdwgc_patch
-  #   POST_BUILD
-  #   COMMAND git apply --reverse ${CMAKE_SOURCE_DIR}/tools/silence_gc_warnings.patch
-  #   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/bdwgc/
-  #   MAIN_DEPENDENCY gc
-  #   COMMENT "Reverting bdwgc patch."
-  # )
 endif ()
-if (ENABLE_MULTITHREAD)
-  add_definitions("-DMULTITHREAD")
-  add_definitions("-DGC_THREADS=1")
-  add_definitions("-DGC_NO_THREAD_REDIRECTS=1")
-endif()
 
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${CMAKE_THREAD_LIBS_INIT}")
-
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIRS})
-set (HAVE_LIBBOOST_IOSTREAMS 1)
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${Boost_LIBRARIES}")
 if (ENABLE_GC)
   set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${LIBGC_LIBRARIES}")
@@ -256,17 +238,6 @@ endif()
 # enable CTest
 enable_testing ()
 
-
-# if we want to manage versions in CMake ...
-# include (cmake/P4CVersion.cmake)
-# set (CPACK_PACKAGE_VERSION_MAJOR ${__P4C_VERSION_MAJOR})
-# set (CPACK_PACKAGE_VERSION_MINOR ${__P4C_VERSION_MINOR})
-# set (CPACK_PACKAGE_VERSION_PATCH ${__P4C_VERSION_PATCH})
-# if (__P4C_VERSION_RC)
-#   set (CPACK_PACKAGE_VERSION_PATCH ${CPACK_PACKAGE_VERSION_PATCH}-${__P4C_VERSION_RC})
-# endif ()
-
-# set (CMAKE_CXX_EXTENSIONS OFF) # prefer using -std=c++17 rather than -std=gnu++17
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
