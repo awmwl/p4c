@@ -13,7 +13,7 @@ PROTOBUF_LIB="protobuf@21"
 BOOST_LIB="boost@1.76"
 
 $BREW update
-$BREW install autoconf automake bdw-gc bison ${BOOST_LIB} ccache cmake \
+$BREW install autoconf automake bison ${BOOST_LIB} ccache cmake \
       libtool openssl pkg-config python coreutils grep ${PROTOBUF_LIB}
 
 # Prefer Homebrew's bison, grep, and protobuf over the macOS-provided version

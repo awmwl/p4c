@@ -13,11 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "lib/gc.h"
 
 #include "config.h"
 #if HAVE_LIBGC
-#include <gc/gc.h>
-#include <gc/gc_cpp.h>
+#include <gc.h>
+#include <gc_cpp.h>
+
 #include <gc/gc_mark.h>
 #endif /* HAVE_LIBGC */
 #include <sys/mman.h>
@@ -26,14 +28,14 @@ limitations under the License.
 #include <cstring>
 #include <new>
 
-#include "backtrace.h"
-#include "cstring.h"
-#include "gc.h"
-#include "log.h"
-#include "n4.h"
+#include "lib/backtrace.h"
+#include "lib/cstring.h"
+#include "lib/log.h"
+#include "lib/n4.h"
 
 // One can disable the GC, e.g., to run under Valgrind, by editing config.h
 #if HAVE_LIBGC
+
 // emergency pool to allow a few extra allocations after a bad_alloc is thrown so we
 // can generate reasonable errors, a stack trace, etc
 static char emergency_pool[16 * 1024];

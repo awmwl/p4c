@@ -153,16 +153,26 @@ add_definitions ("-DBOOST_NO_ARGUMENT_DEPENDENT_LOOKUP")
 if (ENABLE_GC)
   # We need to enable position independent code to make the malloc redirect work.
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  # Turn on C++ support. We do not need the headers and documentation.
   set(enable_cplusplus ON CACHE BOOL "C++ support")
-  # We redirect all malloc calls in the program.
-  set(enable_redirect_malloc ON CACHE BOOL "Redirect malloc and friends to GC routines.")
   set(install_headers OFF CACHE BOOL "Install header and pkg-config metadata files.")
   set(enable_docs OFF CACHE BOOL "Build and install documentation.")
+
+  # We may have to compile very large programs which allocate a lot on the heap.
   set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
-  add_definitions("-DREDIRECT_REALLOC=GC_REALLOC")
-  add_definitions("-DREDIRECT_FREE=GC_FREE")
-  # Do not use threads for MacOS builds (yet).
-  if(APPLE OR BUILD_STATIC_RELEASE)
+
+  if (APPLE)
+    append("-Wno-deprecated-declarations" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+    add_definitions("-DNO_MARKER_SPECIAL_SIGMASK")
+    set(enable_redirect_malloc OFF CACHE BOOL "Redirect malloc and friends to GC routines.")
+  else()
+    # We redirect all malloc calls in the program.
+    set(enable_redirect_malloc ON CACHE BOOL "Redirect malloc and friends to GC routines.")
+    add_definitions("-DREDIRECT_REALLOC=GC_REALLOC")
+    add_definitions("-DREDIRECT_FREE=GC_FREE")
+  endif()
+
+  if(BUILD_STATIC_RELEASE)
     set(enable_threads OFF CACHE BOOL "Support threads.")
   else()
     add_definitions("-DNO_EXECUTE_PERMISSION")
@@ -175,6 +185,7 @@ if (ENABLE_GC)
     bdwgc
     GIT_REPOSITORY https://github.com/ivmai/bdwgc.git
     GIT_TAG        441698c68a90caa1670e9b46275c5db12668d171
+    GIT_PROGRESS TRUE
   )
   FetchContent_MakeAvailable(bdwgc)
   include_directories(SYSTEM ${gc_SOURCE_DIR}/include)

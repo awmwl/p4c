@@ -212,9 +212,9 @@ jobs:
           ./bootstrap.sh -DENABLE_GC=ON -DCMAKE_BUILD_TYPE=RELEASE \
               -DCMAKE_UNITY_BUILD=ON \
               -DProtobuf_INCLUDE_DIR=$PROTOBUF/include \
-              -DProtobuf_LIBRARY=$PROTOBUF/lib/libprotobuf.dylib \
-              -DENABLE_PROTOBUF_STATIC=OFF
+              -DProtobuf_LIBRARY=$PROTOBUF/lib/libprotobuf.dylib
           make -Cbuild -j2
+          update_dyld_shared_cache
 
     - name: Run tests (MacOS)
       # TODO: Renable gtest. Unit tests currently fail on MacOS.
