@@ -39,8 +39,7 @@ OPTION (ENABLE_P4TC "Build the P4TC backend" ON)
 OPTION (ENABLE_P4TEST "Build the P4Test backend (required for the full test suite)" ON)
 OPTION (ENABLE_TEST_TOOLS "Build the P4Tools development platform" OFF)
 OPTION (ENABLE_P4C_GRAPHS "Build the p4c-graphs backend" ON)
-OPTION (ENABLE_GC "Use libgc" ON)
-OPTION (ENABLE_MULTITHREAD "Use multithreading" OFF)
+OPTION (ENABLE_GC "Compile with the Boehm-Demers-Weiser garbage collector." ON)
 OPTION (ENABLE_LTO "Enable Link Time Optimization (LTO)" OFF)
 OPTION (ENABLE_WERROR "Treat warnings as errors" OFF)
 OPTION (ENABLE_SANITIZERS "Enable sanitizers" OFF)
@@ -156,29 +155,28 @@ if (ENABLE_GC)
   # Turn on C++ support. We do not need the headers and documentation.
   set(enable_cplusplus ON CACHE BOOL "C++ support")
   set(install_headers OFF CACHE BOOL "Install header and pkg-config metadata files.")
-  set(enable_docs OFF CACHE BOOL "Build and install documentation.")
-
+  set(enable_docs ${ENABLE_DOCS} CACHE BOOL "Build and install documentation.")
   # We may have to compile very large programs which allocate a lot on the heap.
   set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
 
+  # MacOS has problems with threads and malloc redirect. Disable it for now.
   if (APPLE)
     append("-Wno-deprecated-declarations" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     add_definitions("-DNO_MARKER_SPECIAL_SIGMASK")
     set(enable_redirect_malloc OFF CACHE BOOL "Redirect malloc and friends to GC routines.")
   else()
-    # We redirect all malloc calls in the program.
+    # For any other distribution we redirect all malloc calls in the program.
     set(enable_redirect_malloc ON CACHE BOOL "Redirect malloc and friends to GC routines.")
     add_definitions("-DREDIRECT_REALLOC=GC_REALLOC")
     add_definitions("-DREDIRECT_FREE=GC_FREE")
   endif()
 
   if(BUILD_STATIC_RELEASE)
+    # Static builds do not work with libpthread (yet).
     set(enable_threads OFF CACHE BOOL "Support threads.")
   else()
-    add_definitions("-DNO_EXECUTE_PERMISSION")
-    add_definitions("-D_REENTRANT")
+    # Try to enable thread-local-storage for better performance.
     add_definitions("-DUSE_COMPILER_TLS")
-    add_definitions("-DPARALLEL_MARK")
   endif()
   set(LIBGC_LIBRARIES gc gccpp cord)
   FetchContent_Declare(
