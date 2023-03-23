@@ -149,7 +149,7 @@ find_package (Boost REQUIRED COMPONENTS iostreams)
 # otherwise ordered_map code tries to use boost::get (graph)
 add_definitions ("-DBOOST_NO_ARGUMENT_DEPENDENT_LOOKUP")
 
-# Compile with the Boehm garbage collector (https://github.com/ivmai/bdwgc) if requested.
+# Compile with the Boehm garbage collector (https://github.com/ivmai/bdwgc), if requested.
 if (ENABLE_GC)
   # We need to enable position independent code to make the malloc redirect work.
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -161,6 +161,7 @@ if (ENABLE_GC)
   set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
 
   # MacOS has problems with threads and malloc redirect. Disable it for now.
+  # We still use the C++ new/delete etc garbage collection.
   if (APPLE)
     append("-Wno-deprecated-declarations" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     add_definitions("-DNO_MARKER_SPECIAL_SIGMASK")

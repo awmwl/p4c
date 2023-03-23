@@ -37,3 +37,9 @@ jobs:
     - name: Build (Ubuntu 20.04)
       run: |
         sudo -E tools/ci-build.sh
+        ldd ./build/p4test 2>&1 |  grep -qi "not a dynamic executable"
+        ldd ./build/p4c-bm2-ss 2>&1 |  grep -qi "not a dynamic executable"
+        ldd ./build/p4c-bm2-psa 2>&1 |  grep -qi "not a dynamic executable"
+        ldd ./build/p4c-ebpf 2>&1 |  grep -qi "not a dynamic executable"
+        ldd ./build/p4c-dpdk 2>&1 |  grep -qi "not a dynamic executable"
+        ldd ./build/p4c-ubpf 2>&1 |  grep -qi "not a dynamic executable"
