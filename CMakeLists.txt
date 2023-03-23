@@ -94,8 +94,11 @@ include(UnifiedBuild)
 include(FetchContent)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+# # search in /usr/local first
+# set (CMAKE_FIND_ROOT_PATH "/usr/local/bin" "${CMAKE_FIND_ROOT_PATH}")
 set (P4C_CXX_FLAGS "")
 set (P4C_LIB_DEPS)
+
 
 # Support the legacy unified build option.
 if(ENABLE_UNIFIED_COMPILATION)
@@ -110,29 +113,28 @@ endif()
 if (CMAKE_UNITY_BUILD)
   set(CMAKE_UNITY_BUILD_BATCH_SIZE 10 CACHE UNINITIALIZED "Set the unity build batch size.")
 endif ()
-
-# Set the required options for a static release build.
+# set the required options for a static release build
 if (BUILD_STATIC_RELEASE)
   message(STATUS "Building static release binaries")
   set(BUILD_SHARED_LIBS OFF)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
   # Link Boost statically
-  # See https://cmake.org/cmake/help/latest/module/FindBoost.html for details.
+  # See https://cmake.org/cmake/help/latest/module/FindBoost.html for details
   set(Boost_USE_STATIC_LIBS ON)
   set(Boost_USE_STATIC_RUNTIME OFF)
   # Set the static variable
   set(P4C_STATIC_BUILD STATIC)
-  # Do not bring in dynamic libstdcc and libgcc.
+  # Do not bring in dynamic libstdcc and libgcc
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++ -Wl,-z,muldefs")
   add_definitions(-DP4C_STATIC_BUILD)
 endif ()
 
-# Required tools and libraries.
+# required tools and libraries
 find_package (PythonInterp 3 REQUIRED)
 find_package (FLEX 2.0 REQUIRED)
 find_package (BISON 3.0 REQUIRED)
 find_package (Protobuf 3.0.0 REQUIRED)
-# We require -pthread to make std::call_once work, even if we're not using threads...
+# we require -pthread to make std::call_once work, even if we're not using threads...
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
@@ -144,7 +146,6 @@ else ()
   message (WARNING "Boost graph headers not found, will not build 'graphs' backend")
 endif ()
 find_package (Boost REQUIRED COMPONENTS iostreams)
-set (HAVE_LIBBOOST_IOSTREAMS 1)
 # otherwise ordered_map code tries to use boost::get (graph)
 add_definitions ("-DBOOST_NO_ARGUMENT_DEPENDENT_LOOKUP")
 
@@ -196,8 +197,10 @@ if (ENABLE_GC)
 endif ()
 
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${CMAKE_THREAD_LIBS_INIT}")
+
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIRS})
+set (HAVE_LIBBOOST_IOSTREAMS 1)
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${Boost_LIBRARIES}")
 if (ENABLE_GC)
   set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${LIBGC_LIBRARIES}")
@@ -247,6 +250,17 @@ endif()
 # enable CTest
 enable_testing ()
 
+
+# if we want to manage versions in CMake ...
+# include (cmake/P4CVersion.cmake)
+# set (CPACK_PACKAGE_VERSION_MAJOR ${__P4C_VERSION_MAJOR})
+# set (CPACK_PACKAGE_VERSION_MINOR ${__P4C_VERSION_MINOR})
+# set (CPACK_PACKAGE_VERSION_PATCH ${__P4C_VERSION_PATCH})
+# if (__P4C_VERSION_RC)
+#   set (CPACK_PACKAGE_VERSION_PATCH ${CPACK_PACKAGE_VERSION_PATCH}-${__P4C_VERSION_RC})
+# endif ()
+
+# set (CMAKE_CXX_EXTENSIONS OFF) # prefer using -std=c++17 rather than -std=gnu++17
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
