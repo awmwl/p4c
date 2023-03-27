@@ -37,17 +37,25 @@ static const IR::P4Program *parseV1Program(Input &stream, const char *sourceFile
     // We load the model before parsing the input file, so that the SourceInfo
     // in the model comes first.
     C converter;
-    if (debugHook) converter.addDebugHook(*debugHook, true);
+    if (debugHook) {
+        converter.addDebugHook(*debugHook, true);
+    }
     converter.loadModel();
 
     // Parse.
     const IR::Node *v1 = V1::V1ParserDriver::parse(stream, sourceFile, sourceLine);
-    if (::errorCount() > 0 || v1 == nullptr) return nullptr;
+    if (::errorCount() > 0 || v1 == nullptr) {
+        return nullptr;
+    }
 
     // Convert to P4-16.
-    if (Log::verbose()) std::cerr << "Converting to P4-16" << std::endl;
+    if (Log::verbose()) {
+        std::cerr << "Converting to P4-16" << std::endl;
+    }
     v1 = v1->apply(converter);
-    if (::errorCount() > 0 || v1 == nullptr) return nullptr;
+    if (::errorCount() > 0 || v1 == nullptr) {
+        return nullptr;
+    }
     BUG_CHECK(v1->is<IR::P4Program>(), "Conversion returned %1%", v1);
     return v1->to<IR::P4Program>();
 }
@@ -74,7 +82,9 @@ const IR::P4Program *parseP4File(ParserOptions &options) {
         }
     } else {
         in = options.preprocess();
-        if (::errorCount() > 0 || in == nullptr) return nullptr;
+        if (::errorCount() > 0 || in == nullptr) {
+            return nullptr;
+        }
     }
 
     auto result = options.isv1()

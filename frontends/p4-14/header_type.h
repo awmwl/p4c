@@ -30,18 +30,20 @@ class CheckHeaderTypes : public Modifier {
         return true;
     }
     bool preorder(IR::Metadata *meta) override {
-        if (auto type = global->get<IR::v1HeaderType>(meta->type_name))
+        if (auto type = global->get<IR::v1HeaderType>(meta->type_name)) {
             meta->type = type->as_metadata;
-        else
+        } else {
             error(ErrorType::ERR_TYPE_ERROR, "%s: No header type %s", meta->srcInfo,
                   meta->type_name);
+        }
         return true;
     }
     bool preorder(IR::HeaderOrMetadata *hdr) override {
-        if (auto type = global->get<IR::v1HeaderType>(hdr->type_name))
+        if (auto type = global->get<IR::v1HeaderType>(hdr->type_name)) {
             hdr->type = type->as_header;
-        else
+        } else {
             error(ErrorType::ERR_TYPE_ERROR, "%s: No header type %s", hdr->srcInfo, hdr->type_name);
+        }
         return true;
     }
 };

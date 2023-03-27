@@ -42,7 +42,9 @@ namespace ControlPlaneAPI {
 
 bool hasTranslationAnnotation(const IR::Type *type, TranslationAnnotation *payload) {
     auto ann = type->getAnnotation("p4runtime_translation");
-    if (!ann) return false;
+    if (!ann) {
+        return false;
+    }
 
     // Syntax: @pruntime_translation(<uri>, <basic_type>).
     BUG_CHECK(ann->expr.size() == 2,
@@ -102,10 +104,11 @@ bool TypeSpecConverter::preorder(const IR::Type_Bits *type) {
     auto typeSpec = new P4DataTypeSpec();
     auto bitTypeSpec = typeSpec->mutable_bitstring();
     auto bw = type->width_bits();
-    if (type->isSigned)
+    if (type->isSigned) {
         bitTypeSpec->mutable_int_()->set_bitwidth(bw);
-    else
+    } else {
         bitTypeSpec->mutable_bit()->set_bitwidth(bw);
+    }
     map.emplace(type, typeSpec);
     return false;
 }
@@ -359,7 +362,9 @@ bool TypeSpecConverter::preorder(const IR::Type_SerEnum *type) {
                     continue;
                 }
                 auto value = stringRepr(m->value->to<IR::Constant>(), width);
-                if (!value) continue;  // error already logged by stringRepr
+                if (!value) {
+                    continue;  // error already logged by stringRepr
+                }
                 member->set_value(*value);
             }
             (*enums)[name] = *enumTypeSpec;
@@ -372,7 +377,9 @@ bool TypeSpecConverter::preorder(const IR::Type_SerEnum *type) {
 bool TypeSpecConverter::preorder(const IR::Type_Error *type) {
     if (p4RtTypeInfo && !p4RtTypeInfo->has_error()) {
         auto errorTypeSpec = p4RtTypeInfo->mutable_error();
-        for (auto m : type->members) errorTypeSpec->add_members(m->controlPlaneName());
+        for (auto m : type->members) {
+            errorTypeSpec->add_members(m->controlPlaneName());
+        }
     }
     map.emplace(type, nullptr);
     return false;

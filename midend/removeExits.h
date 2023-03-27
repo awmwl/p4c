@@ -61,7 +61,9 @@ class DoRemoveExits : public DoRemoveReturns {
 class RemoveExits : public PassManager {
  public:
     RemoveExits(ReferenceMap *refMap, TypeMap *typeMap, TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoRemoveExits(refMap, typeMap));
         setName("RemoveExits");

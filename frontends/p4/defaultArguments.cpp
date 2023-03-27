@@ -36,8 +36,9 @@ class TypeNameSubstitutionVisitor : public TypeVariableSubstitutionVisitor {
 
     const IR::Node *preorder(IR::Type_Name *tn) override {
         auto t = typeMap->getTypeType(getOriginal<IR::Type>(), true);
-        if (auto tv = t->to<IR::ITypeVar>())
+        if (auto tv = t->to<IR::ITypeVar>()) {
             return replacement(tv, tn)->to<IR::Type>()->getP4Type();
+        }
         return tn;
     }
     // When cloning the value of an argument we want to make a fresh
@@ -58,9 +59,10 @@ static const IR::Vector<IR::Argument> *fillDefaults(const TypeMap *typeMap,
         auto arg = subst->lookup(param);
         if (arg != nullptr) {
             // there is a matching argument
-            if (arg->name.name.isNullOrEmpty())
+            if (arg->name.name.isNullOrEmpty()) {
                 // if it has no name add the name
                 arg = new IR::Argument(arg->srcInfo, param->name, arg->expression);
+            }
         } else if (param->defaultValue != nullptr) {
             // Parameter with default value: add a corresponding argument
             const IR::Expression *value = param->defaultValue;
@@ -72,28 +74,36 @@ static const IR::Vector<IR::Argument> *fillDefaults(const TypeMap *typeMap,
         args->push_back(arg);
     }
 
-    if (changed) return args;
+    if (changed) {
+        return args;
+    }
     return nullptr;
 }
 
 const IR::Node *DoDefaultArguments::postorder(IR::MethodCallExpression *mce) {
     auto mi = MethodInstance::resolve(mce, refMap, typeMap);
     auto args = fillDefaults(typeMap, &mi->substitution, &mi->typeSubstitution);
-    if (args != nullptr) mce->arguments = args;
+    if (args != nullptr) {
+        mce->arguments = args;
+    }
     return mce;
 }
 
 const IR::Node *DoDefaultArguments::postorder(IR::ConstructorCallExpression *cce) {
     auto cc = ConstructorCall::resolve(cce, refMap, typeMap);
     auto args = fillDefaults(typeMap, &cc->substitution, &cc->typeSubstitution);
-    if (args != nullptr) cce->arguments = args;
+    if (args != nullptr) {
+        cce->arguments = args;
+    }
     return cce;
 }
 
 const IR::Node *DoDefaultArguments::postorder(IR::Declaration_Instance *inst) {
     auto ii = Instantiation::resolve(inst, refMap, typeMap);
     auto args = fillDefaults(typeMap, &ii->substitution, &ii->typeSubstitution);
-    if (args != nullptr) inst->arguments = args;
+    if (args != nullptr) {
+        inst->arguments = args;
+    }
     return inst;
 }
 

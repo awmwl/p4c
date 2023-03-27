@@ -3,15 +3,17 @@
 std::string ErrorMessage::getPrefix() const {
     std::string p = prefix;
     if (type == MessageType::Error) {
-        if (p.empty())
+        if (p.empty()) {
             p = "error: ";
-        else
+        } else {
             p = "[--Werror=" + p + "] error: ";
+        }
     } else if (type == MessageType::Warning) {
-        if (p.empty())
+        if (p.empty()) {
             p = "warning: ";
-        else
+        } else {
             p = "[--Wwarn=" + p + "] warning: ";
+        }
     }
     return p;
 }
@@ -27,8 +29,9 @@ std::string ErrorMessage::toString() const {
     result += getPrefix() + message + "\n" + mainFragment;
 
     for (unsigned i = 1; i < locations.size(); i++) {
-        if (locations[i].isValid())
+        if (locations[i].isValid()) {
             result += locations[i].toPositionString() + "\n" + locations[i].toSourceFragment();
+        }
     }
 
     result += suffix;

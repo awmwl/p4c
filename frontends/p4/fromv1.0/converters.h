@@ -183,10 +183,13 @@ class DiscoverStructure : public Inspector {
 
     void checkReserved(const IR::Node *node, cstring nodeName, cstring kind) const {
         auto it = reserved_names.find(nodeName);
-        if (it == reserved_names.end()) return;
-        if (it->second != kind)
+        if (it == reserved_names.end()) {
+            return;
+        }
+        if (it->second != kind) {
             ::error(ErrorType::ERR_INVALID, "%1%: invalid name; it can only be used for %2%", node,
                     it->second);
+        }
     }
     void checkReserved(const IR::Node *node, cstring nodeName) const {
         checkReserved(node, nodeName, nullptr);
@@ -290,10 +293,14 @@ class ComputeCallGraph : public Inspector {
     void postorder(const IR::V1Parser *parser) override {
         LOG3("Scanning parser " << parser->name);
         structure->parsers.add(parser->name);
-        if (!parser->default_return.name.isNullOrEmpty())
+        if (!parser->default_return.name.isNullOrEmpty()) {
             structure->parsers.calls(parser->name, parser->default_return);
-        if (parser->cases != nullptr)
-            for (auto ce : *parser->cases) structure->parsers.calls(parser->name, ce->action.name);
+        }
+        if (parser->cases != nullptr) {
+            for (auto ce : *parser->cases) {
+                structure->parsers.calls(parser->name, ce->action.name);
+            }
+        }
         for (auto expr : parser->stmts) {
             if (expr->is<IR::Primitive>()) {
                 auto primitive = expr->to<IR::Primitive>();
@@ -311,8 +318,12 @@ class ComputeCallGraph : public Inspector {
         auto name = primitive->name;
         const IR::GlobalRef *glob = nullptr;
         const IR::Declaration_Instance *extrn = nullptr;
-        if (primitive->operands.size() >= 1) glob = primitive->operands[0]->to<IR::GlobalRef>();
-        if (glob) extrn = glob->obj->to<IR::Declaration_Instance>();
+        if (primitive->operands.size() >= 1) {
+            glob = primitive->operands[0]->to<IR::GlobalRef>();
+        }
+        if (glob) {
+            extrn = glob->obj->to<IR::Declaration_Instance>();
+        }
 
         if (extrn) {
             auto parent = findContext<IR::ActionFunction>();
@@ -323,12 +334,14 @@ class ComputeCallGraph : public Inspector {
             // counter invocation
             auto ctrref = primitive->operands.at(0);
             const IR::Counter *ctr = nullptr;
-            if (auto gr = ctrref->to<IR::GlobalRef>())
+            if (auto gr = ctrref->to<IR::GlobalRef>()) {
                 ctr = gr->obj->to<IR::Counter>();
-            else if (auto nr = ctrref->to<IR::PathExpression>())
+            } else if (auto nr = ctrref->to<IR::PathExpression>()) {
                 ctr = structure->counters.get(nr->path->name);
-            if (ctr == nullptr)
+            }
+            if (ctr == nullptr) {
                 ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find counter", ctrref);
+            }
             auto parent = findContext<IR::ActionFunction>();
             BUG_CHECK(parent != nullptr, "%1%: Counter call not within action", primitive);
             structure->calledCounters.calls(parent->name, ctr->name.name);
@@ -336,28 +349,34 @@ class ComputeCallGraph : public Inspector {
         } else if (primitive->name == "execute_meter") {
             auto mtrref = primitive->operands.at(0);
             const IR::Meter *mtr = nullptr;
-            if (auto gr = mtrref->to<IR::GlobalRef>())
+            if (auto gr = mtrref->to<IR::GlobalRef>()) {
                 mtr = gr->obj->to<IR::Meter>();
-            else if (auto nr = mtrref->to<IR::PathExpression>())
+            } else if (auto nr = mtrref->to<IR::PathExpression>()) {
                 mtr = structure->meters.get(nr->path->name);
-            if (mtr == nullptr) ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find meter", mtrref);
+            }
+            if (mtr == nullptr) {
+                ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find meter", mtrref);
+            }
             auto parent = findContext<IR::ActionFunction>();
             BUG_CHECK(parent != nullptr, "%1%: not within action", primitive);
             structure->calledMeters.calls(parent->name, mtr->name.name);
             return;
         } else if (primitive->name == "register_read" || primitive->name == "register_write") {
             const IR::Expression *regref;
-            if (primitive->name == "register_read")
+            if (primitive->name == "register_read") {
                 regref = primitive->operands.at(1);
-            else
+            } else {
                 regref = primitive->operands.at(0);
+            }
             const IR::Register *reg = nullptr;
-            if (auto gr = regref->to<IR::GlobalRef>())
+            if (auto gr = regref->to<IR::GlobalRef>()) {
                 reg = gr->obj->to<IR::Register>();
-            else if (auto nr = regref->to<IR::PathExpression>())
+            } else if (auto nr = regref->to<IR::PathExpression>()) {
                 reg = structure->registers.get(nr->path->name);
-            if (reg == nullptr)
+            }
+            if (reg == nullptr) {
                 ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find register", regref);
+            }
             auto parent = findContext<IR::ActionFunction>();
             BUG_CHECK(parent != nullptr, "%1%: not within action", primitive);
             structure->calledRegisters.calls(parent->name, reg->name.name);
@@ -381,14 +400,15 @@ class ComputeCallGraph : public Inspector {
         } else {
             BUG("%1%: GlobalRef not within action or extern", gref);
         }
-        if (auto ctr = gref->obj->to<IR::Counter>())
+        if (auto ctr = gref->obj->to<IR::Counter>()) {
             structure->calledCounters.calls(caller, ctr->name.name);
-        else if (auto mtr = gref->obj->to<IR::Meter>())
+        } else if (auto mtr = gref->obj->to<IR::Meter>()) {
             structure->calledMeters.calls(caller, mtr->name.name);
-        else if (auto reg = gref->obj->to<IR::Register>())
+        } else if (auto reg = gref->obj->to<IR::Register>()) {
             structure->calledRegisters.calls(caller, reg->name.name);
-        else if (auto ext = gref->obj->to<IR::Declaration_Instance>())
+        } else if (auto ext = gref->obj->to<IR::Declaration_Instance>()) {
             structure->calledExterns.calls(caller, ext->name.name);
+        }
     }
 };
 
@@ -407,19 +427,22 @@ class ComputeTableCallGraph : public Inspector {
     void postorder(const IR::Apply *apply) override {
         LOG3("Scanning " << apply->name);
         auto tbl = structure->tables.get(apply->name.name);
-        if (tbl == nullptr)
+        if (tbl == nullptr) {
             ::error(ErrorType::ERR_NOT_FOUND, "%1%: Could not find table", apply->name);
+        }
         auto parent = findContext<IR::V1Control>();
-        if (!parent)
+        if (!parent) {
             ::error(ErrorType::ERR_UNEXPECTED, "%1%: Apply not within a control block?", apply);
+        }
 
         auto ctrl = get(structure->tableMapping, tbl);
 
         // skip control block that is unused.
         if (!structure->calledControls.isCallee(parent->name) &&
             parent->name != P4V1::V1Model::instance.ingress.name &&
-            parent->name != P4V1::V1Model::instance.egress.name)
+            parent->name != P4V1::V1Model::instance.egress.name) {
             return;
+        }
 
         if (ctrl != nullptr && ctrl != parent) {
             auto previous = get(structure->tableInvocation, tbl);
@@ -517,7 +540,9 @@ class FixExtracts final : public Transform {
     HeaderSplit *splitHeaderType(const IR::Type_Header *type) {
         // Maybe we have seen this type already
         auto fixed = ::get(fixedPart, type->name.name);
-        if (fixed != nullptr) return fixed;
+        if (fixed != nullptr) {
+            return fixed;
+        }
 
         const IR::Expression *headerLength = nullptr;
         // We allocate the following when we find the first varbit field.
@@ -576,11 +601,14 @@ class FixExtracts final : public Transform {
         }
 
         const IR::Node *postorder(IR::PathExpression *expression) override {
-            if (expression->path->absolute) return expression;
+            if (expression->path->absolute) {
+                return expression;
+            }
             for (auto f : header->fields) {
-                if (f->name == expression->path->name)
+                if (f->name == expression->path->name) {
                     return new IR::Member(expression->srcInfo, new IR::PathExpression(var->name),
                                           f->name);
+                }
             }
             return expression;
         }
@@ -612,16 +640,19 @@ class FixExtracts final : public Transform {
         auto mce = getOriginal<IR::MethodCallStatement>()->methodCall;
         LOG3("Looking up in extracts " << dbp(mce));
         auto ht = ::get(structure->extractsSynthesized, mce);
-        if (ht == nullptr)
+        if (ht == nullptr) {
             // not an extract
             return statement;
+        }
 
         // This is an extract method invocation
         BUG_CHECK(mce->arguments->size() == 1, "%1%: expected 1 argument", mce);
         auto arg = mce->arguments->at(0);
 
         auto fixed = splitHeaderType(ht);
-        if (fixed == nullptr) return statement;
+        if (fixed == nullptr) {
+            return statement;
+        }
         CHECK_NULL(fixed->headerLength);
         CHECK_NULL(fixed->fixedHeaderType);
 
@@ -705,8 +736,12 @@ class AdjustLengths : public Transform {
     AdjustLengths() { setName("AdjustLengths"); }
     const IR::Node *postorder(IR::PathExpression *expression) override {
         auto anno = findContext<IR::Annotation>();
-        if (anno == nullptr) return expression;
-        if (anno->name != "length") return expression;
+        if (anno == nullptr) {
+            return expression;
+        }
+        if (anno->name != "length") {
+            return expression;
+        }
 
         LOG3("Inserting cast in length annotation");
         auto type = IR::Type_Bits::get(32);
@@ -733,12 +768,13 @@ class DetectDuplicates : public Inspector {
                     auto e1 = s->second;
                     auto e2 = n->second;
                     if (e1->node_type_name() == e2->node_type_name()) {
-                        if (e1->srcInfo.getStart().isValid())
+                        if (e1->srcInfo.getStart().isValid()) {
                             ::error(ErrorType::ERR_DUPLICATE, "%1%: same name as %2%", e1, e2);
-                        else
+                        } else {
                             // This name is probably standard_metadata_t, a built-in declaration
                             ::error(ErrorType::ERR_INVALID, "%1% is invalid; name %2% is reserved",
                                     e2, key);
+                        }
                     }
                 }
             }
@@ -798,7 +834,9 @@ class InsertCompilerGeneratedStartState : public Transform {
 
     // rename original start state
     const IR::Node *postorder(IR::ParserState *state) override {
-        if (!structure->parserEntryPoints.size()) return state;
+        if (!structure->parserEntryPoints.size()) {
+            return state;
+        }
         if (state->name == IR::ParserState::start) {
             state->name = newStartState;
         }
@@ -807,11 +845,15 @@ class InsertCompilerGeneratedStartState : public Transform {
 
     // Rename any path refering to original start state
     const IR::Node *postorder(IR::Path *path) override {
-        if (!structure->parserEntryPoints.size()) return path;
+        if (!structure->parserEntryPoints.size()) {
+            return path;
+        }
         // At this point any identifier called start should have been renamed
         // to unique name (e.g. start_1) => we can safely assume that any
         // "start" refers to the parser state
-        if (path->name.name != IR::ParserState::start) return path;
+        if (path->name.name != IR::ParserState::start) {
+            return path;
+        }
         // Just to make sure we can also check it explicitly
         auto pe = getContext()->node->to<IR::PathExpression>();
         auto sc = findContext<IR::SelectCase>();
@@ -819,13 +861,16 @@ class InsertCompilerGeneratedStartState : public Transform {
         // Either the path is within SelectCase->state<PathExpression>->path
         if (pe && ((sc && pe->equiv(*sc->state->to<IR::PathExpression>())) ||
                    // Or just within ParserState->selectExpression<PathExpression>->path
-                   (ps && pe->equiv(*ps->selectExpression->to<IR::PathExpression>()))))
+                   (ps && pe->equiv(*ps->selectExpression->to<IR::PathExpression>())))) {
             path->name = newStartState;
+        }
         return path;
     }
 
     const IR::Node *postorder(IR::P4Parser *parser) override {
-        if (!structure->parserEntryPoints.size()) return parser;
+        if (!structure->parserEntryPoints.size()) {
+            return parser;
+        }
         IR::IndexedVector<IR::SerEnumMember> members;
         // transition to original start state
         members.push_back(new IR::SerEnumMember("START", new IR::Constant(0)));
@@ -965,9 +1010,10 @@ class MoveIntrinsicMetadata : public Transform {
     }
 
     const IR::Node *postorder(IR::StructField *field) override {
-        if (getOriginal() == intrField || getOriginal() == queueField)
+        if (getOriginal() == intrField || getOriginal() == queueField) {
             // delete it from its parent
             return nullptr;
+        }
         return field;
     }
 
@@ -976,10 +1022,13 @@ class MoveIntrinsicMetadata : public Transform {
         // standard_metadata.x.  We know that these parameter names
         // are always the same.
         if (member->member != structure->v1model.intrinsicMetadata.name &&
-            member->member != structure->v1model.queueingMetadata.name)
+            member->member != structure->v1model.queueingMetadata.name) {
             return member;
+        }
         auto pe = member->expr->to<IR::PathExpression>();
-        if (pe == nullptr || pe->path->absolute) return member;
+        if (pe == nullptr || pe->path->absolute) {
+            return member;
+        }
         if (pe->path->name == structure->v1model.parser.metadataParam.name) {
             LOG2("Renaming reference " << member);
             return new IR::PathExpression(new IR::Path(

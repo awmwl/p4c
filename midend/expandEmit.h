@@ -62,7 +62,9 @@ class ExpandEmit : public PassManager {
  public:
     ExpandEmit(ReferenceMap *refMap, TypeMap *typeMap, TypeChecking *typeChecking = nullptr) {
         setName("ExpandEmit");
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoExpandEmit(refMap, typeMap));
     }

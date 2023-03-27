@@ -88,15 +88,17 @@ using P4TestContext = P4CContextWithOptions<P4TestOptions>;
 
 static void log_dump(const IR::Node *node, const char *head) {
     if (node && LOGGING(1)) {
-        if (head)
+        if (head) {
             std::cout << '+' << std::setw(strlen(head) + 6) << std::setfill('-') << "+\n| " << head
                       << " |\n"
                       << '+' << std::setw(strlen(head) + 3) << "+" << std::endl
                       << std::setfill(' ');
-        if (LOGGING(2))
+        }
+        if (LOGGING(2)) {
             dump(node);
-        else
+        } else {
             std::cout << *node << std::endl;
+        }
     }
 }
 
@@ -110,9 +112,13 @@ int main(int argc, char *const argv[]) {
     options.compilerVersion = P4TEST_VERSION_STRING;
 
     if (options.process(argc, argv) != nullptr) {
-        if (options.loadIRFromJson == false) options.setInputFile();
+        if (options.loadIRFromJson == false) {
+            options.setInputFile();
+        }
     }
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
     const IR::P4Program *program = nullptr;
     auto hook = options.getDebugHook();
     if (options.loadIRFromJson) {
@@ -121,8 +127,9 @@ int main(int argc, char *const argv[]) {
             JSONLoader loader(json);
             const IR::Node *node = nullptr;
             loader >> node;
-            if (!(program = node->to<IR::P4Program>()))
+            if (!(program = node->to<IR::P4Program>())) {
                 error(ErrorType::ERR_INVALID, "%s is not a P4Program in json format", options.file);
+            }
         } else {
             error(ErrorType::ERR_IO, "Can't open %s", options.file);
         }
@@ -175,8 +182,9 @@ int main(int argc, char *const argv[]) {
             }
         }
         if (program) {
-            if (options.dumpJsonFile)
+            if (options.dumpJsonFile) {
                 JSONGenerator(*openFile(options.dumpJsonFile, true), true) << program << std::endl;
+            }
             if (options.debugJson) {
                 std::stringstream ss1, ss2;
                 JSONGenerator gen1(ss1), gen2(ss2);
@@ -193,13 +201,16 @@ int main(int argc, char *const argv[]) {
                     t1 << ss1.str() << std::flush;
                     t2 << ss2.str() << std::flush;
                     auto rv = system("json_diff t1.json t2.json");
-                    if (rv != 0)
+                    if (rv != 0) {
                         ::warning(ErrorType::WARN_FAILED, "json_diff failed with code %1%", rv);
+                    }
                 }
             }
         }
     }
 
-    if (Log::verbose()) std::cerr << "Done." << std::endl;
+    if (Log::verbose()) {
+        std::cerr << "Done." << std::endl;
+    }
     return ::errorCount() > 0;
 }

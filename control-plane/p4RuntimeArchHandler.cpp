@@ -45,7 +45,9 @@ boost::optional<ExternInstance> getExternInstanceFromProperty(const IR::P4Table 
                                                               TypeMap *typeMap,
                                                               bool *isConstructedInPlace) {
     auto property = table->properties->getProperty(propertyName);
-    if (property == nullptr) return boost::none;
+    if (property == nullptr) {
+        return boost::none;
+    }
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
                 "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
@@ -54,7 +56,9 @@ boost::optional<ExternInstance> getExternInstanceFromProperty(const IR::P4Table 
     }
 
     auto expr = property->value->to<IR::ExpressionValue>()->expression;
-    if (isConstructedInPlace) *isConstructedInPlace = expr->is<IR::ConstructorCallExpression>();
+    if (isConstructedInPlace) {
+        *isConstructedInPlace = expr->is<IR::ConstructorCallExpression>();
+    }
     if (expr->is<IR::ConstructorCallExpression>() &&
         property->getAnnotation(IR::Annotation::nameAnnotation) == nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED,
@@ -78,7 +82,9 @@ boost::optional<ExternInstance> getExternInstanceFromProperty(const IR::P4Table 
 
 bool isExternPropertyConstructedInPlace(const IR::P4Table *table, const cstring &propertyName) {
     auto property = table->properties->getProperty(propertyName);
-    if (property == nullptr) return false;
+    if (property == nullptr) {
+        return false;
+    }
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
                 "Expected %1% property value for table %2% to be an expression: %3%", propertyName,

@@ -150,7 +150,9 @@ class CollectUsedMetadataField : public Inspector {
         : used_fields(used_fields) {}
     bool preorder(const IR::Member *m) override {
         // metadata struct field used like m.<field_name> in expressions
-        if (m->expr->toString() == "m") used_fields.insert(m->member.toString());
+        if (m->expr->toString() == "m") {
+            used_fields.insert(m->member.toString());
+        }
         return true;
     }
 };
@@ -176,9 +178,13 @@ class ShortenTokenLength : public Transform {
     // 1.30.30 => 63(including dot(.))
     // if id name less than allowedLength keep it same
     cstring shortenString(cstring str, size_t allowedLength = 60) {
-        if (str.size() <= allowedLength) return str;
+        if (str.size() <= allowedLength) {
+            return str;
+        }
         auto itr = newNameMap.find(str);
-        if (itr != newNameMap.end()) return itr->second;
+        if (itr != newNameMap.end()) {
+            return itr->second;
+        }
         // make sure new string length less or equal allowedLength
         cstring newStr = str.substr(0, allowedLength - std::to_string(count).size());
         newStr += std::to_string(count);
@@ -189,7 +195,9 @@ class ShortenTokenLength : public Transform {
     }
 
     cstring dropSuffixIfNoAction(IR::ID name) {
-        if (name.originalName == "NoAction") return name.originalName;
+        if (name.originalName == "NoAction") {
+            return name.originalName;
+        }
         return name.name;
     }
 
@@ -199,10 +207,11 @@ class ShortenTokenLength : public Transform {
     static ordered_map<cstring, cstring> origNameMap;
 
     const IR::Node *preorder(IR::Member *m) override {
-        if (m->toString().startsWith("m."))
+        if (m->toString().startsWith("m.")) {
             m->member = shortenString(m->member);
-        else
+        } else {
             m->member = shortenString(m->member, 30);
+        }
         return m;
     }
 
@@ -417,21 +426,23 @@ class CollectUseDefInfo : public Inspector {
 
     bool preorder(const IR::DpdkEmitStatement *e) override {
         auto type = typeMap->getType(e->header)->to<IR::Type_Header>();
-        if (type)
+        if (type) {
             for (auto f : type->fields) {
                 cstring name = e->header->toString() + "." + f->name.toString();
                 usesInfo[name]++;
             }
+        }
         return false;
     }
 
     bool preorder(const IR::DpdkExtractStatement *e) override {
         auto type = typeMap->getType(e->header)->to<IR::Type_Header>();
-        if (type)
+        if (type) {
             for (auto f : type->fields) {
                 cstring name = e->header->toString() + "." + f->name.toString();
                 defInfo[name]++;
             }
+        }
         if (e->length) {
             usesInfo[e->length->toString()]++;
             // dpdk expect length to be metadata struct member
@@ -442,11 +453,12 @@ class CollectUseDefInfo : public Inspector {
 
     bool preorder(const IR::DpdkLookaheadStatement *l) override {
         auto type = typeMap->getType(l->header)->to<IR::Type_Header>();
-        if (type)
+        if (type) {
             for (auto f : type->fields) {
                 cstring name = l->header->toString() + "." + f->name.toString();
                 defInfo[name]++;
             }
+        }
         return false;
     }
 
@@ -483,16 +495,22 @@ class CollectUseDefInfo : public Inspector {
     bool preorder(const IR::DpdkChecksumAddStatement *c) override {
         usesInfo[c->field->toString()]++;
         // dpdk requires it in header
-        if (auto m = c->field->to<IR::Member>())
-            if (m->expr->is<IR::Type_Header>()) dontEliminate[c->field->toString()] = true;
+        if (auto m = c->field->to<IR::Member>()) {
+            if (m->expr->is<IR::Type_Header>()) {
+                dontEliminate[c->field->toString()] = true;
+            }
+        }
         return false;
     }
 
     bool preorder(const IR::DpdkChecksumSubStatement *c) override {
         usesInfo[c->field->toString()]++;
         // dpdk requires it in header
-        if (auto m = c->field->to<IR::Member>())
-            if (m->expr->is<IR::Type_Header>()) dontEliminate[c->field->toString()] = true;
+        if (auto m = c->field->to<IR::Member>()) {
+            if (m->expr->is<IR::Type_Header>()) {
+                dontEliminate[c->field->toString()] = true;
+            }
+        }
         return false;
     }
 
@@ -519,7 +537,9 @@ class CollectUseDefInfo : public Inspector {
 
     bool preorder(const IR::DpdkMeterExecuteStatement *e) override {
         usesInfo[e->index->toString()]++;
-        if (e->length) usesInfo[e->length->toString()]++;
+        if (e->length) {
+            usesInfo[e->length->toString()]++;
+        }
         usesInfo[e->color_in->toString()]++;
         usesInfo[e->color_out->toString()]++;
         return false;
@@ -527,7 +547,9 @@ class CollectUseDefInfo : public Inspector {
 
     bool preorder(const IR::DpdkCounterCountStatement *c) override {
         usesInfo[c->index->toString()]++;
-        if (c->incr) usesInfo[c->incr->toString()]++;
+        if (c->incr) {
+            usesInfo[c->incr->toString()]++;
+        }
         return false;
     }
 
@@ -549,10 +571,11 @@ class CollectUseDefInfo : public Inspector {
 
     bool preorder(const IR::DpdkTable *t) override {
         auto keys = t->match_keys;
-        if (keys)
+        if (keys) {
             for (auto ke : keys->keyElements) {
                 dontEliminate[ke->expression->toString()] = true;
             }
+        }
         return false;
     }
 

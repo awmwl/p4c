@@ -25,7 +25,9 @@ void RenameMap::setNewName(const IR::IDeclaration *decl, cstring name) {
     CHECK_NULL(decl);
     BUG_CHECK(!name.isNullOrEmpty(), "Empty name");
     LOG1("Will rename " << dbp(decl) << " to " << name);
-    if (newName.find(decl) != newName.end()) BUG("%1%: already renamed", decl);
+    if (newName.find(decl) != newName.end()) {
+        BUG("%1%: already renamed", decl);
+    }
     newName.emplace(decl, name);
 }
 
@@ -56,7 +58,9 @@ class FindActionCalls : public Inspector {
 
     void postorder(const IR::MethodCallExpression *expression) {
         auto mi = MethodInstance::resolve(expression, refMap, typeMap);
-        if (!mi->is<P4::ActionCall>()) return;
+        if (!mi->is<P4::ActionCall>()) {
+            return;
+        }
         auto ac = mi->to<P4::ActionCall>();
         renameMap->markActionCall(ac->action, getOriginal<IR::MethodCallExpression>());
     }
@@ -67,7 +71,9 @@ class FindActionCalls : public Inspector {
 // Add a @name annotation ONLY if it does not already exist.
 // Otherwise do nothing.
 static const IR::Annotations *addNameAnnotation(cstring name, const IR::Annotations *annos) {
-    if (annos == nullptr) annos = IR::Annotations::empty;
+    if (annos == nullptr) {
+        annos = IR::Annotations::empty;
+    }
     return annos->addAnnotationIfNew(IR::Annotation::nameAnnotation, new IR::StringLiteral(name),
                                      false);
 }
@@ -97,7 +103,9 @@ UniqueParameters::UniqueParameters(ReferenceMap *refMap, TypeMap *typeMap)
 
 IR::ID *RenameSymbols::getName() const {
     auto orig = getOriginal<IR::IDeclaration>();
-    if (!renameMap->toRename(orig)) return nullptr;
+    if (!renameMap->toRename(orig)) {
+        return nullptr;
+    }
     auto newName = renameMap->getName(orig);
     auto name = new IR::ID(orig->getName().srcInfo, newName, orig->getName().originalName);
     return name;
@@ -115,7 +123,9 @@ const IR::Node *RenameSymbols::postorder(IR::Declaration_Variable *decl) {
 
 const IR::Node *RenameSymbols::postorder(IR::Declaration_Constant *decl) {
     auto name = getName();
-    if (name != nullptr && *name != decl->name) decl->name = *name;
+    if (name != nullptr && *name != decl->name) {
+        decl->name = *name;
+    }
     return decl;
 }
 
@@ -130,7 +140,9 @@ const IR::Node *RenameSymbols::postorder(IR::Parameter *param) {
 
 const IR::Node *RenameSymbols::postorder(IR::PathExpression *expression) {
     auto decl = refMap->getDeclaration(expression->path, true);
-    if (!renameMap->toRename(decl)) return expression;
+    if (!renameMap->toRename(decl)) {
+        return expression;
+    }
     // This should be a local name.
     BUG_CHECK(!expression->path->absolute, "%1%: renaming absolute path", expression);
     auto newName = renameMap->getName(decl);
@@ -182,16 +194,24 @@ const IR::Node *RenameSymbols::postorder(IR::P4ValueSet *decl) {
 }
 
 const IR::Node *RenameSymbols::postorder(IR::Argument *arg) {
-    if (!arg->name) return arg;
+    if (!arg->name) {
+        return arg;
+    }
     auto mce = findOrigCtxt<IR::MethodCallExpression>();
-    if (mce == nullptr) return arg;
+    if (mce == nullptr) {
+        return arg;
+    }
     LOG2("Found named argument " << arg << " of " << dbp(mce));
     auto action = renameMap->actionCalled(mce);
-    if (action == nullptr) return arg;
+    if (action == nullptr) {
+        return arg;
+    }
     auto origParam = action->parameters->getParameter(arg->name.name);
     CHECK_NULL(origParam);
 
-    if (!renameMap->toRename(origParam)) return arg;
+    if (!renameMap->toRename(origParam)) {
+        return arg;
+    }
     auto newName = renameMap->getName(origParam);
     LOG2("Renamed argument " << arg << " to " << newName);
     arg->name = IR::ID(arg->name.srcInfo, newName, arg->name.originalName);

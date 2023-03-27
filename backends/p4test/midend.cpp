@@ -67,7 +67,9 @@ class SkipControls : public P4::ActionSynthesisPolicy {
  public:
     explicit SkipControls(const std::set<cstring> *skip) : skip(skip) { CHECK_NULL(skip); }
     bool convert(const Visitor::Context *, const IR::P4Control *control) override {
-        if (skip->find(control->name) != skip->end()) return false;
+        if (skip->find(control->name) != skip->end()) {
+            return false;
+        }
         return true;
     }
 };
@@ -124,12 +126,15 @@ MidEnd::MidEnd(CompilerOptions &options, std::ostream *outStream) {
          [v1controls, evaluator](const IR::Node *root) -> const IR::Node * {
              auto toplevel = evaluator->getToplevelBlock();
              auto main = toplevel->getMain();
-             if (main == nullptr)
+             if (main == nullptr) {
                  // nothing further to do
                  return nullptr;
+             }
              // Special handling when compiling for v1model.p4
              if (main->type->name == P4V1::V1Model::instance.sw.name) {
-                 if (main->getConstructorParameters()->size() != 6) return root;
+                 if (main->getConstructorParameters()->size() != 6) {
+                     return root;
+                 }
                  auto verify = main->getParameterValue(P4V1::V1Model::instance.sw.verify.name);
                  auto update = main->getParameterValue(P4V1::V1Model::instance.sw.compute.name);
                  auto deparser = main->getParameterValue(P4V1::V1Model::instance.sw.deparser.name);

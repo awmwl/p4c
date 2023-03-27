@@ -54,18 +54,19 @@ class V1ProgramStructure : public ProgramStructure {
 
     V1ProgramStructure() {}
     BlockConverted blockKind(const IR::Node *node) const {
-        if (node == parser)
+        if (node == parser) {
             return BlockConverted::Parser;
-        else if (node == ingress)
+        } else if (node == ingress) {
             return BlockConverted::Ingress;
-        else if (node == egress)
+        } else if (node == egress) {
             return BlockConverted::Egress;
-        else if (node == compute_checksum)
+        } else if (node == compute_checksum) {
             return BlockConverted::ChecksumCompute;
-        else if (node == verify_checksum)
+        } else if (node == verify_checksum) {
             return BlockConverted::ChecksumVerify;
-        else if (node == deparser)
+        } else if (node == deparser) {
             return BlockConverted::Deparser;
+        }
         return BlockConverted::None;
     }
 };
@@ -90,21 +91,27 @@ class SimpleSwitchExpressionConverter : public ExpressionConverter {
             modelError("%1%: Expected 4 parameter for parser", st->parser);
             return false;
         }
-        if (params->parameters.at(3) == param) return true;
+        if (params->parameters.at(3) == param) {
+            return true;
+        }
 
         params = st->ingress->getApplyParameters();
         if (params->size() != 3) {
             modelError("%1%: Expected 3 parameter for ingress", st->ingress);
             return false;
         }
-        if (params->parameters.at(2) == param) return true;
+        if (params->parameters.at(2) == param) {
+            return true;
+        }
 
         params = st->egress->getApplyParameters();
         if (params->size() != 3) {
             modelError("%1%: Expected 3 parameter for egress", st->egress);
             return false;
         }
-        if (params->parameters.at(2) == param) return true;
+        if (params->parameters.at(2) == param) {
+            return true;
+        }
 
         return false;
     }

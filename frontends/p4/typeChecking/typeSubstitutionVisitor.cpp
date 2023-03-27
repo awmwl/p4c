@@ -19,12 +19,16 @@ limitations under the License.
 namespace P4 {
 
 bool TypeOccursVisitor::preorder(const IR::Type_Var *typeVariable) {
-    if (*typeVariable == *(toFind->asType())) occurs = true;
+    if (*typeVariable == *(toFind->asType())) {
+        occurs = true;
+    }
     return occurs;
 }
 
 bool TypeOccursVisitor::preorder(const IR::Type_InfInt *typeVariable) {
-    if (*typeVariable == *(toFind->asType())) occurs = true;
+    if (*typeVariable == *(toFind->asType())) {
+        occurs = true;
+    }
     return occurs;
 }
 
@@ -36,9 +40,10 @@ const IR::Node *TypeVariableSubstitutionVisitor::preorder(IR::TypeParameters *tp
             LOG3("Removing from generic parameters " << *it);
             it = tps->parameters.erase(it);
         } else {
-            if (type != nullptr)
+            if (type != nullptr) {
                 BUG_CHECK(type->is<IR::Type_Var>(),
                           "cannot replace a type parameter %1% with %2%:", *it, type);
+            }
             ++it;
         }
     }
@@ -54,12 +59,18 @@ const IR::Node *TypeVariableSubstitutionVisitor::replacement(const IR::ITypeVar 
         // This will end because there should be no circular chain of variables pointing
         // to each other.
         const IR::Type *type = bindings->lookup(current);
-        if (type == nullptr) break;
+        if (type == nullptr) {
+            break;
+        }
         replacement = type;
-        if (!type->is<IR::ITypeVar>()) break;
+        if (!type->is<IR::ITypeVar>()) {
+            break;
+        }
         current = type->to<IR::ITypeVar>();
     }
-    if (replacement == nullptr) return node;
+    if (replacement == nullptr) {
+        return node;
+    }
     LOG2("Replacing " << getOriginal() << " with " << replacement);
     return replacement;
 }

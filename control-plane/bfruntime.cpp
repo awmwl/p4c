@@ -44,12 +44,13 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
             }
             type = makeTypeBytes(typeEnum->second.underlying_type().bitwidth());
         } else if (fSpec.has_bitstring()) {
-            if (fSpec.bitstring().has_bit())
+            if (fSpec.bitstring().has_bit()) {
                 type = makeTypeBytes(fSpec.bitstring().bit().bitwidth());
-            else if (fSpec.bitstring().has_int_())
+            } else if (fSpec.bitstring().has_int_()) {
                 type = makeTypeBytes(fSpec.bitstring().int_().bitwidth());
-            else if (fSpec.bitstring().has_varbit())
+            } else if (fSpec.bitstring().has_varbit()) {
                 type = makeTypeBytes(fSpec.bitstring().varbit().max_bitwidth());
+            }
         } else if (fSpec.has_bool_()) {
             type = makeTypeBool(1);
         } else if (fSpec.has_new_type()) {
@@ -82,8 +83,9 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
         BUG_CHECK(p_it != typeInfo.structs().end(), "Struct name '%1%' not found in P4Info map",
                   structName);
         P4Id id = idOffset;
-        for (const auto &member : p_it->second.members())
+        for (const auto &member : p_it->second.members()) {
             addField(id++, member.name(), member.type_spec());
+        }
     } else if (typeSpec.has_tuple()) {
         P4Id id = idOffset;
         int fNameIdx = 0;
@@ -216,7 +218,9 @@ boost::optional<BFRuntimeGenerator::Counter> BFRuntimeGenerator::getDirectCounte
     P4Id counterId) const {
     if (isOfType(counterId, p4configv1::P4Ids::DIRECT_COUNTER)) {
         auto *counter = Standard::findDirectCounter(p4info, counterId);
-        if (counter == nullptr) return boost::none;
+        if (counter == nullptr) {
+            return boost::none;
+        }
         return Counter::fromDirect(*counter);
     }
     return boost::none;
@@ -225,7 +229,9 @@ boost::optional<BFRuntimeGenerator::Counter> BFRuntimeGenerator::getDirectCounte
 boost::optional<BFRuntimeGenerator::Meter> BFRuntimeGenerator::getDirectMeter(P4Id meterId) const {
     if (isOfType(meterId, p4configv1::P4Ids::DIRECT_METER)) {
         auto *meter = Standard::findDirectMeter(p4info, meterId);
-        if (meter == nullptr) return boost::none;
+        if (meter == nullptr) {
+            return boost::none;
+        }
         return Meter::fromDirect(*meter);
     }
     return boost::none;
@@ -247,10 +253,11 @@ Util::JsonObject *BFRuntimeGenerator::makeCommonDataField(P4Id id, cstring name,
     dataField->emplace("id", id);
     dataField->emplace("name", name);
     dataField->emplace("repeated", repeated);
-    if (annotations != nullptr)
+    if (annotations != nullptr) {
         dataField->emplace("annotations", annotations);
-    else
+    } else {
         dataField->emplace("annotations", new Util::JsonArray());
+    }
     dataField->emplace("type", type);
     return dataField;
 }
@@ -262,10 +269,11 @@ Util::JsonObject *BFRuntimeGenerator::makeContainerDataField(P4Id id, cstring na
     dataField->emplace("id", id);
     dataField->emplace("name", name);
     dataField->emplace("repeated", repeated);
-    if (annotations != nullptr)
+    if (annotations != nullptr) {
         dataField->emplace("annotations", annotations);
-    else
+    } else {
         dataField->emplace("annotations", new Util::JsonArray());
+    }
     dataField->emplace("container", items);
     return dataField;
 }
@@ -279,10 +287,11 @@ void BFRuntimeGenerator::addActionDataField(Util::JsonArray *dataJson, P4Id id,
     dataField->emplace("repeated", false);
     dataField->emplace("mandatory", mandatory);
     dataField->emplace("read_only", read_only);
-    if (annotations != nullptr)
+    if (annotations != nullptr) {
         dataField->emplace("annotations", annotations);
-    else
+    } else {
         dataField->emplace("annotations", new Util::JsonArray());
+    }
     dataField->emplace("type", type);
     dataJson->append(dataField);
 }
@@ -294,10 +303,11 @@ void BFRuntimeGenerator::addKeyField(Util::JsonArray *dataJson, P4Id id, cstring
     dataField->emplace("id", id);
     dataField->emplace("name", name);
     dataField->emplace("repeated", false);
-    if (annotations != nullptr)
+    if (annotations != nullptr) {
         dataField->emplace("annotations", annotations);
-    else
+    } else {
         dataField->emplace("annotations", new Util::JsonArray());
+    }
     dataField->emplace("mandatory", mandatory);
     dataField->emplace("match_type", matchType);
     dataField->emplace("type", type);
@@ -312,7 +322,9 @@ void BFRuntimeGenerator::addKeyField(Util::JsonArray *dataJson, P4Id id, cstring
     tableJson->emplace("id", id);
     tableJson->emplace("table_type", tableType);
     tableJson->emplace("size", size);
-    if (annotations != nullptr) tableJson->emplace("annotations", annotations);
+    if (annotations != nullptr) {
+        tableJson->emplace("annotations", annotations);
+    }
     tableJson->emplace("depends_on", new Util::JsonArray());
     return tableJson;
 }
@@ -322,7 +334,9 @@ void BFRuntimeGenerator::addKeyField(Util::JsonArray *dataJson, P4Id id, cstring
     CHECK_NULL(dependsOnJson);
     // Skip duplicates
     for (auto *d : *dependsOnJson) {
-        if (*d->to<Util::JsonValue>() == id) return;
+        if (*d->to<Util::JsonValue>() == id) {
+            return;
+        }
     }
     dependsOnJson->append(id);
 }
@@ -526,7 +540,9 @@ void BFRuntimeGenerator::addActionProfCommon(
 boost::optional<bool> BFRuntimeGenerator::actProfHasSelector(P4Id actProfId) const {
     if (isOfType(actProfId, p4configv1::P4Ids::ACTION_PROFILE)) {
         auto *actionProf = Standard::findActionProf(p4info, actProfId);
-        if (actionProf == nullptr) return boost::none;
+        if (actionProf == nullptr) {
+            return boost::none;
+        }
         return actionProf->with_selector();
     }
     return boost::none;
@@ -578,12 +594,16 @@ Util::JsonArray *BFRuntimeGenerator::makeActionSpecs(const p4configv1::Table &ta
                                    false /* read_only */, makeTypeBytes(param.bitwidth()),
                                    annotations);
             }
-            if (param.id() > maxId) maxId = param.id();
+            if (param.id() > maxId) {
+                maxId = param.id();
+            }
         }
         spec->emplace("data", dataJson);
         specs->append(spec);
     }
-    if (maxActionParamId != nullptr) *maxActionParamId = maxId;
+    if (maxActionParamId != nullptr) {
+        *maxActionParamId = maxId;
+    }
     return specs;
 }
 
@@ -604,7 +624,9 @@ void BFRuntimeGenerator::addLearnFilterCommon(Util::JsonArray *learnFiltersJson,
 void BFRuntimeGenerator::addLearnFilters(Util::JsonArray *learnFiltersJson) const {
     for (const auto &digest : p4info.digests()) {
         auto digestInstance = Digest::from(digest);
-        if (digestInstance == boost::none) continue;
+        if (digestInstance == boost::none) {
+            continue;
+        }
         addLearnFilterCommon(learnFiltersJson, *digestInstance);
     }
 }
@@ -649,7 +671,9 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
         auto *tableJson =
             initTableJson(pre.name(), pre.id(), "MatchAction_Direct", table.size(), annotations);
 
-        if (!addActionProfIds(table, tableJson)) continue;
+        if (!addActionProfIds(table, tableJson)) {
+            continue;
+        }
 
         tableJson->emplace("has_const_default_action", table.const_default_action_id() != 0);
 
@@ -675,8 +699,9 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
                         int(mf.match_type()));
                 continue;
             }
-            if (*matchType == "Ternary" || *matchType == "Range" || *matchType == "Optional")
+            if (*matchType == "Ternary" || *matchType == "Range" || *matchType == "Optional") {
                 needsPriority = true;
+            }
             auto *annotations =
                 transformAnnotations(mf.annotations().begin(), mf.annotations().end());
 
@@ -699,7 +724,9 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
             // and pdgen use "$valid".
             auto keyName = mf.name();
             auto found = keyName.find(".$valid");
-            if (found != std::string::npos) keyName.pop_back();
+            if (found != std::string::npos) {
+                keyName.pop_back();
+            }
 
             // Replace header stack indices hdr[<index>] with hdr$<index>. This
             // is output in the context.json
@@ -771,9 +798,13 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
         // ternary).
         auto supportsDynMask = std::count(pre.annotations().begin(), pre.annotations().end(),
                                           "@dynamic_table_key_masks(1)");
-        if (supportsDynMask) attributesJson->append("DynamicKeyMask");
+        if (supportsDynMask) {
+            attributesJson->append("DynamicKeyMask");
+        }
 
-        if (table.is_const_table()) attributesJson->append("ConstTable");
+        if (table.is_const_table()) {
+            attributesJson->append("ConstTable");
+        }
 
         if (table.idle_timeout_behavior() == p4configv1::Table::NOTIFY_CONTROL) {
             auto pollModeOnly = std::count(pre.annotations().begin(), pre.annotations().end(),
@@ -789,8 +820,9 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
                                                        makeTypeEnum({"ENTRY_IDLE", "ENTRY_ACTIVE"}),
                                                        false /* repeated */);
             addSingleton(dataJson, fEntryHitState, false /* mandatory */, false /* read-only */);
-            if (!pollModeOnly)
+            if (!pollModeOnly) {
                 addSingleton(dataJson, fEntryTTL, false /* mandatory */, false /* read-only */);
+            }
         }
 
         tableJson->emplace("data", dataJson);
@@ -804,7 +836,9 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
 void BFRuntimeGenerator::addActionProfs(Util::JsonArray *tablesJson) const {
     for (const auto &actionProf : p4info.action_profiles()) {
         auto actionProfInstance = ActionProf::from(p4info, actionProf);
-        if (actionProfInstance == boost::none) continue;
+        if (actionProfInstance == boost::none) {
+            continue;
+        }
         addActionProfCommon(tablesJson, *actionProfInstance);
     }
 }
@@ -812,7 +846,9 @@ void BFRuntimeGenerator::addActionProfs(Util::JsonArray *tablesJson) const {
 void BFRuntimeGenerator::addCounters(Util::JsonArray *tablesJson) const {
     for (const auto &counter : p4info.counters()) {
         auto counterInstance = Counter::from(counter);
-        if (counterInstance == boost::none) continue;
+        if (counterInstance == boost::none) {
+            continue;
+        }
         addCounterCommon(tablesJson, *counterInstance);
     }
 }
@@ -820,7 +856,9 @@ void BFRuntimeGenerator::addCounters(Util::JsonArray *tablesJson) const {
 void BFRuntimeGenerator::addMeters(Util::JsonArray *tablesJson) const {
     for (const auto &meter : p4info.meters()) {
         auto meterInstance = Meter::from(meter);
-        if (meterInstance == boost::none) continue;
+        if (meterInstance == boost::none) {
+            continue;
+        }
         addMeterCommon(tablesJson, *meterInstance);
     }
 }
@@ -828,7 +866,9 @@ void BFRuntimeGenerator::addMeters(Util::JsonArray *tablesJson) const {
 void BFRuntimeGenerator::addRegisters(Util::JsonArray *tablesJson) const {
     for (const auto &reg : p4info.registers()) {
         auto regInstance = Register::from(reg);
-        if (regInstance == boost::none) continue;
+        if (regInstance == boost::none) {
+            continue;
+        }
         addRegisterCommon(tablesJson, *regInstance);
     }
 }

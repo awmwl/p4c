@@ -41,7 +41,9 @@ const IR::Node *DontcareArgs::postorder(IR::MethodCallExpression *expression) {
             vec->push_back(a);
         }
     }
-    if (changes) expression->arguments = vec;
+    if (changes) {
+        expression->arguments = vec;
+    }
     return expression;
 }
 

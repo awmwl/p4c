@@ -43,7 +43,9 @@ void SwitchAddDefault::postorder(IR::SwitchStatement *sw) {
             } else {
                 need_default = true;
             }
-            if (need_default) break;
+            if (need_default) {
+                break;
+            }
         }
     }
     if (need_default) {

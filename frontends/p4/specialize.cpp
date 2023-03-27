@@ -134,7 +134,9 @@ IR::Vector<IR::Node> *SpecializationMap::getSpecializations(const IR::Node *inse
     IR::Vector<IR::Node> *result = nullptr;
     for (auto s : specializations) {
         if (s.second->insertBefore == insertionPoint) {
-            if (result == nullptr) result = new IR::Vector<IR::Node>();
+            if (result == nullptr) {
+                result = new IR::Vector<IR::Node>();
+            }
             auto node = s.second->synthesize(refMap);
             LOG2("Will insert " << node << " before " << insertionPoint);
             result->push_back(node);
@@ -154,7 +156,9 @@ class IsConcreteType : public Inspector {
     void postorder(const IR::Type_Var *) override { hasTypeVariables = true; }
     void postorder(const IR::Type_Name *type) override {
         auto t = typeMap->getType(type, true);
-        if (t->is<IR::Type_Var>()) hasTypeVariables = true;
+        if (t->is<IR::Type_Var>()) {
+            hasTypeVariables = true;
+        }
     }
 
     bool isConcrete(const IR::Type *type) {
@@ -166,20 +170,32 @@ class IsConcreteType : public Inspector {
 
 bool FindSpecializations::isSimpleConstant(const IR::Expression *expr) const {
     CHECK_NULL(expr);
-    if (expr->is<IR::Constant>()) return true;
-    if (expr->is<IR::BoolLiteral>()) return true;
+    if (expr->is<IR::Constant>()) {
+        return true;
+    }
+    if (expr->is<IR::BoolLiteral>()) {
+        return true;
+    }
     if (expr->is<IR::ListExpression>()) {
         auto list = expr->to<IR::ListExpression>();
-        for (auto e : list->components)
-            if (!isSimpleConstant(e)) return false;
+        for (auto e : list->components) {
+            if (!isSimpleConstant(e)) {
+                return false;
+            }
+        }
         return true;
     }
     auto ei = EnumInstance::resolve(expr, specMap->typeMap);
-    if (ei != nullptr) return true;
+    if (ei != nullptr) {
+        return true;
+    }
     if (expr->is<IR::ConstructorCallExpression>()) {
         auto cce = expr->to<IR::ConstructorCallExpression>();
-        for (auto e : *cce->arguments)
-            if (!isSimpleConstant(e->expression)) return false;
+        for (auto e : *cce->arguments) {
+            if (!isSimpleConstant(e->expression)) {
+                return false;
+            }
+        }
         return true;
     }
     return false;
@@ -194,43 +210,59 @@ const IR::Node *FindSpecializations::findInsertionPoint() const {
     // Find location where the specialization is to be inserted.
     // This can be before a Parser, Control, or a toplevel instance declaration
     const IR::Node *insert = findContext<IR::P4Parser>();
-    if (insert != nullptr) return insert;
+    if (insert != nullptr) {
+        return insert;
+    }
     insert = findContext<IR::P4Control>();
-    if (insert != nullptr) return insert;
+    if (insert != nullptr) {
+        return insert;
+    }
     insert = findContext<IR::Declaration_Instance>();
     return insert;
 }
 
 void FindSpecializations::postorder(const IR::ConstructorCallExpression *expression) {
     if (expression->arguments->size() == 0 &&
-        !expression->constructedType->is<IR::Type_Specialized>())
+        !expression->constructedType->is<IR::Type_Specialized>()) {
         return;  // nothing to specialize
+    }
 
     auto cc = ConstructorCall::resolve(expression, specMap->refMap, specMap->typeMap);
-    if (!cc->is<ContainerConstructorCall>()) return;
+    if (!cc->is<ContainerConstructorCall>()) {
+        return;
+    }
     for (auto arg : *expression->arguments) {
-        if (!isSimpleConstant(arg->expression)) return;
+        if (!isSimpleConstant(arg->expression)) {
+            return;
+        }
     }
 
     auto insert = findInsertionPoint();
     auto decl = cc->to<ContainerConstructorCall>()->container;
-    if (decl->is<IR::Type_Package>()) return;
+    if (decl->is<IR::Type_Package>()) {
+        return;
+    }
     specMap->addSpecialization(expression, decl, insert);
 }
 
 void FindSpecializations::postorder(const IR::Declaration_Instance *decl) {
-    if (decl->arguments->size() == 0 && !decl->type->is<IR::Type_Specialized>()) return;
+    if (decl->arguments->size() == 0 && !decl->type->is<IR::Type_Specialized>()) {
+        return;
+    }
 
     auto type = specMap->typeMap->getType(decl, true);
     if (type->is<IR::Type_SpecializedCanonical>()) {
         auto ts = type->to<IR::Type_SpecializedCanonical>();
         IsConcreteType ct(specMap->typeMap);
-        if (!ct.isConcrete(ts))
+        if (!ct.isConcrete(ts)) {
             return;  // no point in specializing if arguments have type variables
+        }
         type = ts->baseType;
     }
     for (auto arg : *decl->arguments) {
-        if (!isSimpleConstant(arg->expression)) return;
+        if (!isSimpleConstant(arg->expression)) {
+            return;
+        }
     }
 
     const IR::Type_Name *contDecl;
@@ -241,15 +273,21 @@ void FindSpecializations::postorder(const IR::Declaration_Instance *decl) {
         contDecl = decl->type->to<IR::Type_Specialized>()->baseType;
     }
     auto cont = specMap->refMap->getDeclaration(contDecl->path, true);
-    if (!cont->is<IR::P4Parser>() && !cont->is<IR::P4Control>()) return;
+    if (!cont->is<IR::P4Parser>() && !cont->is<IR::P4Control>()) {
+        return;
+    }
     auto insert = findInsertionPoint();
-    if (insert == nullptr) insert = decl;
+    if (insert == nullptr) {
+        insert = decl;
+    }
     specMap->addSpecialization(decl, cont->to<IR::IContainer>(), insert);
 }
 
 const IR::Node *Specialize::instantiate(const IR::Node *node) {
     auto specs = specMap->getSpecializations(getOriginal());
-    if (specs == nullptr) return node;
+    if (specs == nullptr) {
+        return node;
+    }
     LOG2(specs->size() << " instantiations before " << node);
     specs->push_back(node);
     return specs;
@@ -257,7 +295,9 @@ const IR::Node *Specialize::instantiate(const IR::Node *node) {
 
 const IR::Node *Specialize::postorder(IR::ConstructorCallExpression *expression) {
     auto name = specMap->getName(getOriginal());
-    if (name.isNullOrEmpty()) return expression;
+    if (name.isNullOrEmpty()) {
+        return expression;
+    }
     auto typeRef = new IR::Type_Name(IR::ID(name, nullptr));
     auto result = new IR::ConstructorCallExpression(typeRef, new IR::Vector<IR::Argument>());
     LOG2("Replaced " << expression << " with " << result);

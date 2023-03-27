@@ -40,14 +40,18 @@ class SourceCodeBuilder {
     void increaseIndent() { indentLevel += indentAmount; }
     void decreaseIndent() {
         indentLevel -= indentAmount;
-        if (indentLevel < 0) BUG("Negative indent");
+        if (indentLevel < 0) {
+            BUG("Negative indent");
+        }
     }
     void newline() {
         buffer << nl;
         endsInSpace = true;
     }
     void spc() {
-        if (!endsInSpace) buffer << " ";
+        if (!endsInSpace) {
+            buffer << " ";
+        }
         endsInSpace = true;
     }
 
@@ -57,7 +61,9 @@ class SourceCodeBuilder {
         newline();
     }
     void append(const std::string &str) {
-        if (str.size() == 0) return;
+        if (str.size() == 0) {
+            return;
+        }
         endsInSpace = ::isspace(str.at(str.size() - 1));
         buffer << str;
     }
@@ -66,8 +72,12 @@ class SourceCodeBuilder {
         buffer << c;
     }
     void append(const char *str) {
-        if (str == nullptr) BUG("Null argument to append");
-        if (strlen(str) == 0) return;
+        if (str == nullptr) {
+            BUG("Null argument to append");
+        }
+        if (strlen(str) == 0) {
+            return;
+        }
         endsInSpace = ::isspace(str[strlen(str) - 1]);
         buffer << str;
     }
@@ -83,7 +93,9 @@ class SourceCodeBuilder {
 
     void endOfStatement(bool addNl = false) {
         append(";");
-        if (addNl) newline();
+        if (addNl) {
+            newline();
+        }
     }
 
     void blockStart() {
@@ -94,14 +106,18 @@ class SourceCodeBuilder {
 
     void emitIndent() {
         buffer << std::string(indentLevel, ' ');
-        if (indentLevel > 0) endsInSpace = true;
+        if (indentLevel > 0) {
+            endsInSpace = true;
+        }
     }
 
     void blockEnd(bool nl) {
         decreaseIndent();
         emitIndent();
         append("}");
-        if (nl) newline();
+        if (nl) {
+            newline();
+        }
     }
 
     std::string toString() const { return buffer.str(); }

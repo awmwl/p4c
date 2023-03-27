@@ -39,7 +39,9 @@ void DpdkBackend::convert(const IR::ToplevelBlock *tlb) {
     DpdkProgramStructure structure;
     auto parseDpdkArch = new ParseDpdkArchitecture(&structure);
     auto main = tlb->getMain();
-    if (!main) return;
+    if (!main) {
+        return;
+    }
     main->apply(*parseDpdkArch);
 
     auto hook = options.getDebugHook();
@@ -130,7 +132,9 @@ void DpdkBackend::convert(const IR::ToplevelBlock *tlb) {
     program = program->apply(simplify);
     ordered_set<cstring> used_fields;
     dpdk_program = convertToDpdk->getDpdkProgram();
-    if (!dpdk_program) return;
+    if (!dpdk_program) {
+        return;
+    }
     if (structure.p4arch == "pna") {
         PassManager post_code_gen = {
             new PrependPassRecircId(),

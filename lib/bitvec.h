@@ -110,7 +110,9 @@ int popcount(I x) {
     return builtin_popcount(x);
 #else
     int rv = 0;
-    for (auto v = x; v; v &= v - 1) ++rv;
+    for (auto v = x; v; v &= v - 1) {
+        ++rv;
+    }
     return rv;
 #endif
 }
@@ -157,7 +159,9 @@ class bitvec {
             return *this;
         }
         bitref &operator--() {
-            if (idx < 0) idx = self.size * bitvec::bits_per_unit;
+            if (idx < 0) {
+                idx = self.size * bitvec::bits_per_unit;
+            }
             while (--idx >= 0) {
                 if (auto w = self.word(idx / bitvec::bits_per_unit)
                              << (bitvec::bits_per_unit - 1 - idx % bitvec::bits_per_unit)) {
@@ -243,8 +247,12 @@ class bitvec {
     }
     bitvec(bitvec &&a) : size(a.size), data(a.data) { a.size = 1; }
     bitvec &operator=(const bitvec &a) {
-        if (this == &a) return *this;
-        if (size > 1) delete[] ptr;
+        if (this == &a) {
+            return *this;
+        }
+        if (size > 1) {
+            delete[] ptr;
+        }
         if ((size = a.size) > 1) {
             ptr = new IF_HAVE_LIBGC((PointerFreeGC)) uintptr_t[size];
             memcpy(ptr, a.ptr, size * sizeof(*ptr));
@@ -259,26 +267,36 @@ class bitvec {
         return *this;
     }
     ~bitvec() {
-        if (size > 1) delete[] ptr;
+        if (size > 1) {
+            delete[] ptr;
+        }
     }
 
     void clear() {
-        if (size > 1)
+        if (size > 1) {
             memset(ptr, 0, size * sizeof(*ptr));
-        else
+        } else {
             data = 0;
+        }
     }  // NOLINT(whitespace/newline)
     bool setbit(size_t idx) {
-        if (idx >= size * bits_per_unit) expand(1 + idx / bits_per_unit);
-        if (size > 1)
+        if (idx >= size * bits_per_unit) {
+            expand(1 + idx / bits_per_unit);
+        }
+        if (size > 1) {
             ptr[idx / bits_per_unit] |= (uintptr_t)1 << (idx % bits_per_unit);
-        else
+        } else {
             data |= (uintptr_t)1 << idx;
+        }
         return true;
     }
     void setrange(size_t idx, size_t sz) {
-        if (sz == 0) return;
-        if (idx + sz > size * bits_per_unit) expand(1 + (idx + sz - 1) / bits_per_unit);
+        if (sz == 0) {
+            return;
+        }
+        if (idx + sz > size * bits_per_unit) {
+            expand(1 + (idx + sz - 1) / bits_per_unit);
+        }
         if (size == 1) {
             data |= ~(~(uintptr_t)1 << (sz - 1)) << idx;
         } else if (idx / bits_per_unit == (idx + sz - 1) / bits_per_unit) {
@@ -290,7 +308,9 @@ class bitvec {
             while (++i < idx / bits_per_unit) {
                 ptr[i] = ~(uintptr_t)0;
             }
-            if (i < size) ptr[i] |= (((uintptr_t)1 << (idx % bits_per_unit)) - 1);
+            if (i < size) {
+                ptr[i] |= (((uintptr_t)1 << (idx % bits_per_unit)) - 1);
+            }
         }
     }
     void setraw(uintptr_t raw) {
@@ -298,54 +318,79 @@ class bitvec {
             data = raw;
         } else {
             ptr[0] = raw;
-            for (size_t i = 1; i < size; i++) ptr[i] = 0;
+            for (size_t i = 1; i < size; i++) {
+                ptr[i] = 0;
+            }
         }
     }
     template <typename T, typename = typename std::enable_if<std::is_integral<T>::value &&
                                                              (sizeof(T) > sizeof(uintptr_t))>::type>
     void setraw(T raw) {
-        if (sizeof(T) / sizeof(uintptr_t) > size) expand(sizeof(T) / sizeof(uintptr_t));
+        if (sizeof(T) / sizeof(uintptr_t) > size) {
+            expand(sizeof(T) / sizeof(uintptr_t));
+        }
         for (size_t i = 0; i < size; i++) {
             ptr[i] = raw;
             raw >>= bits_per_unit;
         }
     }
     void setraw(uintptr_t *raw, size_t sz) {
-        if (sz > size) expand(sz);
+        if (sz > size) {
+            expand(sz);
+        }
         if (size == 1) {
             data = raw[0];
         } else {
-            for (size_t i = 0; i < sz; i++) ptr[i] = raw[i];
-            for (size_t i = sz; i < size; i++) ptr[i] = 0;
+            for (size_t i = 0; i < sz; i++) {
+                ptr[i] = raw[i];
+            }
+            for (size_t i = sz; i < size; i++) {
+                ptr[i] = 0;
+            }
         }
     }
     template <typename T, typename = typename std::enable_if<std::is_integral<T>::value &&
                                                              (sizeof(T) > sizeof(uintptr_t))>::type>
     void setraw(T *raw, size_t sz) {
         constexpr size_t m = sizeof(T) / sizeof(uintptr_t);
-        if (m * sz > size) expand(m * sz);
+        if (m * sz > size) {
+            expand(m * sz);
+        }
         size_t i = 0;
-        for (; i < sz * m; ++i) ptr[i] = raw[i / m] >> ((i % m) * bits_per_unit);
-        for (; i < size; ++i) ptr[i] = 0;
+        for (; i < sz * m; ++i) {
+            ptr[i] = raw[i / m] >> ((i % m) * bits_per_unit);
+        }
+        for (; i < size; ++i) {
+            ptr[i] = 0;
+        }
     }
     bool clrbit(size_t idx) {
-        if (idx >= size * bits_per_unit) return false;
-        if (size > 1)
+        if (idx >= size * bits_per_unit) {
+            return false;
+        }
+        if (size > 1) {
             ptr[idx / bits_per_unit] &= ~((uintptr_t)1 << (idx % bits_per_unit));
-        else
+        } else {
             data &= ~((uintptr_t)1 << idx);
+        }
         return false;
     }
     void clrrange(size_t idx, size_t sz) {
-        if (sz == 0) return;
-        if (size < sz / bits_per_unit)  // To avoid sz + idx overflow
+        if (sz == 0) {
+            return;
+        }
+        if (size < sz / bits_per_unit) {  // To avoid sz + idx overflow
             sz = size * bits_per_unit;
-        if (idx >= size * bits_per_unit) return;
+        }
+        if (idx >= size * bits_per_unit) {
+            return;
+        }
         if (size == 1) {
-            if (idx + sz < bits_per_unit)
+            if (idx + sz < bits_per_unit) {
                 data &= ~(~(~(uintptr_t)1 << (sz - 1)) << idx);
-            else
+            } else {
                 data &= ~(~(uintptr_t)0 << idx);
+            }
         } else if (idx / bits_per_unit == (idx + sz - 1) / bits_per_unit) {
             ptr[idx / bits_per_unit] &= ~(~(~(uintptr_t)1 << (sz - 1)) << (idx % bits_per_unit));
         } else {
@@ -355,7 +400,9 @@ class bitvec {
             while (++i < idx / bits_per_unit && i < size) {
                 ptr[i] = 0;
             }
-            if (i < size) ptr[i] &= ~(((uintptr_t)1 << (idx % bits_per_unit)) - 1);
+            if (i < size) {
+                ptr[i] &= ~(((uintptr_t)1 << (idx % bits_per_unit)) - 1);
+            }
         }
     }
     bool getbit(size_t idx) const {
@@ -363,14 +410,18 @@ class bitvec {
     }
     uintmax_t getrange(size_t idx, size_t sz) const {
         assert(sz > 0 && sz <= CHAR_BIT * sizeof(uintmax_t));
-        if (idx >= size * bits_per_unit) return 0;
+        if (idx >= size * bits_per_unit) {
+            return 0;
+        }
         if (size > 1) {
             unsigned shift = idx % bits_per_unit;
             idx /= bits_per_unit;
             uintmax_t rv = ptr[idx] >> shift;
             shift = bits_per_unit - shift;
             while (shift < sz) {
-                if (++idx >= size) break;
+                if (++idx >= size) {
+                    break;
+                }
                 rv |= (uintmax_t)ptr[idx] << shift;
                 shift += bits_per_unit;
             }
@@ -383,7 +434,9 @@ class bitvec {
         assert(sz > 0 && sz <= CHAR_BIT * sizeof(uintmax_t));
         uintptr_t mask = ~(uintmax_t)0 >> (CHAR_BIT * sizeof(uintmax_t) - sz);
         v &= mask;
-        if (idx + sz > size * bits_per_unit) expand(1 + (idx + sz - 1) / bits_per_unit);
+        if (idx + sz > size * bits_per_unit) {
+            expand(1 + (idx + sz - 1) / bits_per_unit);
+        }
         if (size == 1) {
             data &= ~(mask << idx);
             data |= v << idx;
@@ -420,8 +473,11 @@ class bitvec {
     nonconst_bitref begin() & { return min(); }
     nonconst_bitref end() & { return nonconst_bitref(*this, -1); }
     bool empty() const {
-        for (size_t i = 0; i < size; i++)
-            if (word(i) != 0) return false;
+        for (size_t i = 0; i < size; i++) {
+            if (word(i) != 0) {
+                return false;
+            }
+        }
         return true;
     }
     explicit operator bool() const { return !empty(); }
@@ -439,11 +495,12 @@ class bitvec {
             }
             if (size > a.size) {
                 if (!rv) {
-                    for (size_t i = a.size; i < size; i++)
+                    for (size_t i = a.size; i < size; i++) {
                         if (ptr[i]) {
                             rv = true;
                             break;
                         }
+                    }
                 }
                 memset(ptr + a.size, 0, (size - a.size) * sizeof(*ptr));
             }
@@ -469,7 +526,9 @@ class bitvec {
     }
     bool operator|=(const bitvec &a) {
         bool rv = false;
-        if (size < a.size) expand(a.size);
+        if (size < a.size) {
+            expand(a.size);
+        }
         if (size > 1) {
             if (a.size > 1) {
                 for (size_t i = 0; i < a.size; i++) {
@@ -516,10 +575,14 @@ class bitvec {
         return rv;
     }
     bitvec &operator^=(const bitvec &a) {
-        if (size < a.size) expand(a.size);
+        if (size < a.size) {
+            expand(a.size);
+        }
         if (size > 1) {
             if (a.size > 1) {
-                for (size_t i = 0; i < a.size; i++) ptr[i] ^= a.ptr[i];
+                for (size_t i = 0; i < a.size; i++) {
+                    ptr[i] ^= a.ptr[i];
+                }
             } else {
                 *ptr ^= a.data;
             }
@@ -560,16 +623,23 @@ class bitvec {
         return rv;
     }
     bool operator==(const bitvec &a) const {
-        for (size_t i = 0; i < size || i < a.size; i++)
-            if (word(i) != a.word(i)) return false;
+        for (size_t i = 0; i < size || i < a.size; i++) {
+            if (word(i) != a.word(i)) {
+                return false;
+            }
+        }
         return true;
     }
     bool operator!=(const bitvec &a) const { return !(*this == a); }
     bool operator<(const bitvec &a) const {
         size_t i = std::max(size, a.size);
         while (i--) {
-            if (word(i) < a.word(i)) return true;
-            if (word(i) > a.word(i)) return false;
+            if (word(i) < a.word(i)) {
+                return true;
+            }
+            if (word(i) > a.word(i)) {
+                return false;
+            }
         }
         return false;
     }
@@ -577,15 +647,24 @@ class bitvec {
     bool operator>=(const bitvec &a) const { return !(*this < a); }
     bool operator<=(const bitvec &a) const { return !(a < *this); }
     bool intersects(const bitvec &a) const {
-        for (size_t i = 0; i < size && i < a.size; i++)
-            if (word(i) & a.word(i)) return true;
+        for (size_t i = 0; i < size && i < a.size; i++) {
+            if (word(i) & a.word(i)) {
+                return true;
+            }
+        }
         return false;
     }
     bool contains(const bitvec &a) const {  // is 'a' a subset or equal to 'this'?
-        for (size_t i = 0; i < size && i < a.size; i++)
-            if ((word(i) & a.word(i)) != a.word(i)) return false;
-        for (size_t i = size; i < a.size; i++)
-            if (a.word(i)) return false;
+        for (size_t i = 0; i < size && i < a.size; i++) {
+            if ((word(i) & a.word(i)) != a.word(i)) {
+                return false;
+            }
+        }
+        for (size_t i = size; i < a.size; i++) {
+            if (a.word(i)) {
+                return false;
+            }
+        }
         return true;
     }
     bitvec &operator>>=(size_t count);
@@ -604,7 +683,9 @@ class bitvec {
     bitvec rotate_right_copy(size_t start_bit, size_t rotation_idx, size_t end_bit) const;
     int popcount() const {
         int rv = 0;
-        for (size_t i = 0; i < size; i++) rv += bv::popcount(word(i));
+        for (size_t i = 0; i < size; i++) {
+            rv += bv::popcount(word(i));
+        }
         return rv;
     }
     bool is_contiguous() const;

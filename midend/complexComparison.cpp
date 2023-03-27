@@ -35,10 +35,11 @@ const IR::Expression *RemoveComplexComparisons::explode(Util::SourceInfo srcInfo
 
     auto rightTuple = rightType->to<IR::Type_BaseList>();
     auto leftTuple = leftType->to<IR::Type_BaseList>();
-    if (leftTuple && !rightTuple)
+    if (leftTuple && !rightTuple) {
         // put the tuple on the right if it is the only one,
         // so we handle fewer cases
         return explode(srcInfo, rightType, right, leftType, left);
+    }
 
     if (auto ht = leftType->to<IR::Type_Header>()) {
         auto lmethod = new IR::Member(left, IR::Type_Header::isValid);
@@ -150,14 +151,19 @@ const IR::Expression *RemoveComplexComparisons::explode(Util::SourceInfo srcInfo
 }
 
 const IR::Node *RemoveComplexComparisons::postorder(IR::Operation_Binary *expression) {
-    if (!expression->is<IR::Neq>() && !expression->is<IR::Equ>()) return expression;
+    if (!expression->is<IR::Neq>() && !expression->is<IR::Equ>()) {
+        return expression;
+    }
     auto ltype = typeMap->getType(expression->left, true);
     auto rtype = typeMap->getType(expression->right, true);
     if (!ltype->is<IR::Type_StructLike>() && !ltype->is<IR::Type_Stack>() &&
-        !ltype->is<IR::Type_BaseList>())
+        !ltype->is<IR::Type_BaseList>()) {
         return expression;
+    }
     auto result = explode(expression->srcInfo, ltype, expression->left, rtype, expression->right);
-    if (expression->is<IR::Neq>()) result = new IR::LNot(expression->srcInfo, result);
+    if (expression->is<IR::Neq>()) {
+        result = new IR::LNot(expression->srcInfo, result);
+    }
     return result;
 }
 

@@ -65,7 +65,9 @@ EbpfOptions::EbpfOptions() {
         "--max-ternary-masks", "MAX_TERNARY_MASKS",
         [this](const char *arg) {
             unsigned int parsed_val = std::strtoul(arg, nullptr, 0);
-            if (parsed_val >= 2) this->maxTernaryMasks = parsed_val;
+            if (parsed_val >= 2) {
+                this->maxTernaryMasks = parsed_val;
+            }
             return true;
         },
         "Set number of maximum possible masks for a ternary key"

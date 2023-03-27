@@ -33,16 +33,18 @@ const IR::Expression *LowerExpressions::shift(const IR::Operation_Binary *expres
     if (rhstype->is<IR::Type_InfInt>()) {
         auto cst = rhs->checkedTo<IR::Constant>();
         big_int maxShift = Util::shift_left(1, LowerExpressions::maxShiftWidth);
-        if (cst->value > maxShift)
+        if (cst->value > maxShift) {
             ::error(ErrorType::ERR_OVERLIMIT, "%1%: shift amount limited to %2% on this target",
                     expression, maxShift);
+        }
     } else {
         BUG_CHECK(rhstype->is<IR::Type_Bits>(), "%1%: expected a bit<> type", rhstype);
         auto bs = rhstype->to<IR::Type_Bits>();
-        if (bs->size > LowerExpressions::maxShiftWidth)
+        if (bs->size > LowerExpressions::maxShiftWidth) {
             ::error(ErrorType::ERR_OVERLIMIT,
                     "%1%: shift amount limited to %2% bits on this target", expression,
                     LowerExpressions::maxShiftWidth);
+        }
     }
     auto ltype = typeMap->getType(getOriginal(), true);
     typeMap->setType(expression, ltype);
@@ -171,9 +173,13 @@ const IR::Node *LowerExpressions::postorder(IR::Concat *expression) {
 /////////////////////////////////////////////////////////////
 
 const IR::Node *RemoveComplexExpressions::postorder(IR::MethodCallExpression *expression) {
-    if (expression->arguments->size() == 0) return expression;
+    if (expression->arguments->size() == 0) {
+        return expression;
+    }
     auto mi = P4::MethodInstance::resolve(expression, refMap, typeMap);
-    if (mi->isApply() || mi->is<P4::BuiltInMethod>()) return expression;
+    if (mi->isApply() || mi->is<P4::BuiltInMethod>()) {
+        return expression;
+    }
 
     if (auto ef = mi->to<P4::ExternFunction>()) {
         if (ef->method->name == P4V1::V1Model::instance.digest_receiver.name) {
@@ -215,7 +221,9 @@ const IR::Node *RemoveComplexExpressions::postorder(IR::MethodCallExpression *ex
     }
 
     auto vec = simplifyExpressions(expression->arguments);
-    if (vec != expression->arguments) expression->arguments = vec;
+    if (vec != expression->arguments) {
+        expression->arguments = vec;
+    }
     return expression;
 }
 

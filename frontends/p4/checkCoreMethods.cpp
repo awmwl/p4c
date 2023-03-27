@@ -23,13 +23,16 @@ namespace P4 {
 
 void DoCheckCoreMethods::checkEmitType(const IR::Expression *emit, const IR::Type *type) const {
     if (type->is<IR::Type_Header>() || type->is<IR::Type_Stack>() ||
-        type->is<IR::Type_HeaderUnion>())
+        type->is<IR::Type_HeaderUnion>()) {
         return;
+    }
 
     if (type->is<IR::Type_Struct>()) {
         for (auto f : type->to<IR::Type_Struct>()->fields) {
             auto ftype = typeMap->getType(f);
-            if (ftype == nullptr) continue;
+            if (ftype == nullptr) {
+                continue;
+            }
             checkEmitType(emit, ftype);
         }
         return;
@@ -38,7 +41,9 @@ void DoCheckCoreMethods::checkEmitType(const IR::Expression *emit, const IR::Typ
     if (auto list = type->to<IR::Type_BaseList>()) {
         for (auto f : list->components) {
             auto ftype = typeMap->getTypeType(f, true);
-            if (ftype == nullptr) continue;
+            if (ftype == nullptr) {
+                continue;
+            }
             checkEmitType(emit, ftype);
         }
         return;
@@ -71,12 +76,14 @@ void DoCheckCoreMethods::checkCorelibMethods(const ExternMethod *em) const {
             }
 
             if (argCount == 1) {
-                if (hasVarbitsOrUnions(typeMap, argType))
+                if (hasVarbitsOrUnions(typeMap, argType)) {
                     // This will never have unions, but may have varbits
                     typeError("%1%: argument cannot contain varbit fields", arg0);
+                }
             } else if (argCount == 2) {
-                if (!hasVarbitsOrUnions(typeMap, argType))
+                if (!hasVarbitsOrUnions(typeMap, argType)) {
                     typeError("%1%: argument should contain a varbit field", arg0);
+                }
             } else {
                 // core.p4 is corrupted.
                 typeError("%1%: Expected 1 or 2 arguments for '%2%' method", mce,
@@ -113,7 +120,9 @@ void DoCheckCoreMethods::checkCorelibMethods(const ExternMethod *em) const {
 
 void DoCheckCoreMethods::postorder(const IR::MethodCallExpression *expression) {
     auto mi = MethodInstance::resolve(expression, refMap, typeMap, nullptr, true);
-    if (mi->is<ExternMethod>()) checkCorelibMethods(mi->to<ExternMethod>());
+    if (mi->is<ExternMethod>()) {
+        checkCorelibMethods(mi->to<ExternMethod>());
+    }
 
     // Check that verify is only invoked from parsers.
     if (auto ef = mi->to<ExternFunction>()) {

@@ -78,7 +78,9 @@ class SourcePosition final {
 
     /// Move one column back.  This never moves one line back.
     SourcePosition &operator--() {
-        if (columnNumber > 0) columnNumber--;
+        if (columnNumber > 0) {
+            columnNumber--;
+        }
         return *this;
     }
     SourcePosition operator--(int) {
@@ -88,12 +90,16 @@ class SourcePosition final {
     }
 
     inline const SourcePosition &min(const SourcePosition &rhs) const {
-        if (this->operator<(rhs)) return *this;
+        if (this->operator<(rhs)) {
+            return *this;
+        }
         return rhs;
     }
 
     inline const SourcePosition &max(const SourcePosition &rhs) const {
-        if (this->operator>(rhs)) return *this;
+        if (this->operator>(rhs)) {
+            return *this;
+        }
         return rhs;
     }
 
@@ -152,8 +158,12 @@ class SourceInfo final {
         A SourceInfo that spans both this and rhs.
         However, if this or rhs is invalid, it is not taken into account */
     const SourceInfo operator+(const SourceInfo &rhs) const {
-        if (!this->isValid()) return rhs;
-        if (!rhs.isValid()) return *this;
+        if (!this->isValid()) {
+            return rhs;
+        }
+        if (!rhs.isValid()) {
+            return *this;
+        }
         SourcePosition s = start.min(rhs.start);
         SourcePosition e = end.max(rhs.end);
         return SourceInfo(sources, s, e);
@@ -195,8 +205,12 @@ class SourceInfo final {
        This is true if the start of other is strictly before
        the start of this. */
     bool operator<(const SourceInfo &rhs) const {
-        if (!rhs.isValid()) return false;
-        if (!isValid()) return true;
+        if (!rhs.isValid()) {
+            return false;
+        }
+        if (!isValid()) {
+            return true;
+        }
         return this->start < rhs.start;
     }
     inline bool operator>(const SourceInfo &rhs) const { return rhs.operator<(*this); }
@@ -238,12 +252,15 @@ class Comment final : IHasDbPrint {
         : srcInfo(srcInfo), singleLine(singleLine), body(body) {}
     cstring toString() const {
         std::string result;
-        if (singleLine)
+        if (singleLine) {
             result = "//";
-        else
+        } else {
             result = "/*";
+        }
         result += body;
-        if (!singleLine) result += "*/";
+        if (!singleLine) {
+            result += "*/";
+        }
         return result;
     }
     void dbprint(std::ostream &out) const { out << toString(); }

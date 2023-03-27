@@ -21,10 +21,14 @@ limitations under the License.
 namespace P4 {
 
 const IR::Node *DoEliminateSwitch::postorder(IR::P4Program *program) {
-    if (!exactNeeded) return program;
+    if (!exactNeeded) {
+        return program;
+    }
     for (auto *obj : program->objects) {
         if (auto *match_kind = obj->to<IR::Declaration_MatchKind>()) {
-            if (match_kind->getDeclByName(P4CoreLibrary::instance.exactMatch.Id())) return program;
+            if (match_kind->getDeclByName(P4CoreLibrary::instance.exactMatch.Id())) {
+                return program;
+            }
         }
     }
     ::error(ErrorType::ERR_NOT_FOUND,
@@ -34,7 +38,9 @@ const IR::Node *DoEliminateSwitch::postorder(IR::P4Program *program) {
 }
 
 const IR::Node *DoEliminateSwitch::postorder(IR::P4Control *control) {
-    for (auto a : toInsert) control->controlLocals.push_back(a);
+    for (auto a : toInsert) {
+        control->controlLocals.push_back(a);
+    }
     toInsert.clear();
     return control;
 }
@@ -45,9 +51,10 @@ const IR::Node *DoEliminateSwitch::postorder(IR::SwitchStatement *statement) {
         return statement;
     }
     auto type = typeMap->getType(statement->expression);
-    if (type->is<IR::Type_ActionEnum>())
+    if (type->is<IR::Type_ActionEnum>()) {
         // Classic switch; no changes needed
         return statement;
+    }
 
     auto src = statement->srcInfo;
     IR::IndexedVector<IR::StatOrDecl> contents;

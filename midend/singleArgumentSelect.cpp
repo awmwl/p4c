@@ -15,10 +15,11 @@ DoSingleArgumentSelect::Pair::Pair(const IR::Expression *e, const IR::Type *type
     } else {
         expr = e;
         unsigned width = type->width_bits();
-        if (width == 0)
+        if (width == 0) {
             mask = new IR::Constant(srcInfo, type, 0, 16);
-        else
+        } else {
             mask = new IR::Constant(srcInfo, type, Util::maskFromSlice(width - 1, 0), 16);
+        }
         hasMask = false;
     }
 }
@@ -32,7 +33,9 @@ static const IR::Expression *convertList(const IR::Expression *expression,
                             new IR::Constant(type, 0, 16));
     }
     auto list = expression->to<IR::ListExpression>();
-    if (list == nullptr) return expression;
+    if (list == nullptr) {
+        return expression;
+    }
     BUG_CHECK(list->components.size() > 0, "%1%: No components", list);
     auto tt = selectListType->checkedTo<IR::Type_List>();
     BUG_CHECK(list->size() == tt->components.size(), "%1% and %2% do not have the same size", list,
@@ -47,10 +50,11 @@ static const IR::Expression *convertList(const IR::Expression *expression,
         mask = new IR::Concat(mask, p->mask);
         hasMask = hasMask || p->hasMask;
     }
-    if (!hasMask)
+    if (!hasMask) {
         return expr;
-    else
+    } else {
         return new IR::Mask(expression->srcInfo, expr, mask);
+    }
 }
 
 // Check that all components of type are Type_Bits.

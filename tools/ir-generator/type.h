@@ -62,12 +62,16 @@ struct LookupScope : public Util::IHasSourceInfo {
 
     Util::SourceInfo getSourceInfo() const override { return srcInfo; }
     cstring toString() const override {
-        if (global) return "IR::";
+        if (global) {
+            return "IR::";
+        }
         return (in ? in->toString() + name : name) + "::";
     }
     IrNamespace *resolve(const IrNamespace *) const;
     bool operator==(const LookupScope &l) const {
-        if (name != l.name || global != l.global) return false;
+        if (name != l.name || global != l.global) {
+            return false;
+        }
         return (in == l.in || (in && l.in && *in == *l.in));
     }
 };
@@ -89,8 +93,12 @@ class NamedType : public Type {
     bool isResolved() const override { return resolved != nullptr; }
     bool operator==(const Type &t) const override { return t == *this; }
     bool operator==(const NamedType &t) const override {
-        if (resolved && resolved == t.resolved) return true;
-        if (name != t.name) return false;
+        if (resolved && resolved == t.resolved) {
+            return true;
+        }
+        if (name != t.name) {
+            return false;
+        }
         return (lookup == t.lookup || (lookup && t.lookup && *lookup == *t.lookup));
     }
 
@@ -120,15 +128,22 @@ class TemplateInstantiation : public Type {
     TemplateInstantiation(const Type *b, const Type *a) : base(b) { args.push_back(a); }
     bool isResolved() const override { return base->isResolved(); }
     const IrClass *resolve(const IrNamespace *ns) const override {
-        for (auto arg : args) arg->resolve(ns);
+        for (auto arg : args) {
+            arg->resolve(ns);
+        }
         return base->resolve(ns);
     }
     cstring toString() const override;
     bool operator==(const Type &t) const override { return t == *this; }
     bool operator==(const TemplateInstantiation &t) const override {
-        if (args.size() != t.args.size() || *base != *t.base) return false;
-        for (size_t i = 0; i < args.size(); i++)
-            if (*args[i] != *t.args[i]) return false;
+        if (args.size() != t.args.size() || *base != *t.base) {
+            return false;
+        }
+        for (size_t i = 0; i < args.size(); i++) {
+            if (*args[i] != *t.args[i]) {
+                return false;
+            }
+        }
         return true;
     }
 };
@@ -205,11 +220,17 @@ class FunctionType : public Type {
     cstring toString() const override;
     bool operator==(const Type &t) const override { return t == *this; }
     bool operator==(const FunctionType &t) const override {
-        if (!(*ret == *t.ret)) return false;
-        if (args.size() != t.args.size()) return false;
+        if (!(*ret == *t.ret)) {
+            return false;
+        }
+        if (args.size() != t.args.size()) {
+            return false;
+        }
         for (auto i(args.begin()), j(t.args.begin()); i != args.end() && j != t.args.end();
              ++i, ++j) {
-            if (!(**i == **j)) return false;
+            if (!(**i == **j)) {
+                return false;
+            }
         }
 
         return true;

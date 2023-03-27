@@ -135,7 +135,9 @@ uint16_t BMv2Hash::csum16(const char *buf, size_t len) {
     while (len >= sizeof(uint64_t)) {
         uint64_t s = *b++;
         sum += s;
-        if (sum < s) sum++;
+        if (sum < s) {
+            sum++;
+        }
         len -= 8;
     }
     /* Handle tail less than 8-bytes long */
@@ -143,29 +145,39 @@ uint16_t BMv2Hash::csum16(const char *buf, size_t len) {
     if (len & 4) {
         uint32_t s = *reinterpret_cast<const uint32_t *>(tail);
         sum += s;
-        if (sum < s) sum++;
+        if (sum < s) {
+            sum++;
+        }
         tail += 4;
     }
     if (len & 2) {
         uint16_t s = *reinterpret_cast<const uint16_t *>(tail);
         sum += s;
-        if (sum < s) sum++;
+        if (sum < s) {
+            sum++;
+        }
         tail += 2;
     }
     if (len & 1) {
         uint8_t s = *reinterpret_cast<const uint8_t *>(tail);
         sum += s;
-        if (sum < s) sum++;
+        if (sum < s) {
+            sum++;
+        }
     }
     /* Fold down to 16 bits */
     t1 = sum;
     t2 = sum >> 32;
     t1 += t2;
-    if (t1 < t2) t1++;
+    if (t1 < t2) {
+        t1++;
+    }
     t3 = t1;
     t4 = t1 >> 16;
     t3 += t4;
-    if (t3 < t4) t3++;
+    if (t3 < t4) {
+        t3++;
+    }
     return ntohs(~t3);
 }
 
@@ -192,7 +204,9 @@ uint16_t BMv2Hash::xor16(const char *buf, size_t len) {
 uint64_t BMv2Hash::identity(const char *buf, size_t len) {
     uint64_t res = 0ULL;
     for (size_t i = 0; i < std::min(sizeof(res), len); i++) {
-        if (i > 0) res <<= 8;
+        if (i > 0) {
+            res <<= 8;
+        }
         res += static_cast<uint8_t>(buf[i]);
     }
     return res;

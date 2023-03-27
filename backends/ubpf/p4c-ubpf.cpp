@@ -45,21 +45,29 @@ void compile(EbpfOptions &options) {
         return;
     }
     auto program = P4::parseP4File(options);
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
 
     P4::FrontEnd frontend;
     program = UBPF::UBPFModel::instance.run(program);
     frontend.addDebugHook(hook);
     program = frontend.run(options, program);
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
 
     P4::serializeP4RuntimeIfRequired(program, options);
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
 
     UBPF::MidEnd midend;
     midend.addDebugHook(hook);
     auto toplevel = midend.run(options, program);
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
 
     UBPF::run_ubpf_backend(options, toplevel, &midend.refMap, &midend.typeMap);
 }
@@ -76,7 +84,9 @@ int main(int argc, char *const argv[]) {
         options.setInputFile();
     }
 
-    if (::errorCount() > 0) exit(1);
+    if (::errorCount() > 0) {
+        exit(1);
+    }
 
     try {
         compile(options);
@@ -85,7 +95,9 @@ int main(int argc, char *const argv[]) {
         return 1;
     }
 
-    if (Log::verbose()) std::cout << "Done." << std::endl;
+    if (Log::verbose()) {
+        std::cout << "Done." << std::endl;
+    }
 
     return ::errorCount() > 0;
 }

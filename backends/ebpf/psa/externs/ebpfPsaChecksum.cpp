@@ -24,11 +24,12 @@ void EBPFChecksumPSA::init(const EBPFProgram *program, cstring name, int type) {
     engine = EBPFHashAlgorithmTypeFactoryPSA::instance()->create(type, program, name);
 
     if (engine == nullptr) {
-        if (declaration->arguments->empty())
+        if (declaration->arguments->empty()) {
             ::error(ErrorType::ERR_UNSUPPORTED, "InternetChecksum not yet implemented");
-        else
+        } else {
             ::error(ErrorType::ERR_UNSUPPORTED, "Hash algorithm not yet implemented: %1%",
                     declaration->arguments->at(0));
+        }
     }
 }
 
@@ -52,7 +53,9 @@ EBPFChecksumPSA::EBPFChecksumPSA(const EBPFProgram *program, const IR::Declarati
 
 void EBPFChecksumPSA::processMethod(CodeBuilder *builder, cstring method,
                                     const IR::MethodCallExpression *expr, Visitor *visitor) {
-    if (engine == nullptr) return;
+    if (engine == nullptr) {
+        return;
+    }
 
     engine->setVisitor(visitor);
 

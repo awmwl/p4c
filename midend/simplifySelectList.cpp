@@ -35,10 +35,16 @@ void SubstituteStructures::explode(const IR::Expression *expression, const IR::T
 }
 
 const IR::Node *SubstituteStructures::postorder(IR::PathExpression *expression) {
-    if (findContext<IR::SelectExpression>() == nullptr) return expression;
-    if (getParent<IR::Member>() != nullptr) return expression;
+    if (findContext<IR::SelectExpression>() == nullptr) {
+        return expression;
+    }
+    if (getParent<IR::Member>() != nullptr) {
+        return expression;
+    }
     auto type = typeMap->getType(getOriginal(), true);
-    if (!type->is<IR::Type_Struct>()) return expression;
+    if (!type->is<IR::Type_Struct>()) {
+        return expression;
+    }
     auto result = new IR::ListExpression(expression->srcInfo, {});
     explode(expression, type, &result->components);
     LOG3("Replacing " << expression << " with " << result);
@@ -48,7 +54,9 @@ const IR::Node *SubstituteStructures::postorder(IR::PathExpression *expression) 
 void UnnestSelectList::flatten(const IR::Expression *expression, IR::Vector<IR::Expression> *vec) {
     if (expression->is<IR::ListExpression>()) {
         nesting += '[';
-        for (auto e : expression->to<IR::ListExpression>()->components) flatten(e, vec);
+        for (auto e : expression->to<IR::ListExpression>()->components) {
+            flatten(e, vec);
+        }
         nesting += ']';
     } else {
         vec->push_back(expression);
@@ -62,8 +70,9 @@ void UnnestSelectList::flatten(const IR::Expression *expression, unsigned *nesti
     if (expression->is<IR::ListExpression>()) {
         BUG_CHECK(c == '[', "%1%: expected [, got %2%", *nestingIndex, c);
         (*nestingIndex)++;
-        for (auto e : expression->to<IR::ListExpression>()->components)
+        for (auto e : expression->to<IR::ListExpression>()->components) {
             flatten(e, nestingIndex, vec);
+        }
         char c = nesting.get(*nestingIndex);
         BUG_CHECK(c == ']', "%1%: expected ], got %2%", *nestingIndex, c);
         (*nestingIndex)++;
@@ -91,9 +100,10 @@ const IR::Node *UnnestSelectList::preorder(IR::SelectExpression *expression) {
     IR::Vector<IR::Expression> vec;
     nesting = "";
     flatten(expression->select, &vec);
-    if (nesting.findlast(']') == nesting.c_str())
+    if (nesting.findlast(']') == nesting.c_str()) {
         // no nested lists found
         return expression;
+    }
     expression->select = new IR::ListExpression(expression->select->srcInfo, vec);
     LOG3("Flattened select list to " << expression->select << ": " << nesting);
     for (auto it = expression->selectCases.begin(); it != expression->selectCases.end(); ++it) {

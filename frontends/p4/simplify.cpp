@@ -23,7 +23,9 @@ namespace P4 {
 
 const IR::Node *DoSimplifyControlFlow::postorder(IR::BlockStatement *statement) {
     LOG3("Visiting " << dbp(getOriginal()));
-    if (statement->annotations->size() > 0) return statement;
+    if (statement->annotations->size() > 0) {
+        return statement;
+    }
     auto parent = getContext()->node;
     CHECK_NULL(parent);
     if (parent->is<IR::SwitchCase>() || parent->is<IR::P4Control>() || parent->is<IR::Function>() ||
@@ -33,23 +35,32 @@ const IR::Node *DoSimplifyControlFlow::postorder(IR::BlockStatement *statement) 
     }
     bool inBlock = findContext<IR::Statement>() != nullptr;
     bool inState = findContext<IR::ParserState>() != nullptr;
-    if (!(inBlock || inState)) return statement;
+    if (!(inBlock || inState)) {
+        return statement;
+    }
 
     if (parent->is<IR::BlockStatement>() || parent->is<IR::ParserState>()) {
         // if there are no local declarations we can remove this block
         bool hasDeclarations = false;
-        for (auto c : statement->components)
+        for (auto c : statement->components) {
             if (!c->is<IR::Statement>()) {
                 hasDeclarations = true;
                 break;
             }
-        if (!hasDeclarations) return &statement->components;
+        }
+        if (!hasDeclarations) {
+            return &statement->components;
+        }
     }
 
-    if (statement->components.empty()) return new IR::EmptyStatement(statement->srcInfo);
+    if (statement->components.empty()) {
+        return new IR::EmptyStatement(statement->srcInfo);
+    }
     if (statement->components.size() == 1) {
         auto first = statement->components.at(0);
-        if (first->is<IR::Statement>()) return first;
+        if (first->is<IR::Statement>()) {
+            return first;
+        }
     }
     return statement;
 }
@@ -60,15 +71,20 @@ const IR::Node *DoSimplifyControlFlow::postorder(IR::IfStatement *statement) {
         // swap branches
         statement->condition = lnot->expr;
         auto e = statement->ifFalse;
-        if (!e) e = new IR::EmptyStatement();
+        if (!e) {
+            e = new IR::EmptyStatement();
+        }
         statement->ifFalse = statement->ifTrue;
         statement->ifTrue = e;
     }
 
-    if (SideEffects::check(statement->condition, this, refMap, typeMap)) return statement;
+    if (SideEffects::check(statement->condition, this, refMap, typeMap)) {
+        return statement;
+    }
     if (statement->ifTrue->is<IR::EmptyStatement>() &&
-        (statement->ifFalse == nullptr || statement->ifFalse->is<IR::EmptyStatement>()))
+        (statement->ifFalse == nullptr || statement->ifFalse->is<IR::EmptyStatement>())) {
         return new IR::EmptyStatement(statement->srcInfo);
+    }
     return statement;
 }
 
@@ -76,9 +92,10 @@ const IR::Node *DoSimplifyControlFlow::postorder(IR::EmptyStatement *statement) 
     LOG3("Visiting " << dbp(getOriginal()));
     auto parent = findContext<IR::Statement>();
     if (parent == nullptr ||  // in a ParserState or P4Action
-        parent->is<IR::BlockStatement>())
+        parent->is<IR::BlockStatement>()) {
         // remove it from blocks
         return nullptr;
+    }
     return statement;
 }
 
@@ -93,9 +110,10 @@ const IR::Node *DoSimplifyControlFlow::postorder(IR::SwitchStatement *statement)
             LOG2("Removing switch statement " << statement << " keeping " << mce);
             return new IR::MethodCallStatement(statement->srcInfo, mce);
         }
-        if (SideEffects::check(statement->expression, this, refMap, typeMap))
+        if (SideEffects::check(statement->expression, this, refMap, typeMap)) {
             // This can happen if this pass is run before SideEffectOrdering.
             return statement;
+        }
         LOG2("Removing switch statement " << statement);
         return nullptr;
     }
@@ -103,10 +121,11 @@ const IR::Node *DoSimplifyControlFlow::postorder(IR::SwitchStatement *statement)
     if (last->statement == nullptr) {
         auto it = statement->cases.rbegin();
         for (; it != statement->cases.rend(); ++it) {
-            if ((*it)->statement != nullptr)
+            if ((*it)->statement != nullptr) {
                 break;
-            else
+            } else {
                 warn(ErrorType::WARN_MISSING, "%1%: fallthrough with no statement", last);
+            }
         }
         statement->cases.erase(it.base(), statement->cases.end());
     }

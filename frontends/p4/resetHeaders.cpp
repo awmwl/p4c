@@ -51,7 +51,9 @@ void DoResetHeaders::generateResets(const TypeMap *typeMap, const IR::Type *type
 }
 
 const IR::Node *DoResetHeaders::postorder(IR::Declaration_Variable *decl) {
-    if (decl->initializer != nullptr) return decl;
+    if (decl->initializer != nullptr) {
+        return decl;
+    }
     LOG3("DoResetHeaders context " << dbp(getContext()->node));
     auto type = typeMap->getType(getOriginal(), true);
     auto path = new IR::PathExpression(decl->getName());
@@ -63,7 +65,9 @@ const IR::Node *DoResetHeaders::postorder(IR::Declaration_Variable *decl) {
         auto resets = new IR::Vector<IR::StatOrDecl>();
         resets->push_back(decl);
         generateResets(typeMap, type, path, resets);
-        if (resets->size() == 1) return decl;
+        if (resets->size() == 1) {
+            return decl;
+        }
         return resets;
     } else {
         generateResets(typeMap, type, path, &insert);
@@ -80,7 +84,9 @@ const IR::Node *DoResetHeaders::postorder(IR::P4Control *control) {
 }
 
 const IR::Node *DoResetHeaders::postorder(IR::ParserState *state) {
-    if (state->name != IR::ParserState::start) return state;
+    if (state->name != IR::ParserState::start) {
+        return state;
+    }
     insert.append(state->components);
     state->components = insert;
     insert.clear();

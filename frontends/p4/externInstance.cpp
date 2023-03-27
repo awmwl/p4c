@@ -47,7 +47,9 @@ boost::optional<ExternInstance> ExternInstance::resolve(const IR::PathExpression
     CHECK_NULL(typeMap);
 
     auto decl = refMap->getDeclaration(path->path, true);
-    if (!decl->is<IR::Declaration_Instance>()) return boost::none;
+    if (!decl->is<IR::Declaration_Instance>()) {
+        return boost::none;
+    }
 
     auto instance = decl->to<IR::Declaration_Instance>();
     auto type = typeMap->getType(instance);
@@ -57,7 +59,9 @@ boost::optional<ExternInstance> ExternInstance::resolve(const IR::PathExpression
     }
 
     auto instantiation = Instantiation::resolve(instance, refMap, typeMap);
-    if (!instantiation->is<ExternInstantiation>()) return boost::none;
+    if (!instantiation->is<ExternInstantiation>()) {
+        return boost::none;
+    }
     auto externInstantiation = instantiation->to<ExternInstantiation>();
 
     return ExternInstance{instance->controlPlaneName(),  path,
@@ -74,7 +78,9 @@ boost::optional<ExternInstance> ExternInstance::resolve(
     CHECK_NULL(typeMap);
 
     auto constructorCall = P4::ConstructorCall::resolve(constructorCallExpr, refMap, typeMap);
-    if (!constructorCall->is<P4::ExternConstructorCall>()) return boost::none;
+    if (!constructorCall->is<P4::ExternConstructorCall>()) {
+        return boost::none;
+    }
 
     auto type = constructorCall->to<P4::ExternConstructorCall>()->type;
     return ExternInstance{name,

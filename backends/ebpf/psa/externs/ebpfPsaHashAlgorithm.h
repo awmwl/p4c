@@ -181,13 +181,14 @@ class EBPFHashAlgorithmTypeFactoryPSA {
     }
 
     EBPFHashAlgorithmPSA *create(int type, const EBPFProgram *program, cstring name) {
-        if (type == EBPFHashAlgorithmPSA::HashAlgorithm::CRC32)
+        if (type == EBPFHashAlgorithmPSA::HashAlgorithm::CRC32) {
             return new CRC32ChecksumAlgorithm(program, name);
-        else if (type == EBPFHashAlgorithmPSA::HashAlgorithm::CRC16)
+        } else if (type == EBPFHashAlgorithmPSA::HashAlgorithm::CRC16) {
             return new CRC16ChecksumAlgorithm(program, name);
-        else if (type == EBPFHashAlgorithmPSA::HashAlgorithm::ONES_COMPLEMENT16 ||
-                 type == EBPFHashAlgorithmPSA::HashAlgorithm::TARGET_DEFAULT)
+        } else if (type == EBPFHashAlgorithmPSA::HashAlgorithm::ONES_COMPLEMENT16 ||
+                   type == EBPFHashAlgorithmPSA::HashAlgorithm::TARGET_DEFAULT) {
             return new InternetChecksumAlgorithm(program, name);
+        }
 
         return nullptr;
     }

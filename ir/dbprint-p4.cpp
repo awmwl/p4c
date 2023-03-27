@@ -40,13 +40,19 @@ void IR::HeaderStackItemRef::dbprint(std::ostream &out) const {
     int prec = getprec(out);
     out << setprec(Prec_Postfix) << *base_ << "[" << setprec(Prec_Low) << *index_ << "]"
         << setprec(prec);
-    if (prec == 0) out << ';';
+    if (prec == 0) {
+        out << ';';
+    }
 }
 
 void IR::FieldList::dbprint(std::ostream &out) const {
     out << "field_list " << name << " {" << indent;
-    for (auto f : fields) out << Log::endl << f;
-    if (payload) out << Log::endl << "payload;";
+    for (auto f : fields) {
+        out << Log::endl << f;
+    }
+    if (payload) {
+        out << Log::endl << "payload;";
+    }
     out << unindent << " }";
 }
 void IR::FieldListCalculation::dbprint(std::ostream &out) const {
@@ -62,7 +68,9 @@ void IR::CalculatedField::dbprint(std::ostream &out) const {
     out << indent;
     for (auto &spec : specs) {
         out << Log::endl << (spec.update ? "update " : "verify ") << spec.name;
-        if (spec.cond) out << " if " << spec.cond;
+        if (spec.cond) {
+            out << " if " << spec.cond;
+        }
     }
     out << unindent;
 }
@@ -72,12 +80,13 @@ void IR::CaseEntry::dbprint(std::ostream &out) const {
     out << setprec(Prec_Low);
     for (auto &val : values) {
         if (val.first->is<IR::Constant>()) {
-            if (val.second->asLong() == -1)
+            if (val.second->asLong() == -1) {
                 out << sep << *val.first;
-            else if (val.second->asLong() == 0)
+            } else if (val.second->asLong() == 0) {
                 out << sep << "default";
-            else
+            } else {
                 out << sep << *val.first << " &&& " << *val.second;
+            }
         } else if (val.first->is<IR::PathExpression>()) {
             out << sep << *val.first->to<IR::PathExpression>();
         }
@@ -87,7 +96,9 @@ void IR::CaseEntry::dbprint(std::ostream &out) const {
 }
 void IR::V1Parser::dbprint(std::ostream &out) const {
     out << "parser " << name << " {" << indent;
-    for (auto &stmt : stmts) out << Log::endl << *stmt;
+    for (auto &stmt : stmts) {
+        out << Log::endl << *stmt;
+    }
     if (select) {
         int prec = getprec(out);
         const char *sep = "";
@@ -98,29 +109,52 @@ void IR::V1Parser::dbprint(std::ostream &out) const {
         }
         out << ") {" << indent << setprec(prec);
     }
-    if (cases)
-        for (auto c : *cases) out << Log::endl << *c;
-    if (select) out << " }" << unindent;
-    if (default_return) out << Log::endl << "return " << default_return << ";";
-    if (parse_error) out << Log::endl << "error " << parse_error << ";";
-    if (drop) out << Log::endl << "drop;";
+    if (cases) {
+        for (auto c : *cases) {
+            out << Log::endl << *c;
+        }
+    }
+    if (select) {
+        out << " }" << unindent;
+    }
+    if (default_return) {
+        out << Log::endl << "return " << default_return << ";";
+    }
+    if (parse_error) {
+        out << Log::endl << "error " << parse_error << ";";
+    }
+    if (drop) {
+        out << Log::endl << "drop;";
+    }
     out << " }" << unindent;
 }
 void IR::ParserException::dbprint(std::ostream &out) const { out << "IR::ParserException"; }
 void IR::ParserState::dbprint(std::ostream &out) const {
     out << "state " << name << " " << annotations << "{" << indent;
-    for (auto s : components) out << Log::endl << s;
-    if (selectExpression) out << Log::endl << selectExpression;
+    for (auto s : components) {
+        out << Log::endl << s;
+    }
+    if (selectExpression) {
+        out << Log::endl << selectExpression;
+    }
     out << " }" << unindent;
 }
 void IR::P4Parser::dbprint(std::ostream &out) const {
     out << "parser " << name;
-    if (type->typeParameters && !type->typeParameters->empty()) out << type->typeParameters;
+    if (type->typeParameters && !type->typeParameters->empty()) {
+        out << type->typeParameters;
+    }
     out << '(' << type->applyParams << ')';
-    if (constructorParams) out << '(' << constructorParams << ')';
+    if (constructorParams) {
+        out << '(' << constructorParams << ')';
+    }
     out << " " << type->annotations << "{" << indent;
-    for (auto d : parserLocals) out << Log::endl << d;
-    for (auto s : states) out << Log::endl << s;
+    for (auto d : parserLocals) {
+        out << Log::endl << d;
+    }
+    for (auto s : states) {
+        out << Log::endl << s;
+    }
     out << " }" << unindent;
 }
 
@@ -138,7 +172,9 @@ void IR::ActionFunction::dbprint(std::ostream &out) const {
         sep = ", ";
     }
     out << ") {" << indent;
-    for (auto &p : action) out << Log::endl << p;
+    for (auto &p : action) {
+        out << Log::endl << p;
+    }
     out << unindent << " }";
 }
 
@@ -150,8 +186,11 @@ void IR::P4Action::dbprint(std::ostream &out) const {
         sep = ", ";
     }
     out << ") {" << indent;
-    if (body)
-        for (auto p : body->components) out << Log::endl << p;
+    if (body) {
+        for (auto p : body->components) {
+            out << Log::endl << p;
+        }
+    }
     out << unindent << " }";
 }
 
@@ -177,10 +216,11 @@ void IR::ActionList::dbprint(std::ostream &out) const {
     out << "{" << indent;
     bool first = true;
     for (auto el : actionList) {
-        if (first)
+        if (first) {
             out << ' ' << el;
-        else
+        } else {
             out << Log::endl << el;
+        }
         first = false;
     }
     out << unindent << " }";
@@ -188,16 +228,19 @@ void IR::ActionList::dbprint(std::ostream &out) const {
 void IR::KeyElement::dbprint(std::ostream &out) const {
     int prec = getprec(out);
     out << annotations << Prec_Low << expression << ": " << matchType << setprec(prec);
-    if (!prec) out << ';';
+    if (!prec) {
+        out << ';';
+    }
 }
 void IR::Key::dbprint(std::ostream &out) const {
     out << "{" << indent;
     bool first = true;
     for (auto el : keyElements) {
-        if (first)
+        if (first) {
             out << ' ' << el;
-        else
+        } else {
             out << Log::endl << el;
+        }
         first = false;
     }
     out << unindent << " }";
@@ -205,7 +248,9 @@ void IR::Key::dbprint(std::ostream &out) const {
 void IR::P4Table::dbprint(std::ostream &out) const {
     out << "table " << name;
     out << " " << annotations << "{" << indent;
-    for (auto p : properties->properties) out << Log::endl << p;
+    for (auto p : properties->properties) {
+        out << Log::endl << p;
+    }
     out << " }" << unindent;
 }
 
@@ -219,21 +264,35 @@ void IR::V1Control::dbprint(std::ostream &out) const {
 }
 void IR::P4Control::dbprint(std::ostream &out) const {
     out << "control " << name;
-    if (type->typeParameters && !type->typeParameters->empty()) out << type->typeParameters;
-    if (type->applyParams) out << '(' << type->applyParams << ')';
-    if (constructorParams) out << '(' << constructorParams << ')';
+    if (type->typeParameters && !type->typeParameters->empty()) {
+        out << type->typeParameters;
+    }
+    if (type->applyParams) {
+        out << '(' << type->applyParams << ')';
+    }
+    if (constructorParams) {
+        out << '(' << constructorParams << ')';
+    }
     out << " " << type->annotations << "{" << indent;
-    for (auto d : controlLocals) out << Log::endl << d;
-    for (auto s : body->components) out << Log::endl << s;
+    for (auto d : controlLocals) {
+        out << Log::endl << d;
+    }
+    for (auto s : body->components) {
+        out << Log::endl << s;
+    }
     out << " }" << unindent;
 }
 
 void IR::V1Program::dbprint(std::ostream &out) const {
-    for (auto &obj : Values(scope)) out << obj << Log::endl;
+    for (auto &obj : Values(scope)) {
+        out << obj << Log::endl;
+    }
 }
 
 void IR::P4Program::dbprint(std::ostream &out) const {
-    for (auto obj : objects) out << obj << Log::endl;
+    for (auto obj : objects) {
+        out << obj << Log::endl;
+    }
 }
 
 void IR::Type_Error::dbprint(std::ostream &out) const {
@@ -265,10 +324,14 @@ void IR::Declaration_Instance::dbprint(std::ostream &out) const {
         sep = ", ";
     }
     out << ')' << setprec(prec);
-    if (initializer) out << " {" << indent << initializer << " }" << unindent;
+    if (initializer) {
+        out << " {" << indent << initializer << " }" << unindent;
+    }
     if (!properties.empty()) {
         out << " {" << indent;
-        for (auto &obj : properties) out << Log::endl << obj.second;
+        for (auto &obj : properties) {
+            out << Log::endl << obj.second;
+        }
         out << " }" << unindent;
     }
 }

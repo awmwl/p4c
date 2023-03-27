@@ -42,21 +42,28 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
           buf << "{" << std::endl << cl->indent << cl->indent << "return ";
           bool first = true;
           if (auto parent = cl->getParent()) {
-              if (parent->name == "Node")
+              if (parent->name == "Node") {
                   buf << "typeid(*this) == typeid(a)";
-              else
+              } else {
                   buf << parent->qualified_name(cl->containedIn)
                       << "::operator==(static_cast<const "
                       << parent->qualified_name(cl->containedIn) << " &>(a))";
+              }
               first = false;
           }
           for (auto f : *cl->getFields()) {
-              if (*f->type == NamedType::SourceInfo()) continue;  // FIXME -- deal with SourcInfo
-              if (!first) buf << std::endl << cl->indent << cl->indent << "&& ";
+              if (*f->type == NamedType::SourceInfo()) {
+                  continue;  // FIXME -- deal with SourcInfo
+              }
+              if (!first) {
+                  buf << std::endl << cl->indent << cl->indent << "&& ";
+              }
               first = false;
               if (auto *arr = dynamic_cast<const ArrayType *>(f->type)) {
                   for (int i = 0; i < arr->size; ++i) {
-                      if (i != 0) buf << std::endl << cl->indent << cl->indent << "&& ";
+                      if (i != 0) {
+                          buf << std::endl << cl->indent << cl->indent << "&& ";
+                      }
                       buf << f->name << "[" << i << "] == a." << f->name << "[" << i << "]";
                   }
               } else {
@@ -96,8 +103,9 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
           } else {
               bool first = true;
               for (auto f : *cl->getFields()) {
-                  if (*f->type == NamedType::SourceInfo())
+                  if (*f->type == NamedType::SourceInfo()) {
                       continue;  // FIXME -- deal with SourcInfo
+                  }
                   if (first) {
                       buf << cl->indent << cl->indent << "auto &a = static_cast<const " << cl->name
                           << " &>(a_);\n";
@@ -132,7 +140,9 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
       [](IrClass *cl, Util::SourceInfo srcInfo, cstring body) -> cstring {
           std::stringstream buf;
           buf << "{";
-          if (body) buf << LineDirective(srcInfo, true) << body;
+          if (body) {
+              buf << LineDirective(srcInfo, true) << body;
+          }
           buf << LineDirective(true) << cl->indent << "return out; }";
           return buf.str();
       }}},
@@ -144,18 +154,21 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
           bool needed = false;
           std::stringstream buf;
           buf << "{" << std::endl;
-          if (auto parent = cl->getParent())
+          if (auto parent = cl->getParent()) {
               buf << cl->indent << parent->qualified_name(cl->containedIn) << "::visit_children(v);"
                   << std::endl;
+          }
           for (auto f : *cl->getFields()) {
-              if (f->type->resolve(cl->containedIn) == nullptr)
+              if (f->type->resolve(cl->containedIn) == nullptr) {
                   // This is not an IR pointer
                   continue;
-              if (f->isInline)
+              }
+              if (f->isInline) {
                   buf << cl->indent << f->name << ".visit_children(v);" << std::endl;
-              else
+              } else {
                   buf << cl->indent << "v.visit(" << f->name << ", \"" << f->name << "\");"
                       << std::endl;
+              }
               needed = true;
           }
           buf << "}";
@@ -170,15 +183,17 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
           std::stringstream buf;
           buf << "{" << LineDirective(true);
           for (auto f : *cl->getFields()) {
-              if (f->type->resolve(cl->containedIn) == nullptr)
+              if (f->type->resolve(cl->containedIn) == nullptr) {
                   // This is not an IR pointer
                   continue;
-              if (f->isInline)
+              }
+              if (f->isInline) {
                   buf << std::endl << cl->indent << cl->indent << f->name << ".validate();";
-              else if (!f->nullOK)
+              } else if (!f->nullOK) {
                   buf << std::endl << cl->indent << cl->indent << "CHECK_NULL(" << f->name << ");";
-              else
+              } else {
                   continue;
+              }
               needed = true;
           }
           if (body) {
@@ -209,12 +224,15 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
       [](IrClass *cl, Util::SourceInfo, cstring) -> cstring {
           std::stringstream buf;
           buf << "{" << std::endl;
-          if (auto parent = cl->getParent())
+          if (auto parent = cl->getParent()) {
               buf << cl->indent << parent->qualified_name(cl->containedIn) << "::dump_fields(out);"
                   << std::endl;
+          }
           bool needed = false;
           for (auto f : *cl->getFields()) {
-              if (*f->type == NamedType::SourceInfo()) continue;  // FIXME -- deal with SourcInfo
+              if (*f->type == NamedType::SourceInfo()) {
+                  continue;  // FIXME -- deal with SourcInfo
+              }
               if (f->type->resolve(cl->containedIn) == nullptr &&
                   !dynamic_cast<const TemplateInstantiation *>(f->type)) {
                   // not an IR pointer
@@ -233,13 +251,17 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
       [](IrClass *cl, Util::SourceInfo, cstring) -> cstring {
           std::stringstream buf;
           buf << "{" << std::endl;
-          if (auto parent = cl->getParent())
+          if (auto parent = cl->getParent()) {
               buf << cl->indent << parent->qualified_name(cl->containedIn) << "::toJSON(json);"
                   << std::endl;
+          }
           for (auto f : *cl->getFields()) {
-              if (*f->type == NamedType::SourceInfo()) continue;  // FIXME -- deal with SourcInfo
-              if (!f->isInline && f->nullOK)
+              if (*f->type == NamedType::SourceInfo()) {
+                  continue;  // FIXME -- deal with SourcInfo
+              }
+              if (!f->isInline && f->nullOK) {
                   buf << cl->indent << "if (" << f->name << " != nullptr) ";
+              }
               buf << cl->indent << "json << \",\" << std::endl << json.indent << \"\\\"" << f->name
                   << "\\\" : \" << "
                   << "this->" << f->name << ";" << std::endl;
@@ -253,11 +275,14 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
       IN_IMPL + CONSTRUCTOR + INCL_NESTED,
       [](IrClass *cl, Util::SourceInfo, cstring) -> cstring {
           std::stringstream buf;
-          if (auto parent = cl->getParent())
+          if (auto parent = cl->getParent()) {
               buf << ": " << parent->qualified_name(cl->containedIn) << "(json)";
+          }
           buf << " {" << std::endl;
           for (auto f : *cl->getFields()) {
-              if (*f->type == NamedType::SourceInfo()) continue;  // FIXME -- deal with SourcInfo
+              if (*f->type == NamedType::SourceInfo()) {
+                  continue;  // FIXME -- deal with SourcInfo
+              }
               buf << cl->indent << "json.load(\"" << f->name << "\", " << f->name << ");"
                   << std::endl;
           }
@@ -283,36 +308,54 @@ const ordered_map<cstring, IrMethod::info_t> IrMethod::Generate = {
 };
 
 void IrClass::generateMethods() {
-    if (this == nodeClass() || this == vectorClass()) return;
+    if (this == nodeClass() || this == vectorClass()) {
+        return;
+    }
     if (kind != NodeKind::Interface) {
         for (auto &def : IrMethod::Generate) {
-            if (def.second.flags & NOT_DEFAULT) continue;
-            if (kind == NodeKind::Nested && !(def.second.flags & INCL_NESTED)) continue;
-            if ((def.second.flags & CONCRETE_ONLY) && kind == NodeKind::Abstract) continue;
+            if (def.second.flags & NOT_DEFAULT) {
+                continue;
+            }
+            if (kind == NodeKind::Nested && !(def.second.flags & INCL_NESTED)) {
+                continue;
+            }
+            if ((def.second.flags & CONCRETE_ONLY) && kind == NodeKind::Abstract) {
+                continue;
+            }
             if (Util::Enumerator<IrElement *>::createEnumerator(elements)
                     ->where([](IrElement *el) { return el->is<IrNo>(); })
                     ->where([&def](IrElement *el) { return el->to<IrNo>()->text == def.first; })
-                    ->any())
+                    ->any()) {
                 continue;
+            }
             IrMethod *exist = dynamic_cast<IrMethod *>(
                 Util::Enumerator<IrElement *>::createEnumerator(elements)
                     ->where([](IrElement *el) { return el->is<IrMethod>(); })
                     ->where([&def](IrElement *el) { return el->to<IrMethod>()->name == def.first; })
                     ->nextOrDefault());
-            if (exist && !(def.second.flags & EXTEND)) continue;
+            if (exist && !(def.second.flags & EXTEND)) {
+                continue;
+            }
             cstring body;
-            if (exist)
+            if (exist) {
                 body = def.second.create(this, exist->srcInfo, exist->body);
-            else
+            } else {
                 body = def.second.create(this, Util::SourceInfo(), cstring());
+            }
             if (body) {
-                if (!body.size()) body = nullptr;
+                if (!body.size()) {
+                    body = nullptr;
+                }
                 if (exist) {
                     exist->body = body;
-                    if (def.second.flags & FRIEND) exist->isFriend = true;
+                    if (def.second.flags & FRIEND) {
+                        exist->isFriend = true;
+                    }
                 } else {
                     auto *m = new IrMethod(def.first, body);
-                    if (def.second.flags & FRIEND) m->isFriend = true;
+                    if (def.second.flags & FRIEND) {
+                        m->isFriend = true;
+                    }
                     m->clss = this;
                     elements.push_back(m);
                 }
@@ -336,16 +379,20 @@ void IrClass::generateMethods() {
             m->rtype->resolve(&local);
             continue;
         }
-        if (!m->args.empty()) continue;
-        if (m->name == name) {
-            if (!m->isUser)
-                ctor = m;
-            else
-                user_defined_default_ctor = true;
+        if (!m->args.empty()) {
             continue;
         }
-        if (!IrMethod::Generate.count(m->name))
+        if (m->name == name) {
+            if (!m->isUser) {
+                ctor = m;
+            } else {
+                user_defined_default_ctor = true;
+            }
+            continue;
+        }
+        if (!IrMethod::Generate.count(m->name)) {
             throw Util::CompilationError("Unrecognized predefined method %1%", m->name);
+        }
         auto &info = IrMethod::Generate.at(m->name);
         if (m->name) {
             if (info.rtype) {
@@ -361,28 +408,43 @@ void IrClass::generateMethods() {
                 // concrete type.
                 m->rtype = new PointerType(new NamedType(this));
             }
-            if (m->isUser && (info.flags & EXTEND))
+            if (m->isUser && (info.flags & EXTEND)) {
                 m->body = info.create(this, m->srcInfo, m->body);
-            if (info.flags & FRIEND) m->isFriend = true;
+            }
+            if (info.flags & FRIEND) {
+                m->isFriend = true;
+            }
         } else {
             m->name = name;
         }
         m->args = info.args;
-        if (info.flags & CLASSREF)
+        if (info.flags & CLASSREF) {
             m->args.push_back(new IrField(new ReferenceType(new NamedType(this), true), "a"));
-        if (info.flags & IN_IMPL) m->inImpl = true;
-        if (info.flags & CONST) m->isConst = true;
-        if ((info.flags & OVERRIDE) && kind != NodeKind::Nested) m->isOverride = true;
-        if (info.flags & FACTORY) m->isStatic = true;
+        }
+        if (info.flags & IN_IMPL) {
+            m->inImpl = true;
+        }
+        if (info.flags & CONST) {
+            m->isConst = true;
+        }
+        if ((info.flags & OVERRIDE) && kind != NodeKind::Nested) {
+            m->isOverride = true;
+        }
+        if (info.flags & FACTORY) {
+            m->isStatic = true;
+        }
     }
-    if (ctor) elements.erase(find(elements, ctor));
+    if (ctor) {
+        elements.erase(find(elements, ctor));
+    }
     if (kind != NodeKind::Interface && !shouldSkip("constructor")) {
         ctor_args_t args;
         computeConstructorArguments(args);
         if (!user_defined_default_ctor || !args.empty()) {
             int optargs = generateConstructor(args, ctor, 0);
-            for (unsigned skip = 1; skip < (1U << optargs); ++skip)
+            for (unsigned skip = 1; skip < (1U << optargs); ++skip) {
                 generateConstructor(args, ctor, skip);
+            }
         }
     }
 }

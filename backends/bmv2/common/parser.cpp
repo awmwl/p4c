@@ -26,22 +26,30 @@ limitations under the License.
 namespace BMV2 {
 
 cstring ParserConverter::jsonAssignment(const IR::Type *type, bool inParser) {
-    if (!inParser && type->is<IR::Type_Varbits>()) return "assign_VL";
-    if (type->is<IR::Type_HeaderUnion>()) return "assign_union";
-    if (type->is<IR::Type_Header>() || type->is<IR::Type_Struct>()) return "assign_header";
+    if (!inParser && type->is<IR::Type_Varbits>()) {
+        return "assign_VL";
+    }
+    if (type->is<IR::Type_HeaderUnion>()) {
+        return "assign_union";
+    }
+    if (type->is<IR::Type_Header>() || type->is<IR::Type_Struct>()) {
+        return "assign_header";
+    }
     if (auto ts = type->to<IR::Type_Stack>()) {
         auto et = ts->elementType;
-        if (et->is<IR::Type_HeaderUnion>())
+        if (et->is<IR::Type_HeaderUnion>()) {
             return "assign_union_stack";
-        else
+        } else {
             return "assign_header_stack";
+        }
     }
-    if (inParser)
+    if (inParser) {
         // Unfortunately set can do some things that assign cannot,
         // e.g., handle lookahead on the RHS.
         return "set";
-    else
+    } else {
         return "assign";
+    }
 }
 
 Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat) {
@@ -314,10 +322,11 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                 primitive = "remove_header";
             } else if (bi->name == IR::Type_Stack::push_front ||
                        bi->name == IR::Type_Stack::pop_front) {
-                if (bi->name == IR::Type_Stack::push_front)
+                if (bi->name == IR::Type_Stack::push_front) {
                     primitive = "push";
-                else
+                } else {
                     primitive = "pop";
+                }
 
                 BUG_CHECK(mce->arguments->size() == 1, "Expected 1 argument for %1%", mce);
                 auto arg = ctxt->conv->convert(mce->arguments->at(0)->expression);
@@ -423,7 +432,9 @@ unsigned ParserConverter::combine(const IR::Expression *keySet, const IR::ListEx
             index++;
         }
 
-        if (noMask) mask = -1;
+        if (noMask) {
+            mask = -1;
+        }
         return totalWidth;
     } else if (keySet->is<IR::PathExpression>()) {
         auto pe = keySet->to<IR::PathExpression>();
@@ -478,10 +489,11 @@ std::vector<Util::IJson *> ParserConverter::convertSelectExpression(
             } else {
                 trans->emplace("type", "hexstr");
                 trans->emplace("value", stringRepr(value, bytes));
-                if (mask == -1)
+                if (mask == -1) {
                     trans->emplace("mask", Util::JsonValue::null);
-                else
+                } else {
                     trans->emplace("mask", stringRepr(mask, bytes));
+                }
                 trans->emplace("next_state", stateName(sc->state->path->name));
             }
         }
@@ -518,7 +530,9 @@ Util::IJson *ParserConverter::createDefaultTransition() {
 void ParserConverter::addValueSets(const IR::P4Parser *parser) {
     auto isExactMatch = [this](const IR::StructField *sf) {
         auto matchAnnotation = sf->getAnnotation(IR::Annotation::matchAnnotation);
-        if (!matchAnnotation) return true;  // default (missing annotation) is exact
+        if (!matchAnnotation) {
+            return true;  // default (missing annotation) is exact
+        }
         auto matchPathExpr = matchAnnotation->expr[0]->to<IR::PathExpression>();
         CHECK_NULL(matchPathExpr);
         auto matchTypeDecl =
@@ -528,14 +542,18 @@ void ParserConverter::addValueSets(const IR::P4Parser *parser) {
     };
 
     for (auto s : parser->parserLocals) {
-        if (!s->is<IR::P4ValueSet>()) continue;
+        if (!s->is<IR::P4ValueSet>()) {
+            continue;
+        }
 
         auto inst = s->to<IR::P4ValueSet>();
         auto etype = ctxt->typeMap->getTypeType(inst->elementType, true);
 
         if (auto st = etype->to<IR::Type_Struct>()) {
             for (auto f : st->fields) {
-                if (isExactMatch(f)) continue;
+                if (isExactMatch(f)) {
+                    continue;
+                }
                 ::warning(ErrorType::WARN_UNSUPPORTED,
                           "This backend only supports exact matches in value_sets but the match "
                           "on '%1%' is not exact; the annotation will be ignored",
@@ -558,14 +576,17 @@ bool ParserConverter::preorder(const IR::P4Parser *parser) {
 
     // convert parse state
     for (auto state : parser->states) {
-        if (state->name == IR::ParserState::reject || state->name == IR::ParserState::accept)
+        if (state->name == IR::ParserState::reject || state->name == IR::ParserState::accept) {
             continue;
+        }
         // For the state we use the internal name, not the control-plane name
         auto state_id = ctxt->json->add_parser_state(parser_id, state->name);
         // convert statements
         for (auto s : state->components) {
             auto op = convertParserStatement(s);
-            if (op) ctxt->json->add_parser_op(state_id, op);
+            if (op) {
+                ctxt->json->add_parser_op(state_id, op);
+            }
         }
         // convert transitions
         if (state->selectExpression != nullptr) {
@@ -591,8 +612,9 @@ bool ParserConverter::preorder(const IR::P4Parser *parser) {
     }
     for (auto p : parser->parserLocals) {
         if (p->is<IR::Declaration_Constant>() || p->is<IR::Declaration_Variable>() ||
-            p->is<IR::P4Action>() || p->is<IR::P4Table>())
+            p->is<IR::P4Action>() || p->is<IR::P4Table>()) {
             continue;
+        }
         if (p->is<IR::Declaration_Instance>()) {
             auto bl = ctxt->structure->resourceMap.at(p);
             CHECK_NULL(bl);

@@ -64,7 +64,9 @@ void register_thread() {
 static MTONLY(__thread) int shutdown_loop = 0;  // avoid infinite loop if shutdown crashes
 
 static void sigint_shutdown(int sig, siginfo_t *, void *) {
-    if (shutdown_loop++) _exit(-1);
+    if (shutdown_loop++) {
+        _exit(-1);
+    }
     LOG1("Exiting with SIG" << signames[sig]);
     _exit(sig + 0x80);
 }
@@ -109,15 +111,25 @@ const char *addr2line(void *addr, const char *text) {
         }
         memcpy(p, text, t - text);
         p += t - text;
-        if (!memchr(text, '/', t - text)) *p++ = ')';
+        if (!memchr(text, '/', t - text)) {
+            *p++ = ')';
+        }
         *p = 0;
         child = -1;
 #if HAVE_PIPE2
-        if (pipe2(pfd1, O_CLOEXEC) < 0) return 0;
-        if (pipe2(pfd2, O_CLOEXEC) < 0) return 0;
+        if (pipe2(pfd1, O_CLOEXEC) < 0) {
+            return 0;
+        }
+        if (pipe2(pfd2, O_CLOEXEC) < 0) {
+            return 0;
+        }
 #else
-        if (pipe(pfd1) < 0) return 0;
-        if (pipe(pfd2) < 0) return 0;
+        if (pipe(pfd1) < 0) {
+            return 0;
+        }
+        if (pipe(pfd2) < 0) {
+            return 0;
+        }
         fcntl(pfd1[0], F_SETFD, FD_CLOEXEC | fcntl(pfd1[0], F_GETFL));
         fcntl(pfd1[1], F_SETFD, FD_CLOEXEC | fcntl(pfd1[1], F_GETFL));
         fcntl(pfd2[0], F_SETFD, FD_CLOEXEC | fcntl(pfd2[0], F_GETFL));
@@ -125,7 +137,9 @@ const char *addr2line(void *addr, const char *text) {
 #endif
         while ((child = fork()) == -1 && errno == EAGAIN) {
         }
-        if (child == -1) return 0;
+        if (child == -1) {
+            return 0;
+        }
         if (child == 0) {
             dup2(pfd1[1], 1);
             dup2(pfd1[1], 2);
@@ -138,11 +152,15 @@ const char *addr2line(void *addr, const char *text) {
         close(pfd2[0]);
         to_child = pfd2[1];
     }
-    if (child == -1) return 0;
+    if (child == -1) {
+        return 0;
+    }
     char *p = buffer;
     uintptr_t a = (uintptr_t)addr;
     int shift = (CHAR_BIT * sizeof(uintptr_t) - 1) & ~3;
-    while (shift > 0 && (a >> shift) == 0) shift -= 4;
+    while (shift > 0 && (a >> shift) == 0) {
+        shift -= 4;
+    }
     while (shift >= 0) {
         *p++ = "0123456789abcdef"[(a >> shift) & 0xf];
         shift -= 4;
@@ -157,8 +175,12 @@ const char *addr2line(void *addr, const char *text) {
            !memchr(p - len, '\n', len)) {
     }
     *p = 0;
-    if ((p = strchr(buffer, '\n'))) *p = 0;
-    if (buffer[0] == 0 || buffer[0] == '?') return 0;
+    if ((p = strchr(buffer, '\n'))) {
+        *p = 0;
+    }
+    if (buffer[0] == 0 || buffer[0] == '?') {
+        return 0;
+    }
     return buffer;
 }
 
@@ -227,18 +249,22 @@ static void dumpregs(mcontext_t *mctxt) {
 #endif
 
 static void crash_shutdown(int sig, siginfo_t *info, void *uctxt) {
-    if (shutdown_loop++) _exit(-1);
+    if (shutdown_loop++) {
+        _exit(-1);
+    }
     MTONLY(static std::recursive_mutex lock; static int threads_dumped = 0;
            static bool killed_all_threads = false; lock.lock(); if (!killed_all_threads) {
                killed_all_threads = true;
-               for (int i = 0; i < int(thread_ids.size()); i++)
+               for (int i = 0; i < int(thread_ids.size()); i++) {
                    if (i != my_id - 1) {
                        pthread_kill(thread_ids[i], SIGABRT);
                    }
+               }
            })
     LOG1(MTONLY("Thread #" << my_id << " " <<) "exiting with SIG" << signames[sig] << ", trace:");
-    if (sig == SIGILL || sig == SIGFPE || sig == SIGSEGV || sig == SIGBUS || sig == SIGTRAP)
+    if (sig == SIGILL || sig == SIGFPE || sig == SIGSEGV || sig == SIGBUS || sig == SIGTRAP) {
         LOG1("  address = " << hex(info->si_addr));
+    }
 #if HAVE_UCONTEXT_H
     dumpregs(&(static_cast<ucontext_t *>(uctxt)->uc_mcontext));
 #else
@@ -250,11 +276,16 @@ static void crash_shutdown(int sig, siginfo_t *info, void *uctxt) {
         int size = backtrace(buffer, 64);
         char **strings = backtrace_symbols(buffer, size);
         for (int i = 1; i < size; i++) {
-            if (strings) LOG1("  " << strings[i]);
-            if (const char *line = addr2line(buffer[i], strings ? strings[i] : 0))
+            if (strings) {
+                LOG1("  " << strings[i]);
+            }
+            if (const char *line = addr2line(buffer[i], strings ? strings[i] : 0)) {
                 LOG1("    " << line);
+            }
         }
-        if (size < 1) LOG1("backtrace failed");
+        if (size < 1) {
+            LOG1("backtrace failed");
+        }
         free(strings);
     }
 #endif
@@ -263,7 +294,9 @@ static void crash_shutdown(int sig, siginfo_t *info, void *uctxt) {
             lock.unlock();
             pthread_exit(0);
         } else { lock.unlock(); })
-    if (sig != SIGABRT) BUG("Exiting with SIG%s", signames[sig]);
+    if (sig != SIGABRT) {
+        BUG("Exiting with SIG%s", signames[sig]);
+    }
     _exit(sig + 0x80);
 }
 

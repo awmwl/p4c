@@ -71,7 +71,9 @@ class CodeGenInspector : public Inspector {
 
     void substitute(const IR::Parameter *p, const IR::Parameter *with);
     void copySubstitutions(CodeGenInspector *other) {
-        for (auto s : other->substitution) substitute(s.first, s.second);
+        for (auto s : other->substitution) {
+            substitute(s.first, s.second);
+        }
     }
 
     void useAsPointerVariable(cstring name) { this->asPointerVariables.insert(name); }

@@ -53,22 +53,25 @@ class RemoveUnreachableStates : public Transform {
             bool acceptReachable = false;
             bool rejectReachable = false;
             for (auto s : reachable) {
-                if (s->name == IR::ParserState::reject)
+                if (s->name == IR::ParserState::reject) {
                     rejectReachable = true;
-                else if (s->name == IR::ParserState::accept)
+                } else if (s->name == IR::ParserState::accept) {
                     acceptReachable = true;
+                }
             }
-            if (!rejectReachable && !acceptReachable)
+            if (!rejectReachable && !acceptReachable) {
                 ::error(ErrorType::ERR_UNREACHABLE,
                         "%1%: Parser never reaches accept or reject state", parser);
+            }
             LOG1("Parser " << dbp(parser) << " has " << transitions->size() << " reachable states");
         }
         return parser;
     }
 
     const IR::Node *preorder(IR::ParserState *state) override {
-        if (state->name == IR::ParserState::start || state->name == IR::ParserState::reject)
+        if (state->name == IR::ParserState::start || state->name == IR::ParserState::reject) {
             return state;
+        }
 
         auto orig = getOriginal<IR::ParserState>();
         if (reachable.find(orig) == reachable.end()) {
@@ -117,33 +120,43 @@ class CollapseChains : public Transform {
             auto node = oe.first;
             // Avoid merging in case of state annotation
             if (!node->annotations->annotations.empty()) {
-                if (!node->getAnnotation("name") || node->annotations->annotations.size() != 1)
+                if (!node->getAnnotation("name") || node->annotations->annotations.size() != 1) {
                     continue;
+                }
             }
             auto outedges = oe.second;
-            if (outedges->size() != 1) continue;
+            if (outedges->size() != 1) {
+                continue;
+            }
             auto next = *outedges->begin();
             if (next->name == IR::ParserState::accept || next->name == IR::ParserState::reject ||
-                next->name == IR::ParserState::start)
+                next->name == IR::ParserState::start) {
                 continue;
+            }
             auto callers = transitions->getCallers(next);
-            if (callers->size() != 1) continue;
+            if (callers->size() != 1) {
+                continue;
+            }
             // Avoid merging in case of state annotation
-            if (!next->annotations->annotations.empty())
+            if (!next->annotations->annotations.empty()) {
                 // we are not sure what to do with the annotations
                 continue;
+            }
             chain.emplace(node, next);
             pred.emplace(next, node);
         }
-        if (chain.empty()) return parser;
+        if (chain.empty()) {
+            return parser;
+        }
 
         // Find the head of each chain.
         for (auto e : pred) {
             auto crt = e.first;
             while (pred.find(crt) != pred.end()) {
                 auto prev = pred.find(crt)->second;
-                if (prev == e.first)  // this could be a cycle, e.g., start->start
+                if (prev == e.first) {  // this could be a cycle, e.g., start->start
                     break;
+                }
                 crt = prev;
             }
             chainStart.emplace(crt);
@@ -153,7 +166,9 @@ class CollapseChains : public Transform {
         // annotations of the chain's head state.
         auto states = new IR::IndexedVector<IR::ParserState>();
         for (auto s : parser->states) {
-            if (pred.find(s) != pred.end()) continue;
+            if (pred.find(s) != pred.end()) {
+                continue;
+            }
             if (chainStart.find(s) != chainStart.end()) {
                 // collapse chain
                 auto components = new IR::IndexedVector<IR::StatOrDecl>();
@@ -164,7 +179,9 @@ class CollapseChains : public Transform {
                     components->append(crt->components);
                     select = crt->selectExpression;
                     crt = ::get(chain, crt);
-                    if (crt == nullptr) break;
+                    if (crt == nullptr) {
+                        break;
+                    }
                     LOG1("Adding " << dbp(crt) << " to chain");
                 }
                 s = new IR::ParserState(s->srcInfo, s->name, s->annotations, *components, select);

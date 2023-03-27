@@ -39,10 +39,11 @@ const IR::Expression *DoSimplifyExpressions::addAssignment(Util::SourceInfo srcI
                                                            cstring varName,
                                                            const IR::Expression *expression) {
     const IR::PathExpression *left;
-    if (auto pe = expression->to<IR::PathExpression>())
+    if (auto pe = expression->to<IR::PathExpression>()) {
         left = new IR::PathExpression(IR::ID(varName, pe->path->name.originalName));
-    else
+    } else {
         left = new IR::PathExpression(IR::ID(varName, nullptr));
+    }
     auto stat = new IR::AssignmentStatement(srcInfo, left, expression);
     statements.push_back(stat);
     auto result = left->clone();
@@ -86,13 +87,17 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::ArrayIndex *expression) {
         }
     }
     typeMap->setType(expression, type);
-    if (isWrite()) typeMap->setLeftValue(expression);
+    if (isWrite()) {
+        typeMap->setLeftValue(expression);
+    }
     prune();
     return expression;
 }
 
 static bool isIfContext(const Visitor::Context *ctxt) {
-    if (ctxt && ctxt->node->is<IR::LNot>()) ctxt = ctxt->parent;
+    if (ctxt && ctxt->node->is<IR::LNot>()) {
+        ctxt = ctxt->parent;
+    }
     return ctxt && ctxt->node->is<IR::IfStatement>();
 }
 
@@ -128,7 +133,9 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::Member *expression) {
         }
     }
     typeMap->setType(rv, type);
-    if (isWrite()) typeMap->setLeftValue(rv);
+    if (isWrite()) {
+        typeMap->setLeftValue(rv);
+    }
     prune();
     return rv;
 }
@@ -159,7 +166,9 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::StructExpression *expression
             break;
         }
     }
-    if (!foundEffect) return expression;
+    if (!foundEffect) {
+        return expression;
+    }
     // allocate temporaries for all members in order.
     // this will handle cases like a = (S) { b, f(b) }, where f can mutate b.
     IR::IndexedVector<IR::NamedExpression> vec;
@@ -187,7 +196,9 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::ListExpression *expression) 
             break;
         }
     }
-    if (!foundEffect) return expression;
+    if (!foundEffect) {
+        return expression;
+    }
     // allocate temporaries for all members in order.
     // this will handle cases like a = { b, f(b) }, where f can mutate b.
     LOG3("Dismantling " << dbp(expression));
@@ -323,12 +334,18 @@ bool DoSimplifyExpressions::mayAlias(const IR::Expression *left,
 /// Returns true if type is a header or a struct containing a header.
 /// (We don't care about stacks or unions.)
 bool DoSimplifyExpressions::containsHeaderType(const IR::Type *type) {
-    if (type->is<IR::Type_Header>()) return true;
+    if (type->is<IR::Type_Header>()) {
+        return true;
+    }
     auto st = type->to<IR::Type_Struct>();
-    if (st == nullptr) return false;
+    if (st == nullptr) {
+        return false;
+    }
     for (auto f : st->fields) {
         auto ftype = typeMap->getType(f, true);
-        if (containsHeaderType(ftype)) return true;
+        if (containsHeaderType(ftype)) {
+            return true;
+        }
     }
     return false;
 }
@@ -368,7 +385,9 @@ class GetWrittenExpressions : public Inspector {
             }
         }
         for (auto p : *mi->substitution.getParametersInArgumentOrder()) {
-            if (!p->hasOut()) continue;
+            if (!p->hasOut()) {
+                continue;
+            }
             // The only modified expressions much be left-values
             // that are substituted to out or inout parameters.
             auto arg = mi->substitution.lookup(p);
@@ -411,12 +430,16 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
     mce->apply(gwe);
 
     for (auto p : *mi->substitution.getParametersInArgumentOrder()) {
-        if (p->direction == IR::Direction::None) continue;
+        if (p->direction == IR::Direction::None) {
+            continue;
+        }
         auto arg = mi->substitution.lookup(p);
         if (gwe.written.find(GetWrittenExpressions::everything) != gwe.written.end()) {
             // just copy everything.
             LOG3("Detected table application, using temporaries for all parameters " << arg);
-            for (auto p : *mi->substitution.getParametersInArgumentOrder()) useTemporary.emplace(p);
+            for (auto p : *mi->substitution.getParametersInArgumentOrder()) {
+                useTemporary.emplace(p);
+            }
             break;
         }
         modifies.insert(gwe.written.begin(), gwe.written.end());
@@ -444,7 +467,9 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
         // the SetHeaders pass later simpler (otherwise we have to
         // handle this case there).
         auto ptype = typeMap->getType(p, true);
-        if (!containsHeaderType(ptype)) continue;
+        if (!containsHeaderType(ptype)) {
+            continue;
+        }
 
         if (arg->expression->is<IR::ListExpression>() ||
             arg->expression->is<IR::StructExpression>()) {
@@ -457,18 +482,23 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
 
     // For each argument check to see if it aliases any expression in the written set.
     for (auto p : *mi->substitution.getParametersInArgumentOrder()) {
-        if (useTemporary.find(p) != useTemporary.end()) continue;
+        if (useTemporary.find(p) != useTemporary.end()) {
+            continue;
+        }
         auto arg = mi->substitution.lookup(p);
-        if (typeMap->isCompileTimeConstant(arg->expression)) continue;
+        if (typeMap->isCompileTimeConstant(arg->expression)) {
+            continue;
+        }
         for (auto e : modifies) {
             // Here we use just raw equality: equivalent but not equal expressions
             // should be compared.
             if (e != arg->expression && mayAlias(arg->expression, e)) {
                 LOG3("Using temporary for " << dbp(mce) << " param " << dbp(p) << " aliasing"
                                             << dbp(e));
-                if (p->hasOut())
+                if (p->hasOut()) {
                     warn(ErrorType::WARN_ORDERING,
                          "%1%: 'out' argument has fields in common with %2%", arg, e);
+                }
                 useTemporary.emplace(p);
                 break;
             }
@@ -500,7 +530,9 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
             if (temporaries.find(argex) == temporaries.end()) {
                 LOG3("Not a temporary " << argex);
                 auto paramtype = typeMap->getType(p, true);
-                if (paramtype->is<IR::Type_Dontcare>()) paramtype = typeMap->getType(arg, true);
+                if (paramtype->is<IR::Type_Dontcare>()) {
+                    paramtype = typeMap->getType(arg, true);
+                }
                 auto tmp = createTemporary(paramtype);
                 argValue = new IR::PathExpression(IR::ID(tmp, nullptr));
                 typeMap->setType(argValue, paramtype);
@@ -541,7 +573,9 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
         tbl_apply = tbl != nullptr || tbl1 != nullptr || tbl2 != nullptr;
     }
     // Simplified method call, with arguments substituted
-    if (!IR::equiv(mce->arguments, args)) mce->arguments = args;
+    if (!IR::equiv(mce->arguments, args)) {
+        mce->arguments = args;
+    }
     typeMap->setType(mce, type);
     const IR::Expression *rv = mce;
     // See whether we assign the result of the call to a temporary
@@ -575,48 +609,68 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::Function *function) {
-    if (toInsert.empty()) return function;
+    if (toInsert.empty()) {
+        return function;
+    }
     auto body = new IR::BlockStatement(function->body->srcInfo);
-    for (auto a : toInsert) body->push_back(a);
-    for (auto s : function->body->components) body->push_back(s);
+    for (auto a : toInsert) {
+        body->push_back(a);
+    }
+    for (auto s : function->body->components) {
+        body->push_back(s);
+    }
     function->body = body;
     toInsert.clear();
     return function;
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::P4Parser *parser) {
-    if (toInsert.empty()) return parser;
+    if (toInsert.empty()) {
+        return parser;
+    }
     parser->parserLocals.append(toInsert);
     toInsert.clear();
     return parser;
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::P4Control *control) {
-    if (toInsert.empty()) return control;
+    if (toInsert.empty()) {
+        return control;
+    }
     control->controlLocals.append(toInsert);
     toInsert.clear();
     return control;
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::P4Action *action) {
-    if (toInsert.empty()) return action;
+    if (toInsert.empty()) {
+        return action;
+    }
     auto body = new IR::BlockStatement(action->body->srcInfo);
-    for (auto a : toInsert) body->push_back(a);
-    for (auto s : action->body->components) body->push_back(s);
+    for (auto a : toInsert) {
+        body->push_back(a);
+    }
+    for (auto s : action->body->components) {
+        body->push_back(s);
+    }
     action->body = body;
     toInsert.clear();
     return action;
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::ParserState *state) {
-    if (state->selectExpression == nullptr) return state;
+    if (state->selectExpression == nullptr) {
+        return state;
+    }
     state->components.append(statements);
     statements.clear();
     return state;
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::AssignmentStatement *statement) {
-    if (statements.empty()) return statement;
+    if (statements.empty()) {
+        return statement;
+    }
     statements.push_back(statement);
     auto block = new IR::BlockStatement(statements);
     statements.clear();
@@ -628,7 +682,9 @@ const IR::Node *DoSimplifyExpressions::postorder(IR::MethodCallStatement *statem
         BUG_CHECK(statement->methodCall, "NULL methodCall?");
         return statement;
     }
-    if (statement->methodCall) statements.push_back(statement);
+    if (statement->methodCall) {
+        statements.push_back(statement);
+    }
     if (statements.size() == 1) {
         auto rv = statements.front();
         statements.clear();
@@ -640,7 +696,9 @@ const IR::Node *DoSimplifyExpressions::postorder(IR::MethodCallStatement *statem
 }
 
 const IR::Node *DoSimplifyExpressions::postorder(IR::ReturnStatement *statement) {
-    if (statements.empty()) return statement;
+    if (statements.empty()) {
+        return statement;
+    }
     statements.push_back(statement);
     auto block = new IR::BlockStatement(statements);
     statements.clear();
@@ -686,13 +744,15 @@ const IR::Node *KeySideEffect::preorder(IR::Key *key) {
     // the key field values.
     LOG3("Visiting " << key);
     bool complex = false;
-    for (auto k : key->keyElements)
+    for (auto k : key->keyElements) {
         complex = complex || P4::SideEffects::check(k->expression, this, refMap, typeMap);
-    if (!complex)
+    }
+    if (!complex) {
         // This prune will prevent the postoder(IR::KeyElement*) below from executing
         prune();
-    else
+    } else {
         LOG3("Will pull out " << key);
+    }
     return key;
 }
 
@@ -739,10 +799,14 @@ const IR::Node *KeySideEffect::preorder(IR::P4Table *table) {
 
 const IR::Node *KeySideEffect::postorder(IR::P4Table *table) {
     auto insertions = ::get(toInsert, getOriginal<IR::P4Table>());
-    if (insertions == nullptr) return table;
+    if (insertions == nullptr) {
+        return table;
+    }
 
     auto result = new IR::IndexedVector<IR::Declaration>();
-    for (auto d : insertions->declarations) result->push_back(d);
+    for (auto d : insertions->declarations) {
+        result->push_back(d);
+    }
     result->push_back(table);
     return result;
 }
@@ -753,9 +817,13 @@ const IR::Node *KeySideEffect::doStatement(const IR::Statement *statement,
     HasTableApply hta(refMap, typeMap);
     hta.setCalledBy(this);
     (void)expression->apply(hta);
-    if (hta.table == nullptr) return statement;
+    if (hta.table == nullptr) {
+        return statement;
+    }
     auto insertions = get(toInsert, hta.table);
-    if (insertions == nullptr) return statement;
+    if (insertions == nullptr) {
+        return statement;
+    }
 
     auto result = new IR::IndexedVector<IR::StatOrDecl>();
     for (auto assign : insertions->statements) {

@@ -62,7 +62,9 @@ void *operator new(std::size_t size) {
         emergency_ptr += size;
     }
     if (!rv) {
-        if (!emergency_ptr) emergency_ptr = emergency_pool;
+        if (!emergency_ptr) {
+            emergency_ptr = emergency_pool;
+        }
         throw backtrace_exception<std::bad_alloc>();
     }
     return rv;
@@ -144,7 +146,9 @@ void *realloc(void *ptr, size_t size) {
         }
     }
     if (ptr) {
-        if (GC_is_heap_ptr(ptr)) return GC_realloc(ptr, size);
+        if (GC_is_heap_ptr(ptr)) {
+            return GC_realloc(ptr, size);
+        }
         size_t max = raw_size(ptr);
         void *rv = GC_malloc(size);
         memcpy(rv, ptr, max < size ? max : size);
@@ -158,17 +162,23 @@ void *realloc(void *ptr, size_t size) {
 // As it could be optimized to malloc(size) call causing
 // infinite loops
 void *malloc(size_t size) {
-    if (!done_init) return realloc(nullptr, size);
+    if (!done_init) {
+        return realloc(nullptr, size);
+    }
 
     return GC_malloc(size);
 }
 void free(void *ptr) {
-    if (done_init && GC_is_heap_ptr(ptr)) GC_free(ptr);
+    if (done_init && GC_is_heap_ptr(ptr)) {
+        GC_free(ptr);
+    }
 }
 void *calloc(size_t size, size_t elsize) {
     size *= elsize;
     void *rv = malloc(size);
-    if (rv) memset(rv, 0, size);
+    if (rv) {
+        memset(rv, 0, size);
+    }
     return rv;
 }
 
@@ -213,10 +223,14 @@ size_t gc_mem_inuse(size_t *max) {
     GC_word heapsize, heapfree;
     GC_gcollect();
     GC_get_heap_usage_safe(&heapsize, &heapfree, 0, 0, 0);
-    if (max) *max = heapsize;
+    if (max) {
+        *max = heapsize;
+    }
     return heapsize - heapfree;
 #else
-    if (max) *max = 0;
+    if (max) {
+        *max = 0;
+    }
     return 0;
 #endif
 }

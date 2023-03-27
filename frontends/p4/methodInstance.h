@@ -148,8 +148,9 @@ class ExternMethod final : public MethodInstance {
         CHECK_NULL(originalExternType);
         CHECK_NULL(actualExternType);
         bindParameters();
-        if (!incomplete)
+        if (!incomplete) {
             typeSubstitution.setBindings(expr, method->type->typeParameters, expr->typeArguments);
+        }
     }
     friend class MethodInstance;
 
@@ -172,8 +173,9 @@ class ExternFunction final : public MethodInstance {
         : MethodInstance(expr, nullptr, originalMethodType, actualMethodType), method(method) {
         CHECK_NULL(method);
         bindParameters();
-        if (!incomplete)
+        if (!incomplete) {
             typeSubstitution.setBindings(expr, method->type->typeParameters, expr->typeArguments);
+        }
     }
     friend class MethodInstance;
 
@@ -213,9 +215,10 @@ class FunctionCall final : public MethodInstance {
         : MethodInstance(expr, nullptr, originalMethodType, actualMethodType), function(function) {
         CHECK_NULL(function);
         bindParameters();
-        if (!incomplete)
+        if (!incomplete) {
             typeSubstitution.setBindings(function, function->type->typeParameters,
                                          expr->typeArguments);
+        }
     }
     friend class MethodInstance;
 

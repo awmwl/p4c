@@ -40,10 +40,11 @@ inline bool contains_if(C &c, Pred pred) {
 template <class C, class Pred>
 inline void erase_if(C &c, Pred pred) {
     for (auto it = c.begin(); it != c.end();) {
-        if (pred(*it))
+        if (pred(*it)) {
             it = c.erase(it);
-        else
+        } else {
             ++it;
+        }
     }
 }
 

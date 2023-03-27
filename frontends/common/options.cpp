@@ -24,7 +24,9 @@ CompilerOptions::CompilerOptions() : ParserOptions() {
         [this](const char *arg) {
             excludeFrontendPasses = true;
             auto copy = strdup(arg);
-            while (auto pass = strsep(&copy, ",")) passesToExcludeFrontend.push_back(pass);
+            while (auto pass = strsep(&copy, ",")) {
+                passesToExcludeFrontend.push_back(pass);
+            }
             return true;
         },
         "Exclude passes from frontend passes whose name is equal\n"
@@ -44,7 +46,9 @@ CompilerOptions::CompilerOptions() : ParserOptions() {
         [this](const char *arg) {
             excludeMidendPasses = true;
             auto copy = strdup(arg);
-            while (auto pass = strsep(&copy, ",")) passesToExcludeMidend.push_back(pass);
+            while (auto pass = strsep(&copy, ",")) {
+                passesToExcludeMidend.push_back(pass);
+            }
             return true;
         },
         "Exclude passes from midend passes whose name is equal\n"

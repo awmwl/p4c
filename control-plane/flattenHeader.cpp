@@ -26,7 +26,9 @@ FlattenHeader::FlattenHeader(P4::TypeMap *typeMap, IR::Type_Header *flattenedHea
     : typeMap(typeMap), flattenedHeader(flattenedHeader) {}
 
 void FlattenHeader::doFlatten(const IR::Type *type) {
-    if (type->is<IR::Type_Struct>()) needsFlattening = true;
+    if (type->is<IR::Type_Struct>()) {
+        needsFlattening = true;
+    }
     if (auto st = type->to<IR::Type_StructLike>()) {
         for (auto f : st->fields) {
             nameSegments.push_back(f->name);
@@ -52,7 +54,9 @@ void FlattenHeader::doFlatten(const IR::Type *type) {
 
 cstring FlattenHeader::makeName(cstring sep) const {
     cstring name = "";
-    for (auto n : nameSegments) name += sep + n;
+    for (auto n : nameSegments) {
+        name += sep + n;
+    }
     return name;
 }
 
@@ -64,7 +68,9 @@ const IR::Annotations *FlattenHeader::mergeAnnotations() const {
     for (auto annosIt = allAnnotations.rbegin(); annosIt != allAnnotations.rend(); annosIt++) {
         for (auto anno : (*annosIt)->annotations) {
             // if an annotation with the same name was added previously, skip
-            if (mergedAnnotations->getSingle(anno->name)) continue;
+            if (mergedAnnotations->getSingle(anno->name)) {
+                continue;
+            }
             mergedAnnotations->add(anno);
         }
     }

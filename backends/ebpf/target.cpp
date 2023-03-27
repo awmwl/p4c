@@ -47,7 +47,9 @@ void KernelSamplesTarget::emitResizeBuffer(Util::SourceCodeBuilder *builder, cst
 
 void KernelSamplesTarget::emitTableLookup(Util::SourceCodeBuilder *builder, cstring tblName,
                                           cstring key, cstring value) const {
-    if (!value.isNullOrEmpty()) builder->appendFormat("%s = ", value.c_str());
+    if (!value.isNullOrEmpty()) {
+        builder->appendFormat("%s = ", value.c_str());
+    }
     builder->appendFormat("BPF_MAP_LOOKUP_ELEM(%s, &%s)", tblName.c_str(), key.c_str());
 }
 
@@ -176,7 +178,9 @@ void KernelSamplesTarget::emitPreamble(Util::SourceCodeBuilder *builder) const {
 
 void KernelSamplesTarget::emitTraceMessage(Util::SourceCodeBuilder *builder, const char *format,
                                            int argc, ...) const {
-    if (!emitTraceMessages) return;
+    if (!emitTraceMessages) {
+        return;
+    }
 
     cstring msg = format;
     va_list ap;
@@ -184,13 +188,17 @@ void KernelSamplesTarget::emitTraceMessage(Util::SourceCodeBuilder *builder, con
     // Older kernels do not append new line when printing message but newer do that,
     // so ensure that printed message ends with '\n'. Empty lines in logs
     // will look better than everything in a single line.
-    if (!msg.endsWith("\\n")) msg = msg + "\\n";
+    if (!msg.endsWith("\\n")) {
+        msg = msg + "\\n";
+    }
 
     msg = cstring("\"") + msg + "\"";
     va_start(ap, argc);
     for (int i = 0; i < argc; ++i) {
         auto arg = va_arg(ap, const char *);
-        if (!arg) break;
+        if (!arg) {
+            break;
+        }
         msg = msg + ", " + cstring(arg);
     }
     va_end(ap);
@@ -231,7 +239,9 @@ void TestTarget::emitTableDecl(Util::SourceCodeBuilder *builder, cstring tblName
 
 void BccTarget::emitTableLookup(Util::SourceCodeBuilder *builder, cstring tblName, cstring key,
                                 cstring value) const {
-    if (!value.isNullOrEmpty()) builder->appendFormat("%s = ", value.c_str());
+    if (!value.isNullOrEmpty()) {
+        builder->appendFormat("%s = ", value.c_str());
+    }
     builder->appendFormat("%s.lookup(&%s)", tblName.c_str(), key.c_str());
 }
 
@@ -260,14 +270,15 @@ void BccTarget::emitTableDecl(Util::SourceCodeBuilder *builder, cstring tblName,
                               TableKind tableKind, cstring keyType, cstring valueType,
                               unsigned size) const {
     cstring kind;
-    if (tableKind == TableHash)
+    if (tableKind == TableHash) {
         kind = "hash";
-    else if (tableKind == TableArray)
+    } else if (tableKind == TableArray) {
         kind = "array";
-    else if (tableKind == TableLPMTrie)
+    } else if (tableKind == TableLPMTrie) {
         kind = "lpm_trie";
-    else
+    } else {
         BUG("%1%: unsupported table kind", tableKind);
+    }
 
     builder->appendFormat("BPF_TABLE(\"%s\", %s, %s, %s, %d);", kind.c_str(), keyType.c_str(),
                           valueType.c_str(), tblName.c_str(), size);

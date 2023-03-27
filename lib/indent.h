@@ -98,7 +98,9 @@ class TempIndent {
         return out << indent;
     }
     ~TempIndent() {
-        for (auto *out : streams) *out << unindent;
+        for (auto *out : streams) {
+            *out << unindent;
+        }
     }
 };
 

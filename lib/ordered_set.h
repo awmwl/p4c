@@ -63,14 +63,20 @@ class ordered_set {
     map_type data_map;
     void init_data_map() {
         data_map.clear();
-        for (auto it = data.begin(); it != data.end(); it++) data_map.emplace(&*it, it);
+        for (auto it = data.begin(); it != data.end(); it++) {
+            data_map.emplace(&*it, it);
+        }
     }
     iterator tr_iter(typename map_type::iterator i) {
-        if (i == data_map.end()) return data.end();
+        if (i == data_map.end()) {
+            return data.end();
+        }
         return i->second;
     }
     const_iterator tr_iter(typename map_type::const_iterator i) const {
-        if (i == data_map.end()) return data.end();
+        if (i == data_map.end()) {
+            return data.end();
+        }
         return i->second;
     }
 
@@ -130,9 +136,15 @@ class ordered_set {
         // have a set of ordered_sets (or use ordered_set as a map key).
         auto it = a.data_map.begin();
         for (auto &el : data_map) {
-            if (it == a.data_map.end()) return false;
-            if (mapcmp()(el.first, it->first)) return true;
-            if (mapcmp()(it->first, el.first)) return false;
+            if (it == a.data_map.end()) {
+                return false;
+            }
+            if (mapcmp()(el.first, it->first)) {
+                return true;
+            }
+            if (mapcmp()(it->first, el.first)) {
+                return false;
+            }
             ++it;
         }
         return it != a.data_map.end();
@@ -193,7 +205,9 @@ class ordered_set {
         return std::make_pair(it, false);
     }
     void insert(ordered_set::const_iterator begin, ordered_set::const_iterator end) {
-        for (auto it = begin; it != end; ++it) insert(*it);
+        for (auto it = begin; it != end; ++it) {
+            insert(*it);
+        }
     }
     iterator insert(const_iterator pos, const T &v) {
         iterator it = find(v);
@@ -279,35 +293,46 @@ class ordered_set {
 
 template <class T, class C1, class A1, class U>
 inline auto operator|=(ordered_set<T, C1, A1> &a, const U &b) -> decltype(b.begin(), a) {
-    for (auto &el : b) a.insert(el);
+    for (auto &el : b) {
+        a.insert(el);
+    }
     return a;
 }
 template <class T, class C1, class A1, class U>
 inline auto operator-=(ordered_set<T, C1, A1> &a, const U &b) -> decltype(b.begin(), a) {
-    for (auto &el : b) a.erase(el);
+    for (auto &el : b) {
+        a.erase(el);
+    }
     return a;
 }
 template <class T, class C1, class A1, class U>
 inline auto operator&=(ordered_set<T, C1, A1> &a, const U &b) -> decltype(b.begin(), a) {
     for (auto it = a.begin(); it != a.end();) {
-        if (b.count(*it))
+        if (b.count(*it)) {
             ++it;
-        else
+        } else {
             it = a.erase(it);
+        }
     }
     return a;
 }
 
 template <class T, class C1, class A1, class U>
 inline auto contains(const ordered_set<T, C1, A1> &a, const U &b) -> decltype(b.begin(), true) {
-    for (auto &el : b)
-        if (!a.count(el)) return false;
+    for (auto &el : b) {
+        if (!a.count(el)) {
+            return false;
+        }
+    }
     return true;
 }
 template <class T, class C1, class A1, class U>
 inline auto intersects(const ordered_set<T, C1, A1> &a, const U &b) -> decltype(b.begin(), true) {
-    for (auto &el : b)
-        if (a.count(el)) return true;
+    for (auto &el : b) {
+        if (a.count(el)) {
+            return true;
+        }
+    }
     return false;
 }
 

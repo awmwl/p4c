@@ -27,8 +27,11 @@ limitations under the License.
 
 #if !HAVE_MEMRCHR
 static inline void *memrchr(const char *s, int c, size_t n) {
-    for (auto *p = s + n - 1; p >= s; --p)
-        if (*p == c) return const_cast<char *>(p);
+    for (auto *p = s + n - 1; p >= s; --p) {
+        if (*p == c) {
+            return const_cast<char *>(p);
+        }
+    }
     return nullptr;
 }
 #endif
@@ -74,18 +77,30 @@ struct StringRef {
     bool isNullOrEmpty() const { return p == 0 || len == 0; }
 
     int compare(const StringRef &a) const {
-        if (!p) return a.p ? -1 : 0;
-        if (!a.p) return 1;
+        if (!p) {
+            return a.p ? -1 : 0;
+        }
+        if (!a.p) {
+            return 1;
+        }
         int rv = memcmp(p, a.p, std::min(len, a.len));
-        if (!rv && len != a.len) rv = len < a.len ? -1 : 1;
+        if (!rv && len != a.len) {
+            rv = len < a.len ? -1 : 1;
+        }
         return rv;
     }
     int compare(const std::string &a) const { return compare(StringRef(a)); }
     int compare(const char *a) const {
-        if (!p) return a ? -1 : 0;
-        if (!a) return 1;
+        if (!p) {
+            return a ? -1 : 0;
+        }
+        if (!a) {
+            return 1;
+        }
         int rv = strncmp(p, a, len);
-        if (!rv && a[len]) rv = -1;
+        if (!rv && a[len]) {
+            rv = -1;
+        }
         return rv;
     }
     int compare(cstring a) const { return compare(a.c_str()); }
@@ -122,10 +137,11 @@ struct StringRef {
     }
     StringRef &operator++() {
         p++;
-        if (len)
+        if (len) {
             len--;
-        else
+        } else {
             p = 0;
+        }
         return *this;
     }  // NOLINT
     StringRef operator++(int) {
@@ -134,10 +150,11 @@ struct StringRef {
         return rv;
     }
     StringRef &operator--() {
-        if (len)
+        if (len) {
             len--;
-        else
+        } else {
             p = 0;
+        }
         return *this;
     }  // NOLINT
     StringRef operator--(int) {
@@ -184,16 +201,24 @@ struct StringRef {
         return p ? static_cast<const char *>(memrchr(p, ch, len)) : p;
     }
     const char *find(const char *set) const {
-        if (!p) return 0;
+        if (!p) {
+            return 0;
+        }
         size_t off = strcspn(p, set);
         return off >= len ? 0 : p + off;
     }
     const char *findstr(StringRef sub) {
-        if (sub.len < 1) return p;
+        if (sub.len < 1) {
+            return p;
+        }
         const char *s = begin(), *e = end();
         while (s < e && (s = static_cast<const char *>(memchr(s, *sub.p, e - s)))) {
-            if (sub.len > (size_t)(e - s)) return nullptr;
-            if (!memcmp(s, sub.p, sub.len)) return s;
+            if (sub.len > (size_t)(e - s)) {
+                return nullptr;
+            }
+            if (!memcmp(s, sub.p, sub.len)) {
+                return s;
+            }
             s++;
         }
         return nullptr;
@@ -205,8 +230,12 @@ struct StringRef {
         return (size_t)(s - p) <= len ? StringRef(s, p + len - s) : StringRef();
     }
     StringRef substr(size_t start, size_t length) const {
-        if (len <= start) return 0;
-        if (len <= length) return StringRef(p + start, len - start);
+        if (len <= start) {
+            return 0;
+        }
+        if (len <= length) {
+            return StringRef(p + start, len - start);
+        }
         return StringRef(p + start, length);
     }
     class Split;

@@ -34,16 +34,21 @@ class GlobalActionReplacements {
     const IR::P4Action *getReplacement(const IR::P4Action *action,
                                        const IR::P4Control *control) const {
         auto map = ::get(repl, control);
-        if (map == nullptr) return nullptr;
-        if (map->find(action) != map->end()) return (*map)[action];
+        if (map == nullptr) {
+            return nullptr;
+        }
+        if (map->find(action) != map->end()) {
+            return (*map)[action];
+        }
         return nullptr;
     }
     void addReplacement(const IR::P4Action *action, const IR::P4Control *control,
                         const IR::P4Action *replacement) {
         LOG1("Cloning global " << dbp(action) << " into " << dbp(replacement) << " for "
                                << dbp(control));
-        if (repl.find(control) == repl.end())
+        if (repl.find(control) == repl.end()) {
             repl[control] = new ordered_map<const IR::P4Action *, const IR::P4Action *>();
+        }
         (*repl[control])[action] = replacement;
     }
 };
@@ -92,10 +97,14 @@ class ActionReplacement {
     // For each action all replacements to insert
 
     const IR::P4Action *getActionUser(const IR::P4Action *action, const IR::Node *user) {
-        if (toInsert.find(action) == toInsert.end()) return nullptr;
+        if (toInsert.find(action) == toInsert.end()) {
+            return nullptr;
+        }
         auto map = toInsert[action];
         CHECK_NULL(map);
-        if (map->find(user) == map->end()) return nullptr;
+        if (map->find(user) == map->end()) {
+            return nullptr;
+        }
         return (*map)[user];
     }
     void createReplacement(const IR::P4Action *original, const IR::Node *user,

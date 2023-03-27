@@ -38,7 +38,9 @@ class DontcareArgs : public Transform {
     const IR::Node *postorder(IR::MethodCallExpression *expression) override;
     const IR::Node *postorder(IR::Function *function) override {
         IR::IndexedVector<IR::StatOrDecl> body;
-        for (auto d : toAdd) body.push_back(d);
+        for (auto d : toAdd) {
+            body.push_back(d);
+        }
         body.append(function->body->components);
         function->body = new IR::BlockStatement(function->body->srcInfo, body);
         toAdd.clear();

@@ -89,7 +89,9 @@ struct TopLevelCtxt {
         auto fileName = progName.findlast('/');
         // Handle the case when input file is in the current working directory.
         // fileName would be null in that case, hence progName should remain unchanged.
-        if (fileName) progName = fileName;
+        if (fileName) {
+            progName = fileName;
+        }
         auto fileext = progName.find(".");
         progName = progName.replace(fileext, "");
         progName = progName.trim("/\t\n\r");

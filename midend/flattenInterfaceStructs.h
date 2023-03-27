@@ -112,7 +112,9 @@ struct StructTypeReplacement : public IHasDbPrint {
         if (auto st = type->to<T>()) {
             std::function<bool(const IR::Annotation *)> selector =
                 [&policy](const IR::Annotation *annot) {
-                    if (!policy) return false;
+                    if (!policy) {
+                        return false;
+                    }
                     return policy->keep(annot);
                 };
             auto sannotations = st->annotations->where(selector);

@@ -118,7 +118,9 @@ class Vector : public VectorBase {
      *              appended.
      */
     void pushBackOrAppend(const IR::Node *item) {
-        if (item == nullptr) return;
+        if (item == nullptr) {
+            return;
+        }
         if (auto *itemAsVector = item->to<IR::Vector<T>>()) {
             append(*itemAsVector);
             return;
@@ -160,7 +162,9 @@ class Vector : public VectorBase {
         vec.push_back(a);
     }
     void check_null() const {
-        for (auto e : vec) CHECK_NULL(e);
+        for (auto e : vec) {
+            CHECK_NULL(e);
+        }
     }
 
     IRNODE_SUBCLASS(Vector)
@@ -182,13 +186,22 @@ class Vector : public VectorBase {
      * it work by using an instantiation with an (abstract) base class rather
      * than a concrete class, as most of those appear in .def files. */
     bool equiv(const Node &a_) const override {
-        if (static_cast<const Node *>(this) == &a_) return true;
-        if (typeid(*this) != typeid(a_)) return false;
+        if (static_cast<const Node *>(this) == &a_) {
+            return true;
+        }
+        if (typeid(*this) != typeid(a_)) {
+            return false;
+        }
         auto &a = static_cast<const Vector<T> &>(a_);
-        if (size() != a.size()) return false;
+        if (size() != a.size()) {
+            return false;
+        }
         auto it = a.begin();
-        for (auto *el : *this)
-            if (!el->equiv(**it++)) return false;
+        for (auto *el : *this) {
+            if (!el->equiv(**it++)) {
+                return false;
+            }
+        }
         return true;
     }
     cstring node_type_name() const override { return "Vector<" + T::static_type_name() + ">"; }
@@ -219,15 +232,22 @@ namespace GetImpl {
 
 template <class T, class U>
 const T *get(const IR::Vector<T> &vec, U name) {
-    for (auto el : vec)
-        if (el->name == name) return el;
+    for (auto el : vec) {
+        if (el->name == name) {
+            return el;
+        }
+    }
     return nullptr;
 }
 template <class T, class U>
 const T *get(const IR::Vector<T> *vec, U name) {
-    if (vec)
-        for (auto el : *vec)
-            if (el->name == name) return el;
+    if (vec) {
+        for (auto el : *vec) {
+            if (el->name == name) {
+                return el;
+            }
+        }
+    }
     return nullptr;
 }
 

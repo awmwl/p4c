@@ -85,7 +85,9 @@ class SpecializationMap {
     IR::Vector<IR::Node> *getSpecializations(const IR::Node *insertion) const;
     cstring getName(const IR::Node *insertion) const {
         auto s = ::get(specializations, insertion);
-        if (s == nullptr) return nullptr;
+        if (s == nullptr) {
+            return nullptr;
+        }
         return s->name;
     }
     void clear() { specializations.clear(); }

@@ -50,7 +50,9 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
     void collectExternFunction(P4RuntimeSymbolTableIface *symbols,
                                const P4::ExternFunction *externFunction) override {
         auto digest = getDigestCall(externFunction, refMap, typeMap, nullptr);
-        if (digest) symbols->add(SymbolType::P4RT_DIGEST(), digest->name);
+        if (digest) {
+            symbols->add(SymbolType::P4RT_DIGEST(), digest->name);
+        }
     }
 
     void addTableProperties(const P4RuntimeSymbolTableIface &symbols, p4configv1::P4Info *p4info,
@@ -71,7 +73,9 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
                            const P4::ExternFunction *externFunction) override {
         auto p4RtTypeInfo = p4info->mutable_type_info();
         auto digest = getDigestCall(externFunction, refMap, typeMap, p4RtTypeInfo);
-        if (digest) addDigest(symbols, p4info, *digest);
+        if (digest) {
+            addDigest(symbols, p4info, *digest);
+        }
     }
 
     /// @return serialization information for the digest() call represented by
@@ -79,8 +83,9 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
     static boost::optional<Digest> getDigestCall(const P4::ExternFunction *function,
                                                  ReferenceMap *refMap, P4::TypeMap *typeMap,
                                                  p4configv1::P4TypeInfo *p4RtTypeInfo) {
-        if (function->method->name != P4V1::V1Model::instance.digest_receiver.name)
+        if (function->method->name != P4V1::V1Model::instance.digest_receiver.name) {
             return boost::none;
+        }
 
         auto call = function->expr;
         BUG_CHECK(call->typeArguments->size() == 1, "%1%: Expected one type argument", call);
@@ -129,7 +134,9 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
     static bool getSupportsTimeout(const IR::P4Table *table) {
         auto timeout = table->properties->getProperty(
             P4V1::V1Model::instance.tableAttributes.supportTimeout.name);
-        if (timeout == nullptr) return false;
+        if (timeout == nullptr) {
+            return false;
+        }
         if (!timeout->value->is<IR::ExpressionValue>()) {
             ::error(ErrorType::ERR_UNEXPECTED,
                     "Unexpected value %1% for supports_timeout on table %2%", timeout, table);

@@ -30,7 +30,9 @@ namespace P4V1 {
 const IR::Type *ExpressionConverter::getFieldType(const IR::Type_StructLike *ht,
                                                   cstring fieldName) {
     auto field = ht->getField(fieldName);
-    if (field != nullptr) return field->type;
+    if (field != nullptr) {
+        return field->type;
+    }
     BUG("Cannot find field %1% in type %2%", fieldName, ht);
 }
 
@@ -49,8 +51,12 @@ const IR::Node *ExpressionConverter::postorder(IR::Mask *expression) {
         return cst;
     }
     auto range = Util::findOnes(value);
-    if (range.lowIndex == 0 && range.highIndex >= exp->type->width_bits() - 1U) return exp;
-    if (value != range.value) return new IR::BAnd(expression->srcInfo, exp, cst);
+    if (range.lowIndex == 0 && range.highIndex >= exp->type->width_bits() - 1U) {
+        return exp;
+    }
+    if (value != range.value) {
+        return new IR::BAnd(expression->srcInfo, exp, cst);
+    }
     return new IR::Slice(exp, new IR::Constant(expression->srcInfo, range.highIndex),
                          new IR::Constant(expression->srcInfo, range.lowIndex));
 }
@@ -59,11 +65,12 @@ const IR::Node *ExpressionConverter::postorder(IR::Constant *expression) {
     // The P4-14 front-end may have constants that overflow their declared type,
     // since the v1 type inference sets types to constants without any checks.
     // We fix this here.
-    if (expression->type->is<IR::Type::Boolean>())
+    if (expression->type->is<IR::Type::Boolean>()) {
         return new IR::BoolLiteral(expression->srcInfo, expression->type, expression->value != 0);
-    else
+    } else {
         return new IR::Constant(expression->srcInfo, expression->type, expression->value,
                                 expression->base);
+    }
 }
 
 const IR::Node *ExpressionConverter::postorder(IR::FieldList *fl) {
@@ -75,8 +82,9 @@ const IR::Node *ExpressionConverter::postorder(IR::FieldList *fl) {
 }
 
 const IR::Node *ExpressionConverter::postorder(IR::Member *field) {
-    if (auto ht = field->expr->type->to<IR::Type_StructLike>())
+    if (auto ht = field->expr->type->to<IR::Type_StructLike>()) {
         field->type = getFieldType(ht, field->member.name);
+    }
     return field;
 }
 
@@ -123,7 +131,9 @@ const IR::Node *ExpressionConverter::postorder(IR::Primitive *primitive) {
     } else {
         auto func = new IR::PathExpression(IR::ID(primitive->srcInfo, primitive->name));
         auto args = new IR::Vector<IR::Argument>;
-        for (auto *op : primitive->operands) args->push_back(new IR::Argument(op));
+        for (auto *op : primitive->operands) {
+            args->push_back(new IR::Argument(op));
+        }
         auto result = new IR::MethodCallExpression(primitive->srcInfo, func, args);
         return result;
     }
@@ -185,10 +195,11 @@ const IR::Node *ExpressionConverter::postorder(IR::ConcreteHeaderRef *nhr) {
     if (structure->isHeader(nhr)) {
         ref = structure->conversionContext->header->clone();
     } else {
-        if (nhr->ref->name == P4V1::V1Model::instance.standardMetadata.name)
+        if (nhr->ref->name == P4V1::V1Model::instance.standardMetadata.name) {
             return structure->conversionContext->standardMetadata->clone();
-        else
+        } else {
             ref = structure->conversionContext->userMetadata->clone();
+        }
     }
     auto result = new IR::Member(nhr->srcInfo, ref, nhr->ref->name);
     result->type = nhr->type;
@@ -200,7 +211,9 @@ const IR::Node *ExpressionConverter::postorder(IR::HeaderStackItemRef *ref) {
         auto nr = ref->index_->to<IR::PathExpression>();
         if (nr->path->name == "last" || nr->path->name == "next") {
             cstring name = nr->path->name == "last" ? IR::Type_Stack::last : IR::Type_Stack::next;
-            if (replaceNextWithLast && name == IR::Type_Stack::next) name = IR::Type_Stack::last;
+            if (replaceNextWithLast && name == IR::Type_Stack::next) {
+                name = IR::Type_Stack::last;
+            }
             auto result = new IR::Member(ref->srcInfo, ref->base_, name);
             result->type = ref->base_->type;
             return result;
@@ -239,15 +252,18 @@ const IR::Node *ExpressionConverter::postorder(IR::Equ *equ) {
     }
 
     // not a case we support
-    if (boolExpr == nullptr) return equ;
+    if (boolExpr == nullptr) {
+        return equ;
+    }
 
     auto val = constExpr->to<IR::Constant>()->asInt();
-    if (val == 1)
+    if (val == 1) {
         return boolExpr;  // == 1 return the boolean
-    else if (val == 0)
+    } else if (val == 0) {
         return new IR::LNot(equ->srcInfo, boolExpr);  // return the !boolean
-    else
+    } else {
         return new IR::BoolLiteral(equ->srcInfo, false);  // everything else is false
+    }
 }
 
 /// And the Neq
@@ -262,15 +278,18 @@ const IR::Node *ExpressionConverter::postorder(IR::Neq *neq) {
         constExpr = neq->left;
     }
 
-    if (boolExpr == nullptr) return neq;
+    if (boolExpr == nullptr) {
+        return neq;
+    }
 
     auto val = constExpr->to<IR::Constant>()->asInt();
-    if (val == 0)
+    if (val == 0) {
         return boolExpr;
-    else if (val == 1)
+    } else if (val == 1) {
         return new IR::LNot(neq->srcInfo, boolExpr);
-    else
+    } else {
         return new IR::BoolLiteral(neq->srcInfo, true);  // everything else is true
+    }
 }
 
 std::map<cstring, ExpressionConverter::funcType> *ExpressionConverter::cvtForType = nullptr;
@@ -282,7 +301,9 @@ void ExpressionConverter::addConverter(cstring type, ExpressionConverter::funcTy
 }
 
 ExpressionConverter::funcType ExpressionConverter::get(cstring type) {
-    if (cvtForType && cvtForType->count(type)) return cvtForType->at(type);
+    if (cvtForType && cvtForType->count(type)) {
+        return cvtForType->at(type);
+    }
     return nullptr;
 }
 
@@ -302,20 +323,23 @@ const IR::Node *StatementConverter::preorder(IR::Apply *apply) {
         bool otherLabels = false;
         for (auto a : apply->actions) {
             if (a.first == "hit") {
-                if (hit != nullptr)
+                if (hit != nullptr) {
                     ::error(ErrorType::ERR_DUPLICATE, "%1%: Duplicate 'hit' label", hit);
+                }
                 hit = a.second;
             } else if (a.first == "miss") {
-                if (miss != nullptr)
+                if (miss != nullptr) {
                     ::error(ErrorType::ERR_DUPLICATE, "%1%: Duplicate 'miss' label", hit);
+                }
                 miss = a.second;
             } else {
                 otherLabels = true;
             }
         }
 
-        if ((hit != nullptr || miss != nullptr) && otherLabels)
+        if ((hit != nullptr || miss != nullptr) && otherLabels) {
             ::error(ErrorType::ERR_INVALID, "%1%: Cannot mix 'hit'/'miss' and other labels", apply);
+        }
 
         if (!otherLabels) {
             StatementConverter conv(structure, renameMap);
@@ -346,7 +370,9 @@ const IR::Node *StatementConverter::preorder(IR::Apply *apply) {
                     auto path = apply->position.get<IR::Path>(act_name);
                     CHECK_NULL(path);
                     cstring full_name = table->name + '.' + act_name;
-                    if (renameMap->count(full_name)) act_name = renameMap->at(full_name);
+                    if (renameMap->count(full_name)) {
+                        act_name = renameMap->at(full_name);
+                    }
                     destination =
                         new IR::PathExpression(new IR::Path(path->srcInfo, IR::ID(act_name)));
                 }
@@ -382,15 +408,17 @@ const IR::Node *StatementConverter::preorder(IR::If *cond) {
     auto pred = apply_visitor(cond->pred)->to<IR::Expression>();
     BUG_CHECK(pred != nullptr, "Expected to get an expression when converting %1%", cond->pred);
     const IR::Statement *t, *f;
-    if (cond->ifTrue == nullptr)
+    if (cond->ifTrue == nullptr) {
         t = new IR::EmptyStatement();
-    else
+    } else {
         t = conv.convert(cond->ifTrue);
+    }
 
-    if (cond->ifFalse == nullptr)
+    if (cond->ifFalse == nullptr) {
         f = nullptr;
-    else
+    } else {
         f = conv.convert(cond->ifFalse);
+    }
 
     prune();
     auto result = new IR::IfStatement(cond->srcInfo, pred, t, f);
@@ -411,16 +439,18 @@ const IR::Type_Varbits *TypeConverter::postorder(IR::Type_Varbits *vbtype) {
     if (vbtype->size == 0) {
         if (auto type = findContext<IR::Type_StructLike>()) {
             if (auto max = type->getAnnotation("max_length")) {
-                if (max->expr.size() != 1 || !max->expr[0]->is<IR::Constant>())
+                if (max->expr.size() != 1 || !max->expr[0]->is<IR::Constant>()) {
                     error(ErrorType::ERR_UNSUPPORTED, "%s: max_length must be a constant", max);
-                else
+                } else {
                     vbtype->size =
                         8 * max->expr[0]->to<IR::Constant>()->asInt() - type->width_bits();
+                }
             }
         }
     }
-    if (vbtype->size == 0)
+    if (vbtype->size == 0) {
         error(ErrorType::ERR_NOT_FOUND, "%s: no max_length for * field size", vbtype);
+    }
     return vbtype;
 }
 
@@ -436,17 +466,20 @@ class ValidateLenExpr : public Inspector {
     ValidateLenExpr(const IR::Type_StructLike *headerType, const IR::StructField *varbitField)
         : varbitField(varbitField) {
         for (auto f : headerType->fields) {
-            if (f->name.name == varbitField->name.name) break;
+            if (f->name.name == varbitField->name.name) {
+                break;
+            }
             prior.emplace(f->name);
         }
     }
     void postorder(const IR::PathExpression *expression) override {
         BUG_CHECK(!expression->path->absolute, "%1%: absolute path", expression);
         cstring name = expression->path->name.name;
-        if (prior.find(name) == prior.end())
+        if (prior.find(name) == prior.end()) {
             ::error(ErrorType::ERR_INVALID,
                     "%1%: header length must depend only on fields prior to the varbit field %2%",
                     expression, varbitField);
+        }
     }
 };
 
@@ -454,7 +487,9 @@ class ValidateLenExpr : public Inspector {
 
 const IR::StructField *TypeConverter::postorder(IR::StructField *field) {
     auto type = findContext<IR::Type_StructLike>();
-    if (type == nullptr) return field;
+    if (type == nullptr) {
+        return field;
+    }
 
     // given a struct with length and max_length, the
     // varbit field size is max_length * 8 - struct_size
@@ -473,8 +508,9 @@ const IR::StructField *TypeConverter::postorder(IR::StructField *field) {
             }
         }
     }
-    if (auto vec = structure->listIndexes(type->name.name, field->name.name))
+    if (auto vec = structure->listIndexes(type->name.name, field->name.name)) {
         field->annotations = field->annotations->add(new IR::Annotation("field_list", *vec));
+    }
     return field;
 }
 
@@ -512,7 +548,9 @@ class FixupExtern : public Modifier {
         }
     }
     void postorder(IR::Method *meth) override {
-        if (meth->name == origname) meth->name = extname;
+        if (meth->name == origname) {
+            meth->name = extname;
+        }
     }
     // Convert extern methods that take a field_list_calculation to take a type param instead
     bool preorder(IR::Type_MethodBase *mtype) override {
@@ -531,7 +569,9 @@ class FixupExtern : public Modifier {
     }
     void postorder(IR::Type_MethodBase *mtype) override {
         BUG_CHECK(typeParams, "recursion failure");
-        if (*typeParams != *mtype->typeParameters) mtype->typeParameters = typeParams;
+        if (*typeParams != *mtype->typeParameters) {
+            mtype->typeParameters = typeParams;
+        }
         typeParams = nullptr;
     }
 
@@ -543,8 +583,9 @@ class FixupExtern : public Modifier {
 const IR::Type_Extern *ExternConverter::convertExternType(ProgramStructure *structure,
                                                           const IR::Type_Extern *ext,
                                                           cstring name) {
-    if (!ext->attributes.empty())
+    if (!ext->attributes.empty()) {
         warning(ErrorType::WARN_UNSUPPORTED, "%s: P4_14 extern type not fully supported", ext);
+    }
     return ext->apply(FixupExtern(structure, name))->to<IR::Type_Extern>();
 }
 
@@ -554,9 +595,12 @@ const IR::Declaration_Instance *ExternConverter::convertExternInstance(
     auto *rv = ext->clone();
     auto *et = rv->type->to<IR::Type_Extern>();
     BUG_CHECK(et, "Extern %s is not extern type, but %s", ext, ext->type);
-    if (!ext->properties.empty())
+    if (!ext->properties.empty()) {
         warning(ErrorType::WARN_UNSUPPORTED, "%s: P4_14 extern not fully supported", ext);
-    if (structure->extern_remap.count(et)) et = structure->extern_remap.at(et);
+    }
+    if (structure->extern_remap.count(et)) {
+        et = structure->extern_remap.at(et);
+    }
     rv->name = name;
     rv->type = new IR::Type_Name(new IR::Path(structure->extern_types.get(et)));
     return rv->apply(TypeConverter(structure))->to<IR::Declaration_Instance>();
@@ -569,8 +613,9 @@ const IR::Statement *ExternConverter::convertExternCall(ProgramStructure *struct
     auto extref = new IR::PathExpression(structure->externs.get(ext));
     auto method = new IR::Member(prim->srcInfo, extref, prim->name);
     auto args = new IR::Vector<IR::Argument>();
-    for (unsigned i = 1; i < prim->operands.size(); ++i)
+    for (unsigned i = 1; i < prim->operands.size(); ++i) {
         args->push_back(new IR::Argument(conv.convert(prim->operands.at(i))));
+    }
     auto mc = new IR::MethodCallExpression(prim->srcInfo, method, args);
     return new IR::MethodCallStatement(prim->srcInfo, mc);
 }
@@ -585,7 +630,9 @@ void ExternConverter::addConverter(cstring type, ExternConverter *cvt) {
 
 ExternConverter *ExternConverter::get(cstring type) {
     static ExternConverter default_cvt;
-    if (cvtForType && cvtForType->count(type)) return cvtForType->at(type);
+    if (cvtForType && cvtForType->count(type)) {
+        return cvtForType->at(type);
+    }
     return &default_cvt;
 }
 
@@ -598,9 +645,12 @@ PrimitiveConverter::PrimitiveConverter(cstring name, int prio) : prim_name(name)
     all_converters = &converters;
     auto &vec = converters[name];
     auto it = vec.begin();
-    while (it != vec.end() && (*it)->priority > prio) ++it;
-    if (it != vec.end() && (*it)->priority == prio)
+    while (it != vec.end() && (*it)->priority > prio) {
+        ++it;
+    }
+    if (it != vec.end() && (*it)->priority == prio) {
         BUG("duplicate primitive converter for %s at priority %d", name, prio);
+    }
     vec.insert(it, this);
 }
 
@@ -611,9 +661,13 @@ PrimitiveConverter::~PrimitiveConverter() {
 
 const IR::Statement *PrimitiveConverter::cvtPrimitive(ProgramStructure *structure,
                                                       const IR::Primitive *primitive) {
-    if (all_converters->count(primitive->name))
-        for (auto cvt : all_converters->at(primitive->name))
-            if (auto *rv = cvt->convert(structure, primitive)) return rv;
+    if (all_converters->count(primitive->name)) {
+        for (auto cvt : all_converters->at(primitive->name)) {
+            if (auto *rv = cvt->convert(structure, primitive)) {
+                return rv;
+            }
+        }
+    }
     return nullptr;
 }
 
@@ -621,7 +675,9 @@ safe_vector<const IR::Expression *> PrimitiveConverter::convertArgs(ProgramStruc
                                                                     const IR::Primitive *prim) {
     ExpressionConverter conv(structure);
     safe_vector<const IR::Expression *> rv;
-    for (auto arg : prim->operands) rv.push_back(conv.convert(arg));
+    for (auto arg : prim->operands) {
+        rv.push_back(conv.convert(arg));
+    }
     return rv;
 }
 
@@ -636,7 +692,9 @@ ConversionContext *(*Converter::createConversionContext)() = defaultCreateConver
 namespace {
 class RemoveLengthAnnotations : public Transform {
     const IR::Node *postorder(IR::Annotation *annotation) override {
-        if (annotation->name == "length") return nullptr;
+        if (annotation->name == "length") {
+            return nullptr;
+        }
         return annotation;
     }
 };
@@ -669,7 +727,9 @@ Converter::Converter() {
 }
 
 Visitor::profile_t Converter::init_apply(const IR::Node *node) {
-    if (!node->is<IR::V1Program>()) BUG("Converter only accepts IR::Globals, not %1%", node);
+    if (!node->is<IR::V1Program>()) {
+        BUG("Converter only accepts IR::Globals, not %1%", node);
+    }
     return PassManager::init_apply(node);
 }
 

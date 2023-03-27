@@ -91,13 +91,18 @@ class ValueMap final : public IHasDbPrint {
     std::map<const IR::IDeclaration *, SymbolicValue *> map;
     ValueMap *clone() const {
         auto result = new ValueMap();
-        for (auto v : map) result->map.emplace(v.first, v.second->clone());
+        for (auto v : map) {
+            result->map.emplace(v.first, v.second->clone());
+        }
         return result;
     }
     ValueMap *filter(std::function<bool(const IR::IDeclaration *, const SymbolicValue *)> filter) {
         auto result = new ValueMap();
-        for (auto v : map)
-            if (filter(v.first, v.second)) result->map.emplace(v.first, v.second);
+        for (auto v : map) {
+            if (filter(v.first, v.second)) {
+                result->map.emplace(v.first, v.second);
+            }
+        }
         return result;
     }
     void set(const IR::IDeclaration *left, SymbolicValue *right) {
@@ -113,7 +118,9 @@ class ValueMap final : public IHasDbPrint {
     void dbprint(std::ostream &out) const {
         bool first = true;
         for (auto f : map) {
-            if (!first) out << std::endl;
+            if (!first) {
+                out << std::endl;
+            }
             out << f.first << "=>" << f.second;
             first = false;
         }
@@ -133,7 +140,9 @@ class ValueMap final : public IHasDbPrint {
         for (auto v : map) {
             auto ov = other->get(v.first);
             CHECK_NULL(ov);
-            if (!v.second->equals(ov)) return false;
+            if (!v.second->equals(ov)) {
+                return false;
+            }
         }
         return true;
     }
@@ -254,21 +263,24 @@ class ScalarValue : public SymbolicValue {
     bool isKnown() const { return state == ValueState::Constant; }
     bool isScalar() const override { return true; }
     void dbprint(std::ostream &out) const override {
-        if (isUninitialized())
+        if (isUninitialized()) {
             out << "uninitialized";
-        else if (isUnknown())
+        } else if (isUnknown()) {
             out << "unknown";
+        }
     }
     static ValueState init(bool uninit) {
         return uninit ? ValueState::Uninitialized : ValueState::NotConstant;
     }
     void setAllUnknown() override { state = ScalarValue::ValueState::NotConstant; }
     ValueState mergeState(ValueState other) const {
-        if (state == ValueState::Uninitialized && other == ValueState::Uninitialized)
+        if (state == ValueState::Uninitialized && other == ValueState::Uninitialized) {
             return ValueState::Uninitialized;
-        if (state == ValueState::Constant && other == ValueState::Constant)
+        }
+        if (state == ValueState::Constant && other == ValueState::Constant) {
             // This may be wrong.
             return ValueState::Constant;
+        }
         return ValueState::NotConstant;
     }
     bool hasUninitializedParts() const override { return state == ValueState::Uninitialized; }
@@ -309,7 +321,9 @@ class SymbolicBool final : public ScalarValue {
         : ScalarValue(ScalarValue::ValueState::Constant, IR::Type_Boolean::get()), value(value) {}
     void dbprint(std::ostream &out) const override {
         ScalarValue::dbprint(out);
-        if (!isKnown()) return;
+        if (!isKnown()) {
+            return;
+        }
         out << (value ? "true" : "false");
     }
     SymbolicValue *clone() const override {
@@ -337,7 +351,9 @@ class SymbolicInteger final : public ScalarValue {
     SymbolicInteger(const SymbolicInteger &other) = default;
     void dbprint(std::ostream &out) const override {
         ScalarValue::dbprint(out);
-        if (isKnown()) out << constant->value;
+        if (isKnown()) {
+            out << constant->value;
+        }
     }
     SymbolicValue *clone() const override {
         auto result = new SymbolicInteger(type->to<IR::Type_Bits>());
@@ -380,7 +396,9 @@ class SymbolicEnum final : public ScalarValue {
     SymbolicEnum(const SymbolicEnum &other) = default;
     void dbprint(std::ostream &out) const override {
         ScalarValue::dbprint(out);
-        if (isKnown()) out << value;
+        if (isKnown()) {
+            out << value;
+        }
     }
     SymbolicValue *clone() const override { return new SymbolicEnum(state, type, value); }
     void assign(const SymbolicValue *other) override;
@@ -460,8 +478,9 @@ class SymbolicArray final : public SymbolicValue {
     SymbolicArray(const IR::Type_Stack *stack, bool uninitialized,
                   const SymbolicValueFactory *factory);
     SymbolicValue *get(const IR::Node *node, size_t index) const {
-        if (index >= values.size())
+        if (index >= values.size()) {
             return new SymbolicException(node, P4::StandardExceptions::StackOutOfBounds);
+        }
         return values.at(index);
     }
     void shift(int amount);  // negative = shift left
@@ -516,7 +535,9 @@ class SymbolicTuple final : public SymbolicValue {
     void dbprint(std::ostream &out) const override {
         bool first = true;
         for (auto f : values) {
-            if (!first) out << ", ";
+            if (!first) {
+                out << ", ";
+            }
             out << f;
             first = false;
         }

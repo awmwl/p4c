@@ -43,7 +43,9 @@ class SharedActionSelectorCheck : public Inspector {
     P4::TypeMap *typeMap;
 
     static bool checkSameKeyExpr(const IR::Expression *expr0, const IR::Expression *expr1) {
-        if (expr0->node_type_name() != expr1->node_type_name()) return false;
+        if (expr0->node_type_name() != expr1->node_type_name()) {
+            return false;
+        }
         if (auto pe0 = expr0->to<IR::PathExpression>()) {
             auto pe1 = expr1->to<IR::PathExpression>();
             return pe0->path->name == pe1->path->name && pe0->path->absolute == pe1->path->absolute;
@@ -69,14 +71,18 @@ class SharedActionSelectorCheck : public Inspector {
 
     bool preorder(const IR::P4Table *table) override {
         auto implementation = table->properties->getProperty("implementation");
-        if (implementation == nullptr) return false;
+        if (implementation == nullptr) {
+            return false;
+        }
         if (!implementation->value->is<IR::ExpressionValue>()) {
             ::error(ErrorType::ERR_EXPECTED, "%1%: expected expression for property",
                     implementation);
             return false;
         }
         auto propv = implementation->value->to<IR::ExpressionValue>();
-        if (!propv->expression->is<IR::PathExpression>()) return false;
+        if (!propv->expression->is<IR::PathExpression>()) {
+            return false;
+        }
         auto pathe = propv->expression->to<IR::PathExpression>();
         auto decl = refMap->getDeclaration(pathe->path, true);
         if (!decl->is<IR::Declaration_Instance>()) {
@@ -90,14 +96,18 @@ class SharedActionSelectorCheck : public Inspector {
         }
         auto type_extern_name = dcltype->to<IR::Type_Extern>()->name;
         auto actionSelectorName = Standard::ActionSelectorTraits<arch>::typeName();
-        if (type_extern_name != actionSelectorName) return false;
+        if (type_extern_name != actionSelectorName) {
+            return false;
+        }
 
         auto key = table->getKey();
         SelectorInput input;
         for (auto ke : key->keyElements) {
             auto mt = refMap->getDeclaration(ke->matchType->path, true)->to<IR::Declaration_ID>();
             BUG_CHECK(mt != nullptr, "%1%: could not find declaration", ke->matchType);
-            if (mt->name.name != BMV2::MatchImplementation::selectorMatchTypeName) continue;
+            if (mt->name.name != BMV2::MatchImplementation::selectorMatchTypeName) {
+                continue;
+            }
             input.push_back(ke->expression);
         }
         auto decl_instance = decl->to<IR::Declaration_Instance>();
@@ -108,7 +118,9 @@ class SharedActionSelectorCheck : public Inspector {
         }
         // returns true if inputs are the same, false otherwise
         auto cmp_inputs = [](const SelectorInput &i1, const SelectorInput &i2) {
-            if (i1.size() != i2.size()) return false;
+            if (i1.size() != i2.size()) {
+                return false;
+            }
             return std::equal(i1.begin(), i1.end(), i2.begin(), checkSameKeyExpr);
         };
 

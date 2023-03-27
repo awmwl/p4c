@@ -37,10 +37,11 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
     IR::IndexedVector<IR::Declaration> action_data_tables;
     for (auto kv : structure->pipelines) {
         cstring direction = "";
-        if (kv.first == "Ingress")
+        if (kv.first == "Ingress") {
             direction = "ingress";
-        else if (kv.first == "Egress")
+        } else if (kv.first == "Egress") {
             direction = "egress";
+        }
         auto control = kv.second->to<IR::P4Control>();
         for (auto d : control->controlLocals) {
             if (auto tbl = d->to<IR::P4Table>()) {
@@ -51,7 +52,9 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
                 tblAttr.tableHandle = getHandleId(tblAttr.externalName);
                 auto size = tbl->getSizeProperty();
                 tblAttr.size = dpdk_default_table_size;
-                if (size) tblAttr.size = size->asUnsigned();
+                if (size) {
+                    tblAttr.size = size->asUnsigned();
+                }
                 auto hidden = tbl->annotations->getSingle(IR::Annotation::hiddenAnnotation);
                 auto selector = tbl->properties->getProperty("selector");
                 tblAttr.is_add_on_miss = false;
@@ -97,12 +100,13 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
                     tblAttr.tableKeys = ::get(structure->key_map, kv.second->name.originalName +
                                                                       "_" + tbl->name.originalName);
                 }
-                if (!hidden)
+                if (!hidden) {
                     tables.push_back(d);
-                else if (!selector)
+                } else if (!selector) {
                     action_data_tables.push_back(d);
-                else
+                } else {
                     selector_tables.push_back(d);
+                }
                 tableAttrmap.emplace(tbl->name.originalName, tblAttr);
             }
         }
@@ -157,8 +161,12 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
     }
 
     // Keep the compiler generated (hidden) tables at the end
-    for (auto d : selector_tables) tables.push_back(d);
-    for (auto d : action_data_tables) tables.push_back(d);
+    for (auto d : selector_tables) {
+        tables.push_back(d);
+    }
+    for (auto d : action_data_tables) {
+        tables.push_back(d);
+    }
 }
 
 // This functions insert a single key field in the match keys array
@@ -220,7 +228,9 @@ void DpdkContextGenerator::collectHandleId() {
 
 size_t DpdkContextGenerator::getHandleId(cstring name) {
     size_t id = 0;
-    if (context_handle_map.count(name)) id = context_handle_map[name];
+    if (context_handle_map.count(name)) {
+        id = context_handle_map[name];
+    }
     BUG_CHECK(id != 0, "unable to find id for %1%", name);
     return id;
 }
@@ -232,7 +242,9 @@ void DpdkContextGenerator::setActionAttributes(const IR::P4Table *tbl) {
         auto action_decl = refmap->getDeclaration(act->getPath())->to<IR::P4Action>();
         bool has_constant_default_action = false;
         auto prop = tbl->properties->getProperty(IR::TableProperties::defaultActionPropertyName);
-        if (prop && prop->isConstant) has_constant_default_action = true;
+        if (prop && prop->isConstant) {
+            has_constant_default_action = true;
+        }
         bool is_const_default_action = false;
         bool can_be_hit_action = true;
         bool is_compiler_added_action = false;
@@ -276,10 +288,11 @@ void DpdkContextGenerator::setActionAttributes(const IR::P4Table *tbl) {
         /* DPDK target takes a structure as parameter for Actions. So, all action
            parameters are collected into a structure by an earlier pass. */
         auto params = ::get(structure->args_struct_map, act->getPath()->name.name + "_arg_t");
-        if (params)
+        if (params) {
             attr.params = params->clone();
-        else
+        } else {
             attr.params = nullptr;
+        }
 
         attr.constant_default_action = is_const_default_action;
         attr.is_compiler_added_action = is_compiler_added_action;
@@ -295,7 +308,9 @@ void DpdkContextGenerator::setActionAttributes(const IR::P4Table *tbl) {
 // for the specified table.
 void DpdkContextGenerator::setDefaultActionHandle(const IR::P4Table *table) {
     cstring default_action_name = "";
-    if (table->getDefaultAction()) default_action_name = toStr(table->getDefaultAction());
+    if (table->getDefaultAction()) {
+        default_action_name = toStr(table->getDefaultAction());
+    }
 
     auto tableAttr = ::get(tableAttrmap, table->name.originalName);
     for (auto action : table->getActionList()->actionList) {

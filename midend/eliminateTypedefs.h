@@ -21,7 +21,9 @@ class DoReplaceTypedef final : public Transform {
 class EliminateTypedef final : public PassManager {
  public:
     EliminateTypedef(ReferenceMap *refMap, TypeMap *typeMap, TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoReplaceTypedef(refMap));
         passes.push_back(new TypeChecking(refMap, typeMap, true));

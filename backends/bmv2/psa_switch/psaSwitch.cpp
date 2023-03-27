@@ -60,9 +60,10 @@ void PsaCodeGenerator::createStructLike(ConversionContext *ctxt, const IR::Type_
             field->append(f->name.name);
             max_length += type->size;
             field->append("*");
-            if (varbitFound)
+            if (varbitFound) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
                         "%1%: headers with multiple varbit fields are not supported", st);
+            }
             varbitFound = true;
         } else if (ftype->is<IR::Type_Error>()) {
             field->append(f->name.name);
@@ -97,8 +98,12 @@ void PsaCodeGenerator::createStructLike(ConversionContext *ctxt, const IR::Type_
 }
 
 void PsaCodeGenerator::createTypes(ConversionContext *ctxt) {
-    for (auto kv : header_types) createStructLike(ctxt, kv.second);
-    for (auto kv : metadata_types) createStructLike(ctxt, kv.second);
+    for (auto kv : header_types) {
+        createStructLike(ctxt, kv.second);
+    }
+    for (auto kv : metadata_types) {
+        createStructLike(ctxt, kv.second);
+    }
     for (auto kv : header_union_types) {
         auto st = kv.second;
         auto fields = new Util::JsonArray();
@@ -253,13 +258,16 @@ void PsaSwitchBackend::convert(const IR::ToplevelBlock *tlb) {
 
     auto parsePsaArch = new ParsePsaArchitecture(&structure);
     auto main = tlb->getMain();
-    if (!main) return;
+    if (!main) {
+        return;
+    }
 
-    if (main->type->name != "PSA_Switch")
+    if (main->type->name != "PSA_Switch") {
         ::warning(ErrorType::WARN_INVALID,
                   "%1%: the main package should be called PSA_Switch"
                   "; are you using the wrong architecture?",
                   main->type->name);
+    }
 
     main->apply(*parsePsaArch);
 
@@ -297,9 +305,13 @@ void PsaSwitchBackend::convert(const IR::ToplevelBlock *tlb) {
     toplevel->apply(*new BMV2::BuildResourceMap(&structure.resourceMap));
 
     main = toplevel->getMain();
-    if (!main) return;  // no main
+    if (!main) {
+        return;  // no main
+    }
     main->apply(*parsePsaArch);
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
     program = toplevel->getProgram();
 
     PassManager toJson = {new DiscoverStructure(&structure),
@@ -353,11 +365,11 @@ Util::IJson *ExternConverter_Hash::convertExternObject(UNUSED ConversionContext 
                                                        UNUSED const IR::StatOrDecl *s,
                                                        UNUSED const bool &emitExterns) {
     Util::JsonObject *primitive = nullptr;
-    if (mc->arguments->size() == 2)
+    if (mc->arguments->size() == 2) {
         primitive = mkPrimitive("_" + em->originalExternType->name + "_" + em->method->name);
-    else if (mc->arguments->size() == 4)
+    } else if (mc->arguments->size() == 4) {
         primitive = mkPrimitive("_" + em->originalExternType->name + "_" + "get_hash_mod");
-    else {
+    } else {
         modelError("Expected 1 or 3 arguments for %1%", mc);
         return nullptr;
     }
@@ -409,14 +421,15 @@ Util::IJson *ExternConverter_InternetChecksum::convertExternObject(
         if (mc->arguments->size() != 1) {
             modelError("Expected 1 argument for %1%", mc);
             return nullptr;
-        } else
+        } else {
             primitive = mkPrimitive("_" + em->originalExternType->name + "_" + em->method->name);
+        }
     } else if (em->method->name == "get") {
-        if (mc->arguments->size() == 1)
+        if (mc->arguments->size() == 1) {
             primitive = mkPrimitive("_" + em->originalExternType->name + "_" + em->method->name);
-        else if (mc->arguments->size() == 2)
+        } else if (mc->arguments->size() == 2) {
             primitive = mkPrimitive("_" + em->originalExternType->name + "_" + "get_verify");
-        else {
+        } else {
             modelError("Unexpected number of arguments for %1%", mc);
             return nullptr;
         }
@@ -424,8 +437,9 @@ Util::IJson *ExternConverter_InternetChecksum::convertExternObject(
         if (mc->arguments->size() != 0) {
             modelError("Expected 0 argument for %1%", mc);
             return nullptr;
-        } else
+        } else {
             primitive = mkPrimitive("_" + em->originalExternType->name + "_" + em->method->name);
+        }
     }
     auto parameters = mkParameters(primitive);
     primitive->emplace_non_null("source_info", s->sourceInfoJsonObj());
@@ -867,12 +881,13 @@ void ExternConverter_Meter::convertExternInstance(UNUSED ConversionContext *ctxt
     }
     cstring mkind_name = mkind->to<IR::Declaration_ID>()->name;
     cstring type = "?";
-    if (mkind_name == "PACKETS")
+    if (mkind_name == "PACKETS") {
         type = "packets";
-    else if (mkind_name == "BYTES")
+    } else if (mkind_name == "BYTES") {
         type = "bytes";
-    else
+    } else {
         ::error(ErrorType::ERR_UNEXPECTED, "%1%: unexpected meter type", mkind->getNode());
+    }
     auto k = new Util::JsonObject();
     k->emplace("name", "type");
     k->emplace("type", "string");
@@ -942,8 +957,9 @@ void ExternConverter_Register::convertExternInstance(UNUSED ConversionContext *c
         modelError("%1%: expected a constant", sz->getNode());
         return;
     }
-    if (sz->to<IR::Constant>()->value == 0)
+    if (sz->to<IR::Constant>()->value == 0) {
         error(ErrorType::ERR_UNSUPPORTED, "%1%: direct registers are not supported", inst);
+    }
     jreg->emplace("size", sz->to<IR::Constant>()->value);
     if (!eb->instanceType->is<IR::Type_SpecializedCanonical>()) {
         modelError("%1%: Expected a generic specialized type", eb->instanceType);
@@ -983,7 +999,9 @@ void ExternConverter_ActionProfile::convertExternInstance(UNUSED ConversionConte
     cstring name = inst->controlPlaneName();
     // Might call this multiple times if the selector/profile is used more than
     // once in a pipeline, so only add it to the action_profiles once
-    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) return;
+    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) {
+        return;
+    }
     auto action_profile = new Util::JsonObject();
     action_profile->emplace("name", name);
     action_profile->emplace("id", nextId("action_profiles"));
@@ -1009,7 +1027,9 @@ void ExternConverter_ActionSelector::convertExternInstance(UNUSED ConversionCont
     cstring name = inst->controlPlaneName();
     // Might call this multiple times if the selector/profile is used more than
     // once in a pipeline, so only add it to the action_profiles once
-    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) return;
+    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) {
+        return;
+    }
     auto action_profile = new Util::JsonObject();
     action_profile->emplace("name", name);
     action_profile->emplace("id", nextId("action_profiles"));

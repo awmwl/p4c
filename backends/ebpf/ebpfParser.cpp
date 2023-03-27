@@ -122,7 +122,9 @@ bool StateTranslationVisitor::preorder(const IR::AssignmentStatement *statement)
         auto mi = P4::MethodInstance::resolve(mce, state->parser->program->refMap,
                                               state->parser->program->typeMap);
         auto extMethod = mi->to<P4::ExternMethod>();
-        if (extMethod == nullptr) BUG("Unhandled method %1%", mce);
+        if (extMethod == nullptr) {
+            BUG("Unhandled method %1%", mce);
+        }
 
         auto decl = extMethod->object;
         if (decl == state->parser->packet) {
@@ -139,7 +141,9 @@ bool StateTranslationVisitor::preorder(const IR::AssignmentStatement *statement)
 }
 
 bool StateTranslationVisitor::preorder(const IR::ParserState *parserState) {
-    if (parserState->isBuiltin()) return false;
+    if (parserState->isBuiltin()) {
+        return false;
+    }
 
     builder->emitIndent();
     builder->append(parserState->name.name);
@@ -162,8 +166,9 @@ bool StateTranslationVisitor::preorder(const IR::ParserState *parserState) {
         visit(parserState->selectExpression);
     } else {
         // must be a PathExpression which is a state name
-        if (!parserState->selectExpression->is<IR::PathExpression>())
+        if (!parserState->selectExpression->is<IR::PathExpression>()) {
             BUG("Expected a PathExpression, got a %1%", parserState->selectExpression);
+        }
         builder->emitIndent();
         builder->append(" goto ");
         visit(parserState->selectExpression);
@@ -197,14 +202,17 @@ bool StateTranslationVisitor::preorder(const IR::SelectExpression *expression) {
             cstring pvsName = e->keyset->to<IR::PathExpression>()->path->name.name;
             cstring pvsKeyVarName = state->parser->program->refMap->newName(pvsName + "_key");
             auto pvs = state->parser->getValueSet(pvsName);
-            if (pvs != nullptr)
+            if (pvs != nullptr) {
                 pvs->emitKeyInitializer(builder, expression, pvsKeyVarName);
-            else
+            } else {
                 ::error(ErrorType::ERR_UNKNOWN, "%1%: expected a value_set instance", e->keyset);
+            }
         }
     }
 
-    for (auto e : expression->selectCases) visit(e);
+    for (auto e : expression->selectCases) {
+        visit(e);
+    }
 
     builder->emitIndent();
     builder->appendFormat("else goto %s;", IR::ParserState::reject.c_str());
@@ -221,7 +229,9 @@ bool StateTranslationVisitor::preorder(const IR::SelectCase *selectCase) {
         builder->append("if (");
         cstring pvsName = pe->path->name.name;
         auto pvs = state->parser->getValueSet(pvsName);
-        if (pvs) pvs->emitLookup(builder);
+        if (pvs) {
+            pvs->emitLookup(builder);
+        }
         builder->append(" != NULL)");
     } else if (auto mask = selectCase->keyset->to<IR::Mask>()) {
         if (scalar) {
@@ -293,7 +303,9 @@ void StateTranslationVisitor::compileExtractField(const IR::Expression *expr,
             loadSize = 32;
         } else {
             // TODO: this is wrong, since a 60-bit unaligned read may require 9 words.
-            if (wordsToRead > 64) BUG("Unexpected width %d", widthToExtract);
+            if (wordsToRead > 64) {
+                BUG("Unexpected width %d", widthToExtract);
+            }
             helper = "load_dword";
             loadSize = 64;
         }
@@ -305,7 +317,9 @@ void StateTranslationVisitor::compileExtractField(const IR::Expression *expr,
         type->emit(builder);
         builder->appendFormat(")((%s(%s, BYTES(%s))", helper, program->packetStartVar.c_str(),
                               program->offsetVar.c_str());
-        if (shift != 0) builder->appendFormat(" >> %d", shift);
+        if (shift != 0) {
+            builder->appendFormat(" >> %d", shift);
+        }
         builder->append(")");
 
         if (widthToExtract != loadSize) {
@@ -336,16 +350,18 @@ void StateTranslationVisitor::compileExtractField(const IR::Expression *expr,
 
         // wide values; read all bytes one by one.
         unsigned shift;
-        if (alignment == 0)
+        if (alignment == 0) {
             shift = 0;
-        else
+        } else {
             shift = 8 - alignment;
+        }
 
         const char *helper;
-        if (shift == 0)
+        if (shift == 0) {
             helper = "load_byte";
-        else
+        } else {
             helper = "load_half";
+        }
         auto bt = EBPFTypeFactory::instance->create(IR::Type_Bits::get(8));
         unsigned bytes = ROUNDUP(widthToExtract, 8);
         for (unsigned i = 0; i < bytes; i++) {
@@ -431,7 +447,9 @@ void StateTranslationVisitor::compileExtract(const IR::Expression *destination) 
             unsigned readWordSize = scalarType->alignment() * 8;
             unsigned unaligned = scalarType->widthInBits() % readWordSize;
             unsigned padding = readWordSize - unaligned;
-            if (padding == readWordSize) padding = 0;
+            if (padding == readWordSize) {
+                padding = 0;
+            }
             if (scalarType->widthInBits() + padding >= curr_padding) {
                 curr_padding = padding;
             }
@@ -522,13 +540,17 @@ void StateTranslationVisitor::processMethod(const P4::ExternMethod *method) {
 }
 
 bool StateTranslationVisitor::preorder(const IR::MethodCallExpression *expression) {
-    if (commentDescriptionDepth == 0) builder->append("/* ");
+    if (commentDescriptionDepth == 0) {
+        builder->append("/* ");
+    }
     commentDescriptionDepth++;
     visit(expression->method);
     builder->append("(");
     bool first = true;
     for (auto a : *expression->arguments) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         visit(a);
     }
@@ -540,7 +562,9 @@ bool StateTranslationVisitor::preorder(const IR::MethodCallExpression *expressio
     commentDescriptionDepth--;
 
     // do not process extern when comment is generated
-    if (commentDescriptionDepth != 0) return false;
+    if (commentDescriptionDepth != 0) {
+        return false;
+    }
 
     auto mi = P4::MethodInstance::resolve(expression, state->parser->program->refMap,
                                           state->parser->program->typeMap);
@@ -621,7 +645,9 @@ void EBPFParser::emitDeclaration(CodeBuilder *builder, const IR::Declaration *de
 }
 
 void EBPFParser::emit(CodeBuilder *builder) {
-    for (auto l : parserBlock->container->parserLocals) emitDeclaration(builder, l);
+    for (auto l : parserBlock->container->parserLocals) {
+        emitDeclaration(builder, l);
+    }
 
     builder->emitIndent();
     builder->appendFormat("goto %s;", IR::ParserState::start.c_str());
@@ -667,7 +693,9 @@ bool EBPFParser::build() {
     }
 
     auto ht = typeMap->getType(headers);
-    if (ht == nullptr) return false;
+    if (ht == nullptr) {
+        return false;
+    }
     headerType = EBPFTypeFactory::instance->create(ht);
 
     for (auto decl : parserBlock->container->parserLocals) {

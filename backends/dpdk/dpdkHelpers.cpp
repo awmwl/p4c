@@ -85,7 +85,9 @@ void ConvertStatementToDpdk::process_relation_operation(const IR::Expression *ds
 */
 void ConvertStatementToDpdk::process_logical_operation(const IR::Expression *dst,
                                                        const IR::Operation_Binary *op) {
-    if (!op->is<IR::LOr>() && !op->is<IR::LAnd>()) return;
+    if (!op->is<IR::LOr>() && !op->is<IR::LAnd>()) {
+        return;
+    }
     auto true_label = refmap->newName("label_true");
     auto false_label = refmap->newName("label_false");
     auto end_label = refmap->newName("label_end");
@@ -246,14 +248,15 @@ bool ConvertStatementToDpdk::preorder(const IR::AssignmentStatement *a) {
                 auto hash_alg = declArgs->at(0)->expression;
                 unsigned hashAlgValue = CRC1;
                 cstring hashInstr = "hash";
-                if (hash_alg->is<IR::Constant>())
+                if (hash_alg->is<IR::Constant>()) {
                     hashAlgValue = hash_alg->to<IR::Constant>()->asUnsigned();
+                }
                 cstring hashAlgName = "crc32";
-                if (hashAlgValue == JHASH0 || hashAlgValue == JHASH5)
+                if (hashAlgValue == JHASH0 || hashAlgValue == JHASH5) {
                     hashAlgName = "jhash";
-                else if (hashAlgValue >= CRC1 && hashAlgValue <= CRC4)
+                } else if (hashAlgValue >= CRC1 && hashAlgValue <= CRC4) {
                     hashAlgName = "crc32";
-                else if (hashAlgValue == TOEPLITZ) {
+                } else if (hashAlgValue == TOEPLITZ) {
                     hashAlgName = e->object->getName().name;
                     hashInstr = "rss";
                 }
@@ -286,9 +289,9 @@ bool ConvertStatementToDpdk::preorder(const IR::AssignmentStatement *a) {
                        contiguosly.
                     */
                     if (!checkIfBelongToSameHdrMdStructure(field) ||
-                        !checkIfConsecutiveHdrMdfields(field))
+                        !checkIfConsecutiveHdrMdfields(field)) {
                         updateMdStrAndGenInstr(field, components);
-                    else {
+                    } else {
                         processHashParams(field, components);
                     }
                     listExp = new IR::ListExpression(components);
@@ -303,12 +306,13 @@ bool ConvertStatementToDpdk::preorder(const IR::AssignmentStatement *a) {
                        If not, throw an error.
                     */
                     if (auto b = base->expression->to<IR::Expression>()) {
-                        if (!b->is<IR::Constant>())
+                        if (!b->is<IR::Constant>()) {
                             ::error(ErrorType::ERR_UNEXPECTED,
                                     "Expecting const expression '%1%'"
                                     " for 'base' value in get_hash method of Hash extern in DPDK "
                                     "Target",
                                     base);
+                        }
                     }
 
                     if (auto b = max_val->expression->to<IR::Expression>()) {
@@ -333,9 +337,9 @@ bool ConvertStatementToDpdk::preorder(const IR::AssignmentStatement *a) {
                     }
 
                     if (!checkIfBelongToSameHdrMdStructure(field) ||
-                        !checkIfConsecutiveHdrMdfields(field))
+                        !checkIfConsecutiveHdrMdfields(field)) {
                         updateMdStrAndGenInstr(field, components);
-                    else {
+                    } else {
                         processHashParams(field, components);
                     }
                     listExp = new IR::ListExpression(components);
@@ -604,7 +608,9 @@ bool ConvertStatementToDpdk::preorder(const IR::AssignmentStatement *a) {
         std::cerr << right->node_type_name() << std::endl;
         BUG("Not implemented.");
     }
-    if (i) add_instr(i);
+    if (i) {
+        add_instr(i);
+    }
     return false;
 }
 
@@ -696,7 +702,9 @@ cstring ConvertStatementToDpdk::getHdrMdStrName(const IR::Member *mem) {
 */
 bool ConvertStatementToDpdk::checkIfBelongToSameHdrMdStructure(const IR::Argument *field) {
     if (auto s = field->expression->to<IR::StructExpression>()) {
-        if (s->components.size() == 1) return true;
+        if (s->components.size() == 1) {
+            return true;
+        }
 
         cstring hdrStrName = "";
         for (auto field1 : s->components) {
@@ -712,10 +720,11 @@ bool ConvertStatementToDpdk::checkIfBelongToSameHdrMdStructure(const IR::Argumen
                 }
             }
 
-            if (hdrStrName == "")
+            if (hdrStrName == "") {
                 hdrStrName = sName;
-            else if (hdrStrName != sName)
+            } else if (hdrStrName != sName) {
                 return false;
+            }
         }
     }
     return true;
@@ -739,13 +748,17 @@ bool ConvertStatementToDpdk::checkIfBelongToSameHdrMdStructure(const IR::Argumen
 */
 bool ConvertStatementToDpdk::checkIfConsecutiveHdrMdfields(const IR::Argument *field) {
     if (auto s = field->expression->to<IR::StructExpression>()) {
-        if (s->components.size() == 1) return true;
+        if (s->components.size() == 1) {
+            return true;
+        }
         cstring stName = "";
         const IR::Type *hdrMdType = nullptr;
         std::vector<cstring> fldList;
         for (auto field1 : s->components) {
             if (auto exp = field1->expression->to<IR::Member>()) {
-                if (stName == "") stName = getHdrMdStrName(exp);
+                if (stName == "") {
+                    stName = getHdrMdStrName(exp);
+                }
 
                 auto type = typemap->getType(exp, true);
                 if (type->is<IR::Type_Header>()) {
@@ -766,7 +779,9 @@ bool ConvertStatementToDpdk::checkIfConsecutiveHdrMdfields(const IR::Argument *f
             for (unsigned idx = 0; idx != typeheader->fields.size(); idx++) {
                 if (typeheader->fields[idx]->name == fldList[0]) {
                     for (unsigned j = 1; j != fldList.size(); j++) {
-                        if (fldList[j] != typeheader->fields[++idx]->name) return false;
+                        if (fldList[j] != typeheader->fields[++idx]->name) {
+                            return false;
+                        }
                     }
                     break;
                 }
@@ -1117,7 +1132,9 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
             auto declArgs = di->arguments;
             unsigned value = 0;
             auto counter_type = declArgs->at(0)->expression;
-            if (auto c = counter_type->to<IR::Constant>()) value = c->asUnsigned();
+            if (auto c = counter_type->to<IR::Constant>()) {
+                value = c->asUnsigned();
+            }
             if (a->method->getName().name == "count") {
                 auto args = a->expr->arguments;
                 if (args->size() > 1) {
@@ -1128,7 +1145,9 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
                 } else {
                     const IR::Expression *incr = nullptr;
                     auto counter = a->object->getName();
-                    if (args->size() == 1) incr = args->at(0)->expression;
+                    if (args->size() == 1) {
+                        incr = args->at(0)->expression;
+                    }
                     if (!incr && value > 0) {
                         ::error(ErrorType::ERR_UNEXPECTED,
                                 "Expected packet length argument for %1% "
@@ -1145,10 +1164,11 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
                         add_instr(
                             new IR::DpdkCounterCountStatement(counter + "_bytes", metaIndex, incr));
                     } else {
-                        if (value == 1)
+                        if (value == 1) {
                             add_instr(new IR::DpdkCounterCountStatement(counter, metaIndex, incr));
-                        else
+                        } else {
                             add_instr(new IR::DpdkCounterCountStatement(counter, metaIndex));
+                        }
                     }
                 }
             } else {
@@ -1159,8 +1179,9 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
             auto declArgs = di->arguments;
             unsigned value = 0;
             auto counter_type = declArgs->at(1)->expression;
-            if (counter_type->is<IR::Constant>())
+            if (counter_type->is<IR::Constant>()) {
                 value = counter_type->to<IR::Constant>()->asUnsigned();
+            }
             if (a->method->getName().name == "count") {
                 auto args = a->expr->arguments;
                 if (args->size() < 1) {
@@ -1170,7 +1191,9 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
                     const IR::Expression *incr = nullptr;
                     auto index = args->at(0)->expression;
                     auto counter = a->object->getName();
-                    if (args->size() == 2) incr = args->at(1)->expression;
+                    if (args->size() == 2) {
+                        incr = args->at(1)->expression;
+                    }
                     if (!incr && value > 0) {
                         ::error(ErrorType::ERR_UNEXPECTED,
                                 "Expected packet length argument for %1% "
@@ -1183,10 +1206,11 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
                         add_instr(
                             new IR::DpdkCounterCountStatement(counter + "_bytes", index, incr));
                     } else {
-                        if (value == 1)
+                        if (value == 1) {
                             add_instr(new IR::DpdkCounterCountStatement(counter, index, incr));
-                        else
+                        } else {
                             add_instr(new IR::DpdkCounterCountStatement(counter, index));
+                        }
                     }
                 }
             } else {
@@ -1224,8 +1248,9 @@ bool ConvertStatementToDpdk::preorder(const IR::MethodCallStatement *s) {
     } else if (auto a = mi->to<P4::ExternFunction>()) {
         LOG3("extern function: " << dbp(s) << std::endl << s);
         if (a->method->name == "verify") {
-            if (parser == nullptr)
+            if (parser == nullptr) {
                 ::error(ErrorType::ERR_INVALID, "%1%: verify must be used in parser", s);
+            }
             auto args = a->expr->arguments;
             auto condition = args->at(0);
             auto error_id = args->at(1);
@@ -1446,7 +1471,9 @@ bool ConvertStatementToDpdk::preorder(const IR::SwitchStatement *s) {
         add_instr(new IR::DpdkLabelStatement(label));
         if (caseLabel->statement != nullptr) {
             visit(caseLabel->statement);
-            if (label != default_label) add_instr(new IR::DpdkJmpLabelStatement(end_label));
+            if (label != default_label) {
+                add_instr(new IR::DpdkJmpLabelStatement(end_label));
+            }
         }
     }
     add_instr(new IR::DpdkLabelStatement(end_label));

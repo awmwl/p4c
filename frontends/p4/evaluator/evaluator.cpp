@@ -72,7 +72,9 @@ const IR::CompileTimeValue *Evaluator::getValue(const IR::Node *node) const {
     } else if (block != toplevelBlock) {
         // Try to lookup this value in the toplevel block:
         // this is needed for global declarations.
-        if (toplevelBlock->hasValue(node)) result = toplevelBlock->getValue(node);
+        if (toplevelBlock->hasValue(node)) {
+            result = toplevelBlock->getValue(node);
+        }
     }
     return result;
 }
@@ -85,9 +87,10 @@ bool Evaluator::preorder(const IR::P4Program *program) {
 
     pushBlock(toplevelBlock);
     for (auto d : program->objects) {
-        if (d->is<IR::Type_Declaration>())
+        if (d->is<IR::Type_Declaration>()) {
             // we will visit various containers and externs only when we instantiated them
             continue;
+        }
         visit(d);
     }
     popBlock(toplevelBlock);
@@ -148,7 +151,9 @@ const IR::Block *Evaluator::processConstructor(
     const IR::Type *instanceType,                 // Actual canonical type of generated instance.
     const IR::Vector<IR::Argument> *arguments) {  // Constructor arguments
     LOG2("Evaluating constructor " << dbp(type));
-    if (type->is<IR::Type_Specialized>()) type = type->to<IR::Type_Specialized>()->baseType;
+    if (type->is<IR::Type_Specialized>()) {
+        type = type->to<IR::Type_Specialized>()->baseType;
+    }
     const IR::IDeclaration *decl;
     if (type->is<IR::Type_Name>()) {
         auto tn = type->to<IR::Type_Name>();
@@ -164,8 +169,9 @@ const IR::Block *Evaluator::processConstructor(
         // We lookup the method in the instanceType, because it may contain compiler-synthesized
         // constructors with zero arguments that may not appear in the original extern declaration.
         auto canon = instanceType;
-        if (canon->is<IR::Type_SpecializedCanonical>())
+        if (canon->is<IR::Type_SpecializedCanonical>()) {
             canon = canon->to<IR::Type_SpecializedCanonical>()->substituted->to<IR::Type>();
+        }
         BUG_CHECK(canon->is<IR::Type_Extern>(), "%1%: expected an extern", canon);
         auto constructor = canon->to<IR::Type_Extern>()->lookupConstructor(arguments);
         BUG_CHECK(constructor != nullptr, "Type %1% has no constructor with %2% arguments", exttype,
@@ -173,7 +179,9 @@ const IR::Block *Evaluator::processConstructor(
         auto block = new IR::ExternBlock(node->srcInfo, node, instanceType, exttype, constructor);
         pushBlock(block);
         auto values = evaluateArguments(constructor->type->parameters, arguments, current);
-        if (values != nullptr) block->instantiate(values);
+        if (values != nullptr) {
+            block->instantiate(values);
+        }
         popBlock(block);
         return block;
     } else if (decl->is<IR::P4Control>()) {
@@ -183,7 +191,9 @@ const IR::Block *Evaluator::processConstructor(
         auto values = evaluateArguments(cont->getConstructorParameters(), arguments, current);
         if (values != nullptr) {
             block->instantiate(values);
-            for (auto a : cont->controlLocals) visit(a);
+            for (auto a : cont->controlLocals) {
+                visit(a);
+            }
         }
         popBlock(block);
         return block;
@@ -194,8 +204,12 @@ const IR::Block *Evaluator::processConstructor(
         auto values = evaluateArguments(cont->getConstructorParameters(), arguments, current);
         if (values != nullptr) {
             block->instantiate(values);
-            for (auto a : cont->parserLocals) visit(a);
-            for (auto a : cont->states) visit(a);
+            for (auto a : cont->parserLocals) {
+                visit(a);
+            }
+            for (auto a : cont->states) {
+                visit(a);
+            }
         }
         popBlock(block);
         return block;
@@ -204,7 +218,9 @@ const IR::Block *Evaluator::processConstructor(
         auto block = new IR::PackageBlock(node->srcInfo, node, instanceType, package);
         pushBlock(block);
         auto values = evaluateArguments(package->constructorParams, arguments, current);
-        if (values != nullptr) block->instantiate(values);
+        if (values != nullptr) {
+            block->instantiate(values);
+        }
         popBlock(block);
         return block;
     }
@@ -217,7 +233,9 @@ bool Evaluator::preorder(const IR::Member *expression) {
     LOG2("Evaluating " << dbp(expression));
     auto type = typeMap->getType(expression->expr, true);
     const IR::IDeclaration *decl = nullptr;
-    if (type->is<IR::Type_Type>()) type = type->to<IR::Type_Type>()->type;
+    if (type->is<IR::Type_Type>()) {
+        type = type->to<IR::Type_Type>()->type;
+    }
     if (type->is<IR::IGeneralNamespace>()) {
         auto ns = type->to<IR::IGeneralNamespace>();
         decl = ns->getDeclsByName(expression->member.name)->nextOrDefault();
@@ -250,7 +268,9 @@ bool Evaluator::preorder(const IR::Declaration_Instance *inst) {
     LOG2("Evaluating " << dbp(inst));
     auto type = typeMap->getType(inst, true);
     auto block = processConstructor(inst, inst->type, type, inst->arguments);
-    if (block != nullptr) setValue(inst, block);
+    if (block != nullptr) {
+        setValue(inst, block);
+    }
     return false;
 }
 
@@ -258,7 +278,9 @@ bool Evaluator::preorder(const IR::ConstructorCallExpression *expr) {
     LOG2("Evaluating " << dbp(expr));
     auto type = typeMap->getType(expr, true);
     auto block = processConstructor(expr, expr->constructedType, type, expr->arguments);
-    if (block != nullptr) setValue(expr, block);
+    if (block != nullptr) {
+        setValue(expr, block);
+    }
     return false;
 }
 

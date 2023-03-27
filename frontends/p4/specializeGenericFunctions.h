@@ -69,9 +69,13 @@ struct FunctionSpecializationMap {
     IR::Vector<IR::Node> *getInsertions(const IR::Node *insertionPoint) {
         IR::Vector<IR::Node> *result = nullptr;
         for (auto s : map) {
-            if (inserted.find(s.second) != inserted.end()) continue;
+            if (inserted.find(s.second) != inserted.end()) {
+                continue;
+            }
             if (s.second->insertBefore == insertionPoint) {
-                if (result == nullptr) result = new IR::Vector<IR::Node>();
+                if (result == nullptr) {
+                    result = new IR::Vector<IR::Node>();
+                }
                 LOG2("Will insert " << dbp(s.second->specialized) << " before "
                                     << dbp(insertionPoint));
                 result->push_back(s.second->specialized);

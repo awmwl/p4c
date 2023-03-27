@@ -87,7 +87,9 @@ void EBPFRandomPSA::emitRead(CodeBuilder *builder) const {
 
     bool rangeIsPowerOf2 = (range & (range - 1)) == 0;
 
-    if (minValue != 0) builder->appendFormat("(%uu + ", minValue);
+    if (minValue != 0) {
+        builder->appendFormat("(%uu + ", minValue);
+    }
 
     builder->append("(bpf_get_prandom_u32() ");
     if (rangeIsPowerOf2) {
@@ -97,7 +99,9 @@ void EBPFRandomPSA::emitRead(CodeBuilder *builder) const {
     }
     builder->append(")");
 
-    if (minValue != 0) builder->append(")");
+    if (minValue != 0) {
+        builder->append(")");
+    }
 }
 
 }  // namespace EBPF

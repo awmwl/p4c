@@ -46,7 +46,9 @@ class Pattern {
 
      public:
         bool match(const IR::Node *n) override {
-            if (auto k = n->to<IR::Constant>()) return k->value == value;
+            if (auto k = n->to<IR::Constant>()) {
+                return k->value == value;
+            }
             return false;
         }
         Const(big_int v) : value(v) {}  // NOLINT(runtime/explicit)
@@ -58,7 +60,9 @@ class Pattern {
 
      public:
         bool match(const IR::Node *n) override {
-            if (auto b = n->to<T>()) return expr->match(b->expr);
+            if (auto b = n->to<T>()) {
+                return expr->match(b->expr);
+            }
             return false;
         }
         Unary(Base *e) : expr(e) {}  // NOLINT(runtime/explicit)
@@ -71,8 +75,12 @@ class Pattern {
      public:
         bool match(const IR::Node *n) override {
             if (auto b = n->to<T>()) {
-                if (left->match(b->left) && right->match(b->right)) return true;
-                if (commutative && left->match(b->right) && right->match(b->left)) return true;
+                if (left->match(b->left) && right->match(b->right)) {
+                    return true;
+                }
+                if (commutative && left->match(b->right) && right->match(b->left)) {
+                    return true;
+                }
             }
             return false;
         }

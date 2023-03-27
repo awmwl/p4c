@@ -88,9 +88,10 @@ const IR::Node *MoveDeclarations::postorder(IR::Declaration_Variable *decl) {
 
 const IR::Node *MoveDeclarations::postorder(IR::Declaration_Constant *decl) {
     if (findContext<IR::P4Control>() == nullptr && findContext<IR::P4Action>() == nullptr &&
-        findContext<IR::P4Parser>() == nullptr)
+        findContext<IR::P4Parser>() == nullptr) {
         // This is a global declaration
         return decl;
+    }
     addMove(decl);
     return nullptr;
 }
@@ -118,7 +119,9 @@ const IR::Node *MoveInitializers::preorder(IR::P4Parser *parser) {
 }
 
 const IR::Node *MoveInitializers::postorder(IR::P4Parser *parser) {
-    if (oldStart == nullptr) return parser;
+    if (oldStart == nullptr) {
+        return parser;
+    }
     auto newStart = new IR::ParserState(IR::ID(IR::ParserState::start), *toMove,
                                         new IR::PathExpression(newStartName));
     toMove = new IR::IndexedVector<IR::StatOrDecl>();
@@ -127,12 +130,17 @@ const IR::Node *MoveInitializers::postorder(IR::P4Parser *parser) {
 }
 
 const IR::Node *MoveInitializers::postorder(IR::Declaration_Variable *decl) {
-    if (getContext() == nullptr) return decl;
+    if (getContext() == nullptr) {
+        return decl;
+    }
     auto parent = getContext()->node;
-    if (!parent->is<IR::P4Control>() && !parent->is<IR::P4Parser>())
+    if (!parent->is<IR::P4Control>() && !parent->is<IR::P4Parser>()) {
         // We are not in the local toplevel declarations
         return decl;
-    if (decl->initializer == nullptr) return decl;
+    }
+    if (decl->initializer == nullptr) {
+        return decl;
+    }
 
     auto varRef = new IR::PathExpression(decl->name);
     auto assign = new IR::AssignmentStatement(decl->srcInfo, varRef, decl->initializer);
@@ -142,13 +150,19 @@ const IR::Node *MoveInitializers::postorder(IR::Declaration_Variable *decl) {
 }
 
 const IR::Node *MoveInitializers::postorder(IR::ParserState *state) {
-    if (oldStart == nullptr) return state;
-    if (state->name == IR::ParserState::start) state->name = newStartName;
+    if (oldStart == nullptr) {
+        return state;
+    }
+    if (state->name == IR::ParserState::start) {
+        state->name = newStartName;
+    }
     return state;
 }
 
 const IR::Node *MoveInitializers::postorder(IR::P4Control *control) {
-    if (toMove->empty()) return control;
+    if (toMove->empty()) {
+        return control;
+    }
     toMove->append(control->body->components);
     auto newBody = new IR::BlockStatement(control->body->annotations, *toMove);
     control->body = newBody;
@@ -157,9 +171,13 @@ const IR::Node *MoveInitializers::postorder(IR::P4Control *control) {
 }
 
 const IR::Node *MoveInitializers::postorder(IR::Path *path) {
-    if (oldStart == nullptr || path->name != IR::ParserState::start) return path;
+    if (oldStart == nullptr || path->name != IR::ParserState::start) {
+        return path;
+    }
     auto decl = refMap->getDeclaration(getOriginal()->to<IR::Path>());
-    if (!decl->is<IR::ParserState>()) return path;
+    if (!decl->is<IR::ParserState>()) {
+        return path;
+    }
     return new IR::Path(newStartName);
 }
 

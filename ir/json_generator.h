@@ -195,10 +195,11 @@ class JSONGenerator {
     }
 
     void generate(cstring v) {
-        if (v)
+        if (v) {
             out << "\"" << v << "\"";
-        else
+        } else {
             out << "null";
+        }
     }
     template <typename T>
     typename std::enable_if<std::is_same<T, LTBitMatrix>::value || std::is_enum<T>::value>::type
@@ -243,10 +244,11 @@ class JSONGenerator {
     typename std::enable_if<std::is_pointer<T>::value &&
                             has_toJSON<typename std::remove_pointer<T>::type>::value>::type
     generate(T v) {
-        if (v)
+        if (v) {
             generate(*v);
-        else
+        } else {
             out << "null";
+        }
     }
 
     template <typename T, size_t N>

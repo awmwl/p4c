@@ -131,7 +131,9 @@ unsigned JsonObjects::add_header_type(const cstring &name, Util::JsonArray *&fie
         auto temp = new Util::JsonArray();
         header_type->emplace("fields", temp);
     }
-    if (max_length > 0) header_type->emplace("max_length", max_length);
+    if (max_length > 0) {
+        header_type->emplace("max_length", max_length);
+    }
     header_types->append(header_type);
     return id;
 }
@@ -139,7 +141,9 @@ unsigned JsonObjects::add_header_type(const cstring &name, Util::JsonArray *&fie
 unsigned JsonObjects::add_union_type(const cstring &name, Util::JsonArray *&fields) {
     std::string sname(name, name.size());
     auto it = union_type_id.find(sname);
-    if (it != union_type_id.end()) return it->second;
+    if (it != union_type_id.end()) {
+        return it->second;
+    }
     auto union_type = new Util::JsonObject();
     unsigned id = BMV2::nextId("header_union_types");
     union_type_id[sname] = id;
@@ -307,7 +311,9 @@ unsigned JsonObjects::add_parser(const cstring &name) {
 /// insert parser state into a parser identified by parser_id
 /// return the id of the parser state
 unsigned JsonObjects::add_parser_state(const unsigned parser_id, const cstring &state_name) {
-    if (map_parser.find(parser_id) == map_parser.end()) BUG("parser %1% not found.", parser_id);
+    if (map_parser.find(parser_id) == map_parser.end()) {
+        BUG("parser %1% not found.", parser_id);
+    }
     auto parser = map_parser[parser_id];
     auto states = parser->get("parse_states")->to<Util::JsonArray>();
     auto state = new Util::JsonObject();
@@ -327,8 +333,9 @@ unsigned JsonObjects::add_parser_state(const unsigned parser_id, const cstring &
 }
 
 void JsonObjects::add_parser_transition(const unsigned state_id, Util::IJson *transition) {
-    if (map_parser_state.find(state_id) == map_parser_state.end())
+    if (map_parser_state.find(state_id) == map_parser_state.end()) {
         BUG("parser state %1% not found.", state_id);
+    }
     auto state = map_parser_state[state_id];
     auto transitions = state->get("transitions")->to<Util::JsonArray>();
     CHECK_NULL(transitions);
@@ -338,8 +345,9 @@ void JsonObjects::add_parser_transition(const unsigned state_id, Util::IJson *tr
 }
 
 void JsonObjects::add_parser_op(const unsigned state_id, Util::IJson *op) {
-    if (map_parser_state.find(state_id) == map_parser_state.end())
+    if (map_parser_state.find(state_id) == map_parser_state.end()) {
         BUG("parser state %1% not found.", state_id);
+    }
     auto state = map_parser_state[state_id];
     auto statements = state->get("parser_ops")->to<Util::JsonArray>();
     CHECK_NULL(statements);

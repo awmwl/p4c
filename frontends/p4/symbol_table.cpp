@@ -65,7 +65,9 @@ class Namespace : public NamedSymbol {
         : NamedSymbol(name, si), allowDuplicates(allowDuplicates) {}
     void declare(NamedSymbol *symbol) {
         cstring symname = symbol->getName();
-        if (symname.isNullOrEmpty()) return;
+        if (symname.isNullOrEmpty()) {
+            return;
+        }
 
         auto it = contents.find(symname);
         if (it != contents.end()) {
@@ -88,7 +90,9 @@ class Namespace : public NamedSymbol {
     }
     NamedSymbol *lookup(cstring name) const {
         auto it = contents.find(name);
-        if (it == contents.end()) return nullptr;
+        if (it == contents.end()) {
+            return nullptr;
+        }
         return it->second;
     }
     cstring toString() const override { return cstring("Namespace ") + getName(); }
@@ -96,7 +100,9 @@ class Namespace : public NamedSymbol {
         std::string s(indent, ' ');
         into << s;
         into << toString() << "{" << std::endl;
-        for (auto it : contents) it.second->dump(into, indent + 1);
+        for (auto it : contents) {
+            it.second->dump(into, indent + 1);
+        }
         into << s;
         into << "}" << std::endl;
     }
@@ -144,7 +150,9 @@ ProgramStructure::ProgramStructure()
 
 void ProgramStructure::push(Namespace *ns) {
     CHECK_NULL(ns);
-    if (debug) fprintf(debugStream, "ProgramStructure: pushing %s\n", ns->toString().c_str());
+    if (debug) {
+        fprintf(debugStream, "ProgramStructure: pushing %s\n", ns->toString().c_str());
+    }
     LOG4("ProgramStructure: pushing " << ns->toString());
     BUG_CHECK(currentNamespace != nullptr, "Null currentNamespace");
     currentNamespace->declare(ns);
@@ -166,15 +174,18 @@ void ProgramStructure::pushContainerType(IR::ID id, bool allowDuplicates) {
 void ProgramStructure::pop() {
     Namespace *parent = currentNamespace->getParent();
     BUG_CHECK(parent != nullptr, "Popping root namespace");
-    if (debug)
+    if (debug) {
         fprintf(debugStream, "ProgramStructure: popping %s\n",
                 currentNamespace->toString().c_str());
+    }
     LOG4("ProgramStructure: popping " << currentNamespace->toString());
     currentNamespace = parent;
 }
 
 void ProgramStructure::declareType(IR::ID id) {
-    if (debug) fprintf(debugStream, "ProgramStructure: adding type %s\n", id.name.c_str());
+    if (debug) {
+        fprintf(debugStream, "ProgramStructure: adding type %s\n", id.name.c_str());
+    }
 
     LOG3("ProgramStructure: adding type " << id);
     auto st = new SimpleType(id.name, id.srcInfo);
@@ -182,12 +193,16 @@ void ProgramStructure::declareType(IR::ID id) {
 }
 
 void ProgramStructure::declareObject(IR::ID id, cstring type) {
-    if (debug) fprintf(debugStream, "ProgramStructure: adding object %s\n", id.name.c_str());
+    if (debug) {
+        fprintf(debugStream, "ProgramStructure: adding object %s\n", id.name.c_str());
+    }
 
     LOG3("ProgramStructure: adding object " << id << " with type " << type);
     auto type_sym = lookup(type);
     auto o = new Object(id.name, id.srcInfo);
-    if (auto tns = dynamic_cast<const Namespace *>(type_sym)) o->setNamespace(tns);
+    if (auto tns = dynamic_cast<const Namespace *>(type_sym)) {
+        o->setNamespace(tns);
+    }
     currentNamespace->declare(o);
 }
 
@@ -237,11 +252,15 @@ ProgramStructure::SymbolKind ProgramStructure::lookupIdentifier(cstring identifi
     NamedSymbol *ns = lookup(identifier);
     if (ns == nullptr || dynamic_cast<Object *>(ns) != nullptr) {
         LOG2("Identifier " << identifier);
-        if (ns && ns->template_args) return ProgramStructure::SymbolKind::TemplateIdentifier;
+        if (ns && ns->template_args) {
+            return ProgramStructure::SymbolKind::TemplateIdentifier;
+        }
         return ProgramStructure::SymbolKind::Identifier;
     }
     if (dynamic_cast<SimpleType *>(ns) != nullptr || dynamic_cast<ContainerType *>(ns) != nullptr) {
-        if (ns && ns->template_args) return ProgramStructure::SymbolKind::TemplateType;
+        if (ns && ns->template_args) {
+            return ProgramStructure::SymbolKind::TemplateType;
+        }
         return ProgramStructure::SymbolKind::Type;
         LOG2("Type " << identifier);
     }
@@ -249,13 +268,21 @@ ProgramStructure::SymbolKind ProgramStructure::lookupIdentifier(cstring identifi
 }
 
 void ProgramStructure::declareTypes(const IR::IndexedVector<IR::Type_Var> *typeVars) {
-    if (typeVars == nullptr) return;
-    for (auto tv : *typeVars) declareType(tv->name);
+    if (typeVars == nullptr) {
+        return;
+    }
+    for (auto tv : *typeVars) {
+        declareType(tv->name);
+    }
 }
 
 void ProgramStructure::declareParameters(const IR::IndexedVector<IR::Parameter> *params) {
-    if (params == nullptr) return;
-    for (auto param : *params) declareObject(param->name, param->type->toString());
+    if (params == nullptr) {
+        return;
+    }
+    for (auto param : *params) {
+        declareObject(param->name, param->type->toString());
+    }
 }
 
 void ProgramStructure::endParse() {

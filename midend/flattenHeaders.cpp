@@ -21,7 +21,9 @@ namespace P4 {
 
 void FindHeaderTypesToReplace::createReplacement(const IR::Type_Header *type,
                                                  AnnotationSelectionPolicy *policy) {
-    if (replacement.count(type->name)) return;
+    if (replacement.count(type->name)) {
+        return;
+    }
     replacement.emplace(type->name,
                         new StructTypeReplacement<IR::Type_StructLike>(typeMap, type, policy));
 }
@@ -69,9 +71,13 @@ const IR::Node *ReplaceHeaders::postorder(IR::Member *expression) {
         e = mem->expr;
         prefix = cstring(".") + mem->member + prefix;
         auto type = typeMap->getType(e, true);
-        if ((h = type->to<IR::Type_Header>())) break;
+        if ((h = type->to<IR::Type_Header>())) {
+            break;
+        }
     }
-    if (h == nullptr) return expression;
+    if (h == nullptr) {
+        return expression;
+    }
 
     auto repl = findHeaderTypesToReplace->getReplacement(h->name);
     if (repl == nullptr) {
@@ -84,10 +90,13 @@ const IR::Node *ReplaceHeaders::postorder(IR::Member *expression) {
     if (newFieldName.isNullOrEmpty()) {
         auto type = typeMap->getType(getOriginal(), true);
         // This could be, for example, a method like setValid.
-        if (!type->is<IR::Type_Struct>()) return expression;
-        if (getParent<IR::Member>() != nullptr)
+        if (!type->is<IR::Type_Struct>()) {
+            return expression;
+        }
+        if (getParent<IR::Member>() != nullptr) {
             // We only want to process the outermost Member
             return expression;
+        }
         if (isWrite()) {
             ::error(ErrorType::ERR_UNSUPPORTED,
                     "%1%: writing to a structure nested in a header is not supported", expression);

@@ -60,7 +60,9 @@ class ErrorReporter {
     /// If the error has been reported, return true. Otherwise, insert add the error to the
     /// list of seen errors, and return false.
     bool error_reported(int err, const Util::SourceInfo source) {
-        if (!source.isValid()) return false;
+        if (!source.isValid()) {
+            return false;
+        }
         auto p = errorTracker.emplace(err, source);
         return !p.second;  // if insertion took place, then we have not seen the error.
     }
@@ -103,10 +105,11 @@ class ErrorReporter {
         if (!error_reported(errorCode, node->getSourceInfo())) {
             const char *name = get_error_name(errorCode);
             auto da = getDiagnosticAction(name, action);
-            if (name)
+            if (name) {
                 diagnose(da, name, format, suffix, node, args...);
-            else
+            } else {
                 diagnose(action, nullptr, format, suffix, node, std::forward<Args>(args)...);
+            }
         }
     }
 
@@ -124,10 +127,11 @@ class ErrorReporter {
                   const char *suffix, Args... args) {
         const char *name = get_error_name(errorCode);
         auto da = getDiagnosticAction(name, action);
-        if (name)
+        if (name) {
             diagnose(da, name, format, suffix, args...);
-        else
+        } else {
             diagnose(action, nullptr, format, suffix, std::forward<Args>(args)...);
+        }
     }
 
     /// The sink of all the diagnostic functions. Here the error gets printed
@@ -135,13 +139,17 @@ class ErrorReporter {
     template <typename... T>
     void diagnose(DiagnosticAction action, const char *diagnosticName, const char *format,
                   const char *suffix, T... args) {
-        if (action == DiagnosticAction::Ignore) return;
+        if (action == DiagnosticAction::Ignore) {
+            return;
+        }
 
         ErrorMessage::MessageType msgType = ErrorMessage::MessageType::None;
         if (action == DiagnosticAction::Warn) {
             // Avoid burying errors in a pile of warnings: don't emit any more warnings if we've
             // emitted errors.
-            if (errorCount > 0) return;
+            if (errorCount > 0) {
+                return;
+            }
 
             warningCount++;
             msgType = ErrorMessage::MessageType::Warning;
@@ -155,8 +163,9 @@ class ErrorReporter {
         msg = ::error_helper(fmt, msg, args...);
         emit_message(msg);
 
-        if (errorCount > maxErrorCount)
+        if (errorCount > maxErrorCount) {
             FATAL_ERROR("Number of errors exceeded set maximum of %1%", maxErrorCount);
+        }
     }
 
     unsigned getErrorCount() const { return errorCount; }
@@ -218,12 +227,15 @@ class ErrorReporter {
     /// default action if it wasn't overridden via the command line or a pragma.
     DiagnosticAction getDiagnosticAction(cstring diagnostic, DiagnosticAction defaultAction) {
         auto it = diagnosticActions.find(diagnostic);
-        if (it != diagnosticActions.end()) return it->second;
+        if (it != diagnosticActions.end()) {
+            return it->second;
+        }
         // if we're dealing with warnings and they have been globally modified
         // (ingnored or turned into errors), then return the global default
         if (defaultAction == DiagnosticAction::Warn &&
-            defaultWarningDiagnosticAction != DiagnosticAction::Warn)
+            defaultWarningDiagnosticAction != DiagnosticAction::Warn) {
             return defaultWarningDiagnosticAction;
+        }
         return defaultAction;
     }
 

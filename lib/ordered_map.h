@@ -72,14 +72,20 @@ class ordered_map {
     map_type data_map;
     void init_data_map() {
         data_map.clear();
-        for (auto it = data.begin(); it != data.end(); it++) data_map.emplace(&it->first, it);
+        for (auto it = data.begin(); it != data.end(); it++) {
+            data_map.emplace(&it->first, it);
+        }
     }
     iterator tr_iter(typename map_type::iterator i) {
-        if (i == data_map.end()) return data.end();
+        if (i == data_map.end()) {
+            return data.end();
+        }
         return i->second;
     }
     const_iterator tr_iter(typename map_type::const_iterator i) const {
-        if (i == data_map.end()) return data.end();
+        if (i == data_map.end()) {
+            return data.end();
+        }
         return i->second;
     }
 
@@ -98,7 +104,9 @@ class ordered_map {
         /* std::list assignment broken by spec if elements are const... */
         if (this != &a) {
             data.clear();
-            for (auto &el : a.data) data.push_back(el);
+            for (auto &el : a.data) {
+                data.push_back(el);
+            }
             init_data_map();
         }
         return *this;
@@ -143,12 +151,16 @@ class ordered_map {
     }
     iterator upper_bound_pred(const key_type &a) {
         auto ub = data_map.upper_bound(&a);
-        if (ub == data_map.begin()) return end();
+        if (ub == data_map.begin()) {
+            return end();
+        }
         return tr_iter(--ub);
     }
     const_iterator upper_bound_pred(const key_type &a) const {
         auto ub = data_map.upper_bound(&a);
-        if (ub == data_map.begin()) return end();
+        if (ub == data_map.begin()) {
+            return end();
+        }
         return tr_iter(--ub);
     }
 
@@ -219,7 +231,9 @@ class ordered_map {
     }
     template <class InputIterator>
     void insert(InputIterator b, InputIterator e) {
-        while (b != e) insert(*b++);
+        while (b != e) {
+            insert(*b++);
+        }
     }
 
     /* TODO: should not exist, does not make sense for map that preserves
@@ -227,7 +241,9 @@ class ordered_map {
     template <class InputIterator>
     void insert(iterator pos, InputIterator b, InputIterator e) {
         /* should be const_iterator pos, but glibc++ std::list is broken */
-        while (b != e) insert(pos, *b++);
+        while (b != e) {
+            insert(pos, *b++);
+        }
     }
 
     iterator erase(const_iterator pos) {
@@ -265,21 +281,27 @@ namespace GetImpl {
 template <class K, class T, class V, class Comp, class Alloc>
 inline V get(const ordered_map<K, V, Comp, Alloc> &m, T key, V def = V()) {
     auto it = m.find(key);
-    if (it != m.end()) return it->second;
+    if (it != m.end()) {
+        return it->second;
+    }
     return def;
 }
 
 template <class K, class T, class V, class Comp, class Alloc>
 inline V *getref(ordered_map<K, V, Comp, Alloc> &m, T key) {
     auto it = m.find(key);
-    if (it != m.end()) return &it->second;
+    if (it != m.end()) {
+        return &it->second;
+    }
     return 0;
 }
 
 template <class K, class T, class V, class Comp, class Alloc>
 inline const V *getref(const ordered_map<K, V, Comp, Alloc> &m, T key) {
     auto it = m.find(key);
-    if (it != m.end()) return &it->second;
+    if (it != m.end()) {
+        return &it->second;
+    }
     return 0;
 }
 

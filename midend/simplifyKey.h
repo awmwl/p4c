@@ -86,10 +86,11 @@ class IsMask : public IsLikeLeftValue {
  public:
     bool isSimple(const IR::Expression *expression, const Visitor::Context *ctxt) {
         if (auto mask = expression->to<IR::BAnd>()) {
-            if (mask->right->is<IR::Constant>())
+            if (mask->right->is<IR::Constant>()) {
                 expression = mask->left;
-            else if (mask->left->is<IR::Constant>())
+            } else if (mask->left->is<IR::Constant>()) {
                 expression = mask->right;
+            }
         }
         return IsLikeLeftValue::isSimple(expression, ctxt);
     }
@@ -185,7 +186,9 @@ class SimplifyKey : public PassManager {
  public:
     SimplifyKey(ReferenceMap *refMap, TypeMap *typeMap, KeyIsSimple *key_policy,
                 TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoSimplifyKey(refMap, typeMap, key_policy));
         setName("SimplifyKey");

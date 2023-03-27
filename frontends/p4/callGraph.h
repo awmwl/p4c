@@ -57,7 +57,9 @@ class CallGraph {
 
     // node that may call no-one
     void add(T caller) {
-        if (nodes.find(caller) != nodes.end()) return;
+        if (nodes.find(caller) != nodes.end()) {
+            return;
+        }
         LOG1(name << ": " << cgMakeString(caller));
         out_edges[caller] = new std::vector<T>();
         in_edges[caller] = new std::vector<T>();
@@ -106,7 +108,9 @@ class CallGraph {
     }
     bool isCaller(T caller) const {
         auto edges = ::get(out_edges, caller);
-        if (edges == nullptr) return false;
+        if (edges == nullptr) {
+            return false;
+        }
         return !edges->empty();
     }
     // Iterators over the out_edges
@@ -116,7 +120,9 @@ class CallGraph {
     std::vector<T> *getCallers(T callee) { return in_edges[callee]; }
     // Callees are appended to 'toAppend'
     void getCallees(T caller, std::set<T> &toAppend) {
-        if (isCaller(caller)) toAppend.insert(out_edges[caller]->begin(), out_edges[caller]->end());
+        if (isCaller(caller)) {
+            toAppend.insert(out_edges[caller]->begin(), out_edges[caller]->end());
+        }
     }
     size_t size() const { return nodes.size(); }
     // out will contain all nodes reachable from start
@@ -126,19 +132,30 @@ class CallGraph {
         while (!work.empty()) {
             T node = *work.begin();
             work.erase(node);
-            if (out.find(node) != out.end()) continue;
+            if (out.find(node) != out.end()) {
+                continue;
+            }
             out.emplace(node);
             auto edges = out_edges.find(node);
-            if (edges == out_edges.end()) continue;
-            for (auto c : *(edges->second)) work.emplace(c);
+            if (edges == out_edges.end()) {
+                continue;
+            }
+            for (auto c : *(edges->second)) {
+                work.emplace(c);
+            }
         }
     }
     // remove all nodes not in 'to'
     void restrict(const std::set<T> &to) {
         std::vector<T> toRemove;
-        for (auto n : nodes)
-            if (to.find(n) == to.end()) toRemove.push_back(n);
-        for (auto n : toRemove) remove(n);
+        for (auto n : nodes) {
+            if (to.find(n) == to.end()) {
+                toRemove.push_back(n);
+            }
+        }
+        for (auto n : toRemove) {
+            remove(n);
+        }
     }
 
     typedef std::unordered_set<T> Set;
@@ -150,10 +167,11 @@ class CallGraph {
     void dominators(T start, std::map<T, Set> &dominators) {
         // initialize
         for (auto n : nodes) {
-            if (n == start)
+            if (n == start) {
                 dominators[n].emplace(start);
-            else
+            } else {
                 dominators[n].insert(nodes.begin(), nodes.end());
+            }
         }
 
         // There are faster but more complicated algorithms.
@@ -162,11 +180,17 @@ class CallGraph {
             changes = false;
             for (auto node : nodes) {
                 auto vec = in_edges[node];
-                if (vec == nullptr) continue;
+                if (vec == nullptr) {
+                    continue;
+                }
                 auto size = dominators[node].size();
-                for (auto c : *vec) insersectWith(dominators[node], dominators[c]);
+                for (auto c : *vec) {
+                    insersectWith(dominators[node], dominators[c]);
+                }
                 dominators[node].emplace(node);
-                if (dominators[node].size() != size) changes = true;
+                if (dominators[node].size() != size) {
+                    changes = true;
+                }
             }
         }
     }
@@ -190,12 +214,16 @@ class CallGraph {
         int isLoopEntryPoint(T node) const {
             for (size_t i = 0; i < loops.size(); i++) {
                 auto loop = loops.at(i);
-                if (loop->entry == node) return i;
+                if (loop->entry == node) {
+                    return i;
+                }
             }
             return -1;
         }
         bool isInLoop(int loopIndex, T node) const {
-            if (loopIndex == -1) return false;
+            if (loopIndex == -1) {
+                return false;
+            }
             auto loop = loops.at(loopIndex);
             return (loop->body.find(node) != loop->body.end());
         }
@@ -229,9 +257,14 @@ class CallGraph {
                         auto crt = *work.begin();
                         work.erase(crt);
                         loop->body.emplace(crt);
-                        if (crt == n) continue;
-                        for (auto i : *in_edges[crt])
-                            if (loop->body.find(i) == loop->body.end()) work.emplace(i);
+                        if (crt == n) {
+                            continue;
+                        }
+                        for (auto i : *in_edges[crt]) {
+                            if (loop->body.find(i) == loop->body.end()) {
+                                work.emplace(i);
+                            }
+                        }
                     }
                 }
             }
@@ -243,9 +276,14 @@ class CallGraph {
     // intersect in place
     static void insersectWith(Set &set, Set &with) {
         std::vector<T> toRemove;
-        for (auto e : set)
-            if (with.find(e) == with.end()) toRemove.push_back(e);
-        for (auto e : toRemove) set.erase(e);
+        for (auto e : set) {
+            if (with.find(e) == with.end()) {
+                toRemove.push_back(e);
+            }
+        }
+        for (auto e : toRemove) {
+            set.erase(e);
+        }
     }
 
     // Helper for computing strongly-connected components
@@ -271,7 +309,9 @@ class CallGraph {
         void setLowLink(T node, T successor) {
             unsigned nlink = get(lowlink, node);
             unsigned slink = get(lowlink, successor);
-            if (slink < nlink) setLowLink(node, slink);
+            if (slink < nlink) {
+                setLowLink(node, slink);
+            }
         }
         T pop() {
             T result = stack.back();
@@ -300,9 +340,10 @@ class CallGraph {
                     helper.setLowLink(node, next);
                 } else if (helper.isOnStack(next)) {
                     helper.setLowLink(node, next);
-                    if (next == node)
+                    if (next == node) {
                         // the check below does not find self-loops
                         loop = true;
+                    }
                 }
             }
         }
@@ -314,7 +355,9 @@ class CallGraph {
                 T sccMember = helper.pop();
                 LOG1("Scc order " << cgMakeString(sccMember) << "[" << cgMakeString(node) << "]");
                 out.push_back(sccMember);
-                if (sccMember == node) break;
+                if (sccMember == node) {
+                    break;
+                }
                 loop = true;
             }
         }

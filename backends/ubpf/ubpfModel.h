@@ -112,7 +112,9 @@ class UBPFModel : public ::Model::Model {
     };
 
     const IR::P4Program *run(const IR::P4Program *program) {
-        if (program == nullptr) return nullptr;
+        if (program == nullptr) {
+            return nullptr;
+        }
 
         PassManager passes({
             new getUBPFModelVersion,

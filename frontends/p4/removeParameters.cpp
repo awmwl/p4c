@@ -38,7 +38,9 @@ class RemoveMethodCallArguments : public Transform {
         } else {
             auto args = new IR::Vector<IR::Argument>();
             for (int i = 0; i < static_cast<int>(expression->arguments->size()); i++) {
-                if (i < argumentsToRemove) continue;
+                if (i < argumentsToRemove) {
+                    continue;
+                }
                 args->push_back(expression->arguments->at(i));
             }
             expression->arguments = args;
@@ -60,14 +62,17 @@ void FindActionParameters::postorder(const IR::ActionListElement *element) {
 
 void FindActionParameters::postorder(const IR::MethodCallExpression *expression) {
     auto mi = MethodInstance::resolve(expression, refMap, typeMap);
-    if (!mi->is<P4::ActionCall>()) return;
+    if (!mi->is<P4::ActionCall>()) {
+        return;
+    }
     auto ac = mi->to<P4::ActionCall>();
 
     auto table = findContext<IR::P4Table>();
     if (table != nullptr) {
-        if (findContext<IR::ActionListElement>() != nullptr)
+        if (findContext<IR::ActionListElement>() != nullptr) {
             // These are processed elsewhere
             return;
+        }
         // This is probably the default_action; we must remove some parameters
         invocations->bindDefaultAction(ac->action, expression);
     } else {
@@ -112,7 +117,9 @@ const IR::Node *DoRemoveActionParameters::postorder(IR::P4Action *action) {
     auto body = new IR::IndexedVector<IR::StatOrDecl>();
     auto postamble = new IR::IndexedVector<IR::StatOrDecl>();
     auto invocation = invocations->get(getOriginal<IR::P4Action>());
-    if (invocation == nullptr) return action;
+    if (invocation == nullptr) {
+        return action;
+    }
     auto args = invocation->arguments;
 
     ParameterSubstitution substitution;
@@ -147,7 +154,9 @@ const IR::Node *DoRemoveActionParameters::postorder(IR::P4Action *action) {
             }
         }
     }
-    if (result->empty()) return action;
+    if (result->empty()) {
+        return action;
+    }
 
     InsertBeforeExits ibf(postamble);
     ibf.setCalledBy(this);
@@ -196,7 +205,9 @@ RemoveActionParameters::RemoveActionParameters(ReferenceMap *refMap, TypeMap *ty
     // bit<32> w;
     // table t() { actions = a(); ... }
     passes.emplace_back(new MoveDeclarations());
-    if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+    if (!typeChecking) {
+        typeChecking = new TypeChecking(refMap, typeMap);
+    }
     passes.emplace_back(typeChecking);
     passes.emplace_back(new FindActionParameters(refMap, typeMap, ai));
     passes.emplace_back(new DoRemoveActionParameters(ai));

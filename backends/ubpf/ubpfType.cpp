@@ -43,7 +43,9 @@ EBPF::EBPFType *UBPFTypeFactory::create(const IR::Type *type) {
         result = new UBPFEnumType(te);
     } else if (auto ts = type->to<IR::Type_Stack>()) {
         auto et = create(ts->elementType);
-        if (et == nullptr) return nullptr;
+        if (et == nullptr) {
+            return nullptr;
+        }
         result = new EBPF::EBPFStackType(ts, et);
     } else if (auto tpl = type->to<IR::Type_List>()) {
         result = new UBPFListType(tpl);
@@ -54,57 +56,65 @@ EBPF::EBPFType *UBPFTypeFactory::create(const IR::Type *type) {
 }
 
 void UBPFScalarType::emit(EBPF::CodeBuilder *builder) {
-    if (width <= 8)
+    if (width <= 8) {
         builder->appendFormat("uint8_t");
-    else if (width <= 16)
+    } else if (width <= 16) {
         builder->appendFormat("uint16_t");
-    else if (width <= 32)
+    } else if (width <= 32) {
         builder->appendFormat("uint32_t");
-    else if (width <= 64)
+    } else if (width <= 64) {
         builder->appendFormat("uint64_t");
-    else
+    } else {
         builder->appendFormat("uint8_t*");
+    }
 }
 
 cstring UBPFScalarType::getAsString() {
-    if (width <= 8)
+    if (width <= 8) {
         return cstring("uint8_t");
-    else if (width <= 16)
+    } else if (width <= 16) {
         return cstring("uint16_t");
-    else if (width <= 32)
+    } else if (width <= 32) {
         return cstring("uint32_t");
-    else if (width <= 64)
+    } else if (width <= 64) {
         return cstring("uint64_t");
-    else
+    } else {
         return cstring("uint8_t*");
+    }
 }
 
 void UBPFScalarType::declare(EBPF::CodeBuilder *builder, cstring id, bool asPointer) {
     if (EBPFScalarType::generatesScalar(width)) {
         emit(builder);
-        if (asPointer) builder->append("*");
+        if (asPointer) {
+            builder->append("*");
+        }
         builder->spc();
         builder->append(id);
     } else {
-        if (asPointer)
+        if (asPointer) {
             builder->append("uint8_t*");
-        else
+        } else {
             builder->appendFormat("uint8_t %s[%d]", id.c_str(), bytesRequired());
+        }
     }
 }
 
 void UBPFScalarType::declareInit(EBPF::CodeBuilder *builder, cstring id, bool asPointer) {
     if (EBPFScalarType::generatesScalar(width)) {
         emit(builder);
-        if (asPointer) builder->append("*");
+        if (asPointer) {
+            builder->append("*");
+        }
         builder->spc();
         id = id + cstring(" = 0");
         builder->append(id);
     } else {
-        if (asPointer)
+        if (asPointer) {
             builder->append("uint8_t*");
-        else
+        } else {
             builder->appendFormat("uint8_t %s[%d]", id.c_str(), bytesRequired());
+        }
     }
 }
 
@@ -148,7 +158,9 @@ void UBPFStructType::emit(EBPF::CodeBuilder *builder) {
 void UBPFStructType::declare(EBPF::CodeBuilder *builder, cstring id, bool asPointer) {
     builder->append(kind);
     builder->appendFormat(" %s ", name.c_str());
-    if (asPointer) builder->append("*");
+    if (asPointer) {
+        builder->append("*");
+    }
     builder->appendFormat("%s", id.c_str());
 }
 
@@ -234,7 +246,9 @@ void UBPFListType::declareInit(EBPF::CodeBuilder *builder, cstring id, bool asPo
 void UBPFListType::emitInitializer(EBPF::CodeBuilder *builder) {
     builder->blockStart();
     for (auto f : elements) {
-        if (!f->is<Padding>()) continue;
+        if (!f->is<Padding>()) {
+            continue;
+        }
         builder->emitIndent();
         builder->appendFormat(".%s = {0},", f->to<Padding>()->name);
         builder->newline();
@@ -253,10 +267,11 @@ void UBPFListType::emitPadding(EBPF::CodeBuilder *builder, UBPF::UBPFListType::P
 void UBPFListType::emit(EBPF::CodeBuilder *builder) {
     for (auto f : elements) {
         builder->emitIndent();
-        if (!f->is<Padding>())
+        if (!f->is<Padding>()) {
             f->type->declare(builder, f->name, false);
-        else
+        } else {
             emitPadding(builder, f->to<Padding>());
+        }
         builder->append("; ");
         builder->newline();
     }

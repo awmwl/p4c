@@ -38,7 +38,9 @@ static void delete_indent(std::ios_base::event event, std::ios_base &out, int in
 }
 
 indent_t &indent_t::getindent(std::ostream &out) {
-    if (indentctl_index < 0) indentctl_index = out.xalloc();
+    if (indentctl_index < 0) {
+        indentctl_index = out.xalloc();
+    }
     auto &p = out.pword(indentctl_index);
     /* DANGER -- there's a bug in the Garbage Collector on OSX where it doesn't
      * properly scan roots in the global cin/cout/clog objects, which we are

@@ -37,7 +37,9 @@ class IrNamespace {
     std::map<cstring, IrNamespace *> children;
     static IrNamespace &global();
     IrNamespace(IrNamespace *p, cstring n) : parent(p), name(n) {
-        if (p) p->children[name] = this;
+        if (p) {
+            p->children[name] = this;
+        }
     }
     IrNamespace() = delete;
     friend class IrClass;
@@ -83,12 +85,24 @@ class IrElement : public Util::IHasSourceInfo {
     enum access_t { Public, Protected, Private } access = Public;
     enum modifier_t { NullOK = 1, Optional = 2, Inline = 4, Virtual = 8, Static = 16, Const = 32 };
     static inline const char *modifier(int m) {
-        if (m & IrElement::NullOK) return "NullOK";
-        if (m & IrElement::Optional) return "optional";
-        if (m & IrElement::Virtual) return "virtual";
-        if (m & IrElement::Static) return "static";
-        if (m & IrElement::Inline) return "inline";
-        if (m & IrElement::Const) return "const";
+        if (m & IrElement::NullOK) {
+            return "NullOK";
+        }
+        if (m & IrElement::Optional) {
+            return "optional";
+        }
+        if (m & IrElement::Virtual) {
+            return "virtual";
+        }
+        if (m & IrElement::Static) {
+            return "static";
+        }
+        if (m & IrElement::Inline) {
+            return "inline";
+        }
+        if (m & IrElement::Const) {
+            return "const";
+        }
         return "";
     }
 };
@@ -223,7 +237,9 @@ class CommentBlock : public IrElement {
     CommentBlock(Util::SourceInfo si, cstring body) : IrElement(si), body(body) {}
     cstring toString() const override {
         // print only Doxygen comments
-        if (body.startsWith("/**") || body.startsWith("///")) return body;
+        if (body.startsWith("/**") || body.startsWith("///")) {
+            return body;
+        }
         return "";
     }
     void append(cstring comment) { body += "\n" + comment; }
@@ -246,8 +262,9 @@ class IrClass : public IrElement {
 
  public:
     const IrClass *getParent() const {
-        if (concreteParent == nullptr && this != nodeClass() && kind != NodeKind::Nested)
+        if (concreteParent == nullptr && this != nodeClass() && kind != NodeKind::Nested) {
             return IrClass::nodeClass();
+        }
         return concreteParent;
     }
 
@@ -286,8 +303,12 @@ class IrClass : public IrElement {
           local(containedIn, name),
           kind(kind),
           name(name) {
-        if (parents) this->parents = *parents;
-        if (elements) this->elements = *elements;
+        if (parents) {
+            this->parents = *parents;
+        }
+        if (elements) {
+            this->elements = *elements;
+        }
         IrNamespace::add_class(this);
     }
     IrClass(NodeKind kind, cstring name) : IrClass(Util::SourceInfo(), nullptr, kind, name) {}
@@ -334,7 +355,9 @@ class IrDefinitions {
         IrClass::nodemapClass()->resolve();
         IrClass::ideclaration()->resolve();
         IrClass::indexedVectorClass()->resolve();
-        for (auto cls : *getClasses()) cls->resolve();
+        for (auto cls : *getClasses()) {
+            cls->resolve();
+        }
     }
     void generate(std::ostream &t, std::ostream &out, std::ostream &impl) const;
 };
@@ -356,7 +379,9 @@ class LineDirective {
 
 inline std::ostream &operator<<(std::ostream &out, const LineDirective &l) {
     if (!LineDirective::inhibit) {
-        if (l.newline_before) out << '\n';
+        if (l.newline_before) {
+            out << '\n';
+        }
         if (l.reset) {
             out << "#" << std::endl;  // will be fixed by tools/fixup-line-directives
         } else if (l.loc.isValid()) {

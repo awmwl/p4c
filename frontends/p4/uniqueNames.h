@@ -82,18 +82,26 @@ class FindSymbols : public Inspector {
         // Skip toplevel constants with names like __
         // We assume that these do not clash and no new symbols with
         // these names will be added.
-        if (decl->getName().name.startsWith("__") && getParent<IR::P4Program>()) return;
+        if (decl->getName().name.startsWith("__") && getParent<IR::P4Program>()) {
+            return;
+        }
         doDecl(decl);
     }
     void postorder(const IR::Declaration_Instance *decl) override {
-        if (!isTopLevel()) doDecl(decl);
+        if (!isTopLevel()) {
+            doDecl(decl);
+        }
     }
     void postorder(const IR::P4Table *decl) override { doDecl(decl); }
     void postorder(const IR::P4Action *decl) override {
-        if (!isTopLevel()) doDecl(decl);
+        if (!isTopLevel()) {
+            doDecl(decl);
+        }
     }
     void postorder(const IR::P4ValueSet *decl) override {
-        if (!isTopLevel()) doDecl(decl);
+        if (!isTopLevel()) {
+            doDecl(decl);
+        }
     }
 };
 

@@ -30,38 +30,53 @@ const char *PathName::findLastSeparator() const {
     // Not the most efficient, but should be fine for short strings
     for (char c : pathSeparators) {
         const char *f = str.findlast(c);
-        if (f == nullptr) continue;
-        if (found == nullptr)
+        if (f == nullptr) {
+            continue;
+        }
+        if (found == nullptr) {
             found = f;
-        else if (f < found)
+        } else if (f < found) {
             found = f;
+        }
     }
     return found;
 }
 
 PathName PathName::getFilename() const {
-    if (str.isNullOrEmpty()) return *this;
+    if (str.isNullOrEmpty()) {
+        return *this;
+    }
 
     const char *lastSeparator = findLastSeparator();
-    if (lastSeparator == 0) return *this;
+    if (lastSeparator == 0) {
+        return *this;
+    }
 
     return PathName(lastSeparator + 1);
 }
 
 cstring PathName::getExtension() const {
     PathName filename = getFilename();
-    if (filename.isNullOrEmpty()) return filename.str;
+    if (filename.isNullOrEmpty()) {
+        return filename.str;
+    }
 
     const char *dot = filename.str.findlast('.');
-    if (dot == nullptr) return cstring::empty;
+    if (dot == nullptr) {
+        return cstring::empty;
+    }
     return dot + 1;
 }
 
 PathName PathName::getFolder() const {
-    if (str.isNullOrEmpty()) return *this;
+    if (str.isNullOrEmpty()) {
+        return *this;
+    }
 
     const char *lastSeparator = findLastSeparator();
-    if (lastSeparator == 0) return PathName::empty;
+    if (lastSeparator == 0) {
+        return PathName::empty;
+    }
 
     return PathName(str.before(lastSeparator));
 }
@@ -69,13 +84,19 @@ PathName PathName::getFolder() const {
 cstring PathName::getBasename() const {
     PathName file = getFilename();
     const char *dot = file.str.findlast('.');
-    if (dot == nullptr) return file.str;
+    if (dot == nullptr) {
+        return file.str;
+    }
     return file.str.before(dot);
 }
 
 PathName PathName::join(cstring component) const {
-    if (component.isNullOrEmpty()) throw std::logic_error("Empty string for pathname component");
-    if (str.isNullOrEmpty()) return PathName(component);
+    if (component.isNullOrEmpty()) {
+        throw std::logic_error("Empty string for pathname component");
+    }
+    if (str.isNullOrEmpty()) {
+        return PathName(component);
+    }
     char last = str[str.size() - 1];
     for (char c : pathSeparators) {
         if (c == last) {

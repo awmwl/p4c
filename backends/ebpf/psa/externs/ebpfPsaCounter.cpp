@@ -117,12 +117,13 @@ EBPFCounterPSA::EBPFCounterPSA(const EBPFProgram *program, const IR::Declaration
 
 EBPFCounterPSA::CounterType EBPFCounterPSA::toCounterType(const int type) {
     // TODO: make use of something similar to EBPFModel to avoid hardcoded values
-    if (type == 0)
+    if (type == 0) {
         return CounterType::PACKETS;
-    else if (type == 1)
+    } else if (type == 1) {
         return CounterType::BYTES;
-    else if (type == 2)
+    } else if (type == 2) {
         return CounterType::PACKETS_AND_BYTES;
+    }
 
     BUG("Unknown counter type %1%", type);
 }
@@ -133,7 +134,9 @@ void EBPFCounterPSA::emitTypes(CodeBuilder *builder) {
 }
 
 void EBPFCounterPSA::emitKeyType(CodeBuilder *builder) {
-    if (indexWidthType == nullptr) return;
+    if (indexWidthType == nullptr) {
+        return;
+    }
 
     if (indexWidthType->is<EBPFStructType>()) {
         builder->emitIndent();
@@ -145,7 +148,9 @@ void EBPFCounterPSA::emitKeyType(CodeBuilder *builder) {
 void EBPFCounterPSA::emitValueType(CodeBuilder *builder) {
     builder->emitIndent();
     builder->append("struct ");
-    if (!isDirect) builder->appendFormat("%s ", valueTypeName.c_str());
+    if (!isDirect) {
+        builder->appendFormat("%s ", valueTypeName.c_str());
+    }
     builder->blockStart();
     if (type == CounterType::BYTES || type == CounterType::PACKETS_AND_BYTES) {
         builder->emitIndent();
@@ -161,7 +166,9 @@ void EBPFCounterPSA::emitValueType(CodeBuilder *builder) {
     }
 
     builder->blockEnd(false);
-    if (isDirect) builder->appendFormat(" %s", instanceName.c_str());
+    if (isDirect) {
+        builder->appendFormat(" %s", instanceName.c_str());
+    }
     builder->endOfStatement(true);
 }
 
@@ -222,10 +229,11 @@ void EBPFCounterPSA::emitCount(CodeBuilder *builder, const IR::MethodCallExpress
     builder->endOfStatement(true);
 
     builder->emitIndent();
-    if (indexWidthType != nullptr)
+    if (indexWidthType != nullptr) {
         indexWidthType->declare(builder, keyName, false);
-    else
+    } else {
         builder->appendFormat("%s %s", keyTypeName.c_str(), keyName.c_str());
+    }
     builder->append(" = ");
     auto index = expression->arguments->at(0);
     codeGen->visit(index);

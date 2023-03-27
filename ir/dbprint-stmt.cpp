@@ -33,34 +33,48 @@ void IR::ReturnStatement::dbprint(std::ostream &out) const {
     if (expression) {
         out << " " << Prec_Low << expression << setprec(prec);
     }
-    if (!prec) out << ';';
+    if (!prec) {
+        out << ';';
+    }
 }
 
 void IR::AssignmentStatement::dbprint(std::ostream &out) const {
     int prec = getprec(out);
     out << Prec_Low << left << " = " << right << setprec(prec);
-    if (!prec) out << ';';
+    if (!prec) {
+        out << ';';
+    }
 }
 
 void IR::IfStatement::dbprint(std::ostream &out) const {
     int prec = getprec(out);
     out << Prec_Low << "if (" << condition << ") {" << indent << setprec(0) << Log::endl << ifTrue;
-    if (ifFalse) out << unindent << Log::endl << "} else {" << indent << Log::endl << ifFalse;
+    if (ifFalse) {
+        out << unindent << Log::endl << "} else {" << indent << Log::endl << ifFalse;
+    }
     out << " }" << unindent << setprec(prec);
 }
 
 void IR::MethodCallStatement::dbprint(std::ostream &out) const {
     int prec = getprec(out);
     out << Prec_Low << methodCall << setprec(prec);
-    if (!prec) out << ';';
+    if (!prec) {
+        out << ';';
+    }
 }
 
 void IR::Function::dbprint(std::ostream &out) const {
-    if (type->returnType) out << type->returnType << ' ';
+    if (type->returnType) {
+        out << type->returnType << ' ';
+    }
     out << name;
-    if (type->typeParameters && !type->typeParameters->empty()) out << type->typeParameters;
+    if (type->typeParameters && !type->typeParameters->empty()) {
+        out << type->typeParameters;
+    }
     out << "(" << type->parameters << ") {" << indent;
-    for (auto s : body->components) out << Log::endl << s;
+    for (auto s : body->components) {
+        out << Log::endl << s;
+    }
     out << unindent << " }";
 }
 
@@ -69,7 +83,9 @@ void IR::SwitchStatement::dbprint(std::ostream &out) const {
     out << Prec_Low << "switch (" << expression << ") {" << indent;
     bool fallthrough = false;
     for (auto c : cases) {
-        if (!fallthrough) out << Log::endl;
+        if (!fallthrough) {
+            out << Log::endl;
+        }
         out << Prec_Low << c->label << ": " << setprec(0);
         if (c->statement) {
             out << c->statement;

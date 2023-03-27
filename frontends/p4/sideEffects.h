@@ -43,9 +43,13 @@ class HasTableApply : public Inspector {
 
     void postorder(const IR::MethodCallExpression *expression) override {
         auto mi = MethodInstance::resolve(expression, refMap, typeMap);
-        if (!mi->isApply()) return;
+        if (!mi->isApply()) {
+            return;
+        }
         auto am = mi->to<P4::ApplyMethod>();
-        if (!am->object->is<IR::P4Table>()) return;
+        if (!am->object->is<IR::P4Table>()) {
+            return;
+        }
         BUG_CHECK(table == nullptr, "%1% and %2%: multiple table applications in one expression",
                   table, am->object);
         table = am->object->to<IR::P4Table>();
@@ -353,7 +357,9 @@ class TablesInKeys : public Inspector {
         return Inspector::init_apply(node);
     }
     void postorder(const IR::MethodCallExpression *mce) override {
-        if (!findContext<IR::Key>()) return;
+        if (!findContext<IR::Key>()) {
+            return;
+        }
         HasTableApply hta(refMap, typeMap);
         hta.setCalledBy(this);
         (void)mce->apply(hta);
@@ -400,7 +406,9 @@ class SideEffectOrdering : public PassRepeated {
  public:
     SideEffectOrdering(ReferenceMap *refMap, TypeMap *typeMap, bool skipSideEffectOrdering,
                        TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         if (!skipSideEffectOrdering) {
             passes.push_back(new TypeChecking(refMap, typeMap));
             passes.push_back(new DoSimplifyExpressions(refMap, typeMap, &added));

@@ -56,10 +56,11 @@ class Dump {
 };
 
 inline std::ostream &operator<<(std::ostream &out, const Dump &d) {
-    if (d.n)
+    if (d.n) {
         dump(out, d.n, d.maxdepth);
-    else
+    } else {
         dump(out, d.ctxt);
+    }
     return out;
 }
 

@@ -62,7 +62,9 @@ class ComplexValues final {
         Component *getComponent(cstring name) override { return ::get(members, name); }
         void dbprint(std::ostream &out) const override {
             out << Log::indent;
-            for (auto m : members) out << m.first << "=>" << m.second;
+            for (auto m : members) {
+                out << m.first << "=>" << m.second;
+            }
             out << Log::unindent;
         }
     };
@@ -85,7 +87,9 @@ class ComplexValues final {
                  IR::Vector<T> *result);
     Component *getTranslation(const IR::IDeclaration *decl) {
         auto dv = decl->to<IR::Declaration_Variable>();
-        if (dv == nullptr) return nullptr;
+        if (dv == nullptr) {
+            return nullptr;
+        }
         return ::get(values, dv);
     }
     Component *getTranslation(const IR::Expression *expression) {
@@ -149,7 +153,9 @@ class NestedStructs final : public PassManager {
  public:
     NestedStructs(ReferenceMap *refMap, TypeMap *typeMap, TypeChecking *typeChecking = nullptr) {
         auto values = new ComplexValues(refMap, typeMap);
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new RemoveNestedStructs(values));
         passes.push_back(new ClearTypeMap(typeMap));

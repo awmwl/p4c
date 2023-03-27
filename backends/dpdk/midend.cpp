@@ -146,7 +146,9 @@ DpdkMidEnd::DpdkMidEnd(CompilerOptions &options, std::ostream *outStream) {
                     "verify",
                 };
                 for (auto f : doNotCopyPropList) {
-                    if (externFuncName == f) return false;
+                    if (externFuncName == f) {
+                        return false;
+                    }
                 }
             }
         }

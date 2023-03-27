@@ -36,7 +36,9 @@ class ConvertGlobals : public Inspector {
     bool preorder(const IR::ToplevelBlock *block) override {
         /// Blocks are not in IR tree, use a custom visitor to traverse
         for (auto it : block->constantValue) {
-            if (it.second->is<IR::Block>()) visit(it.second->getNode());
+            if (it.second->is<IR::Block>()) {
+                visit(it.second->getNode());
+            }
         }
         return false;
     }

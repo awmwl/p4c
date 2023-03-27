@@ -109,7 +109,9 @@ class IfInParser : public Inspector {
         setName("IfInParser");
     }
     void postorder(const IR::IfStatement *) override {
-        if (findContext<IR::P4Parser>()) *found = true;
+        if (findContext<IR::P4Parser>()) {
+            *found = true;
+        }
     }
 };
 

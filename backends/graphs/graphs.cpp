@@ -59,7 +59,9 @@ void Graphs::limitStringSize(std::stringstream &sstream, std::stringstream &help
 }
 
 boost::optional<Graphs::vertex_t> Graphs::merge_other_statements_into_vertex() {
-    if (statementsStack.empty()) return boost::none;
+    if (statementsStack.empty()) {
+        return boost::none;
+    }
     std::stringstream sstream;
     std::stringstream helper_sstream;  // to limit line width
 
@@ -80,7 +82,9 @@ boost::optional<Graphs::vertex_t> Graphs::merge_other_statements_into_vertex() {
         limitStringSize(sstream, helper_sstream);
     }
     auto v = add_vertex(cstring(sstream), VertexType::STATEMENTS);
-    for (auto parent : parents) add_edge(parent.first, v, parent.second->label());
+    for (auto parent : parents) {
+        add_edge(parent.first, v, parent.second->label());
+    }
     parents = {{v, new EdgeUnconditional()}};
     statementsStack.clear();
     return v;
@@ -89,7 +93,9 @@ boost::optional<Graphs::vertex_t> Graphs::merge_other_statements_into_vertex() {
 Graphs::vertex_t Graphs::add_and_connect_vertex(const cstring &name, VertexType type) {
     merge_other_statements_into_vertex();
     auto v = add_vertex(name, type);
-    for (auto parent : parents) add_edge(parent.first, v, parent.second->label());
+    for (auto parent : parents) {
+        add_edge(parent.first, v, parent.second->label());
+    }
     return v;
 }
 

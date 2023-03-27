@@ -68,7 +68,9 @@ class OutHeaderSize final : public EBPF::CodeGenInspector {
 
         auto mi = P4::MethodInstance::resolve(statement->methodCall, refMap, typeMap);
         auto method = mi->to<P4::ExternMethod>();
-        if (method == nullptr) return illegal(statement);
+        if (method == nullptr) {
+            return illegal(statement);
+        }
 
         auto declType = method->originalExternType;
         if (declType->name.name != p4lib.packetOut.name ||
@@ -143,14 +145,18 @@ void UBPFDeparserTranslationVisitor::compileEmitField(const IR::Expression *expr
         builder->appendFormat(".%s = %s(", field.c_str(), swap);
         visit(expr);
         builder->appendFormat(".%s", field.c_str());
-        if (shift != 0) builder->appendFormat(" << %d", shift);
+        if (shift != 0) {
+            builder->appendFormat(" << %d", shift);
+        }
         builder->append(")");
         builder->endOfStatement(true);
     }
 
     auto program = deparser->program;
     unsigned bitsInFirstByte = widthToEmit % 8;
-    if (bitsInFirstByte == 0) bitsInFirstByte = 8;
+    if (bitsInFirstByte == 0) {
+        bitsInFirstByte = 8;
+    }
     unsigned bitsInCurrentByte = bitsInFirstByte;
     unsigned left = widthToEmit;
 

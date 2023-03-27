@@ -11,8 +11,9 @@ class ErrorOnInfInt : public Inspector {
     explicit ErrorOnInfInt(const TypeMap *typeMap) : typeMap(typeMap) {}
     void postorder(const IR::Expression *expression) override {
         auto t = typeMap->getType(expression, true);
-        if (t->is<IR::Type_InfInt>())
+        if (t->is<IR::Type_InfInt>()) {
             ::error(ErrorType::ERR_TYPE_ERROR, "%1%: could not infer a width", expression);
+        }
     }
 };
 
@@ -77,17 +78,25 @@ const IR::Node *DoBindTypeVariables::postorder(IR::Expression *expression) {
 }
 
 const IR::Node *DoBindTypeVariables::postorder(IR::Declaration_Instance *decl) {
-    if (decl->type->is<IR::Type_Specialized>()) return decl;
+    if (decl->type->is<IR::Type_Specialized>()) {
+        return decl;
+    }
     auto type = typeMap->getType(getOriginal(), true);
-    if (auto tsc = type->to<IR::Type_SpecializedCanonical>()) type = tsc->substituted;
+    if (auto tsc = type->to<IR::Type_SpecializedCanonical>()) {
+        type = tsc->substituted;
+    }
     BUG_CHECK(type->is<IR::IMayBeGenericType>(), "%1%: unexpected type %2% for declaration", decl,
               type);
     auto mt = type->to<IR::IMayBeGenericType>();
-    if (mt->getTypeParameters()->empty()) return decl;
+    if (mt->getTypeParameters()->empty()) {
+        return decl;
+    }
     auto typeArgs = new IR::Vector<IR::Type>();
     for (auto p : mt->getTypeParameters()->parameters) {
         auto type = getVarValue(p, getOriginal());
-        if (type == nullptr) return decl;
+        if (type == nullptr) {
+            return decl;
+        }
         typeArgs->push_back(type);
     }
     decl->type =
@@ -98,18 +107,25 @@ const IR::Node *DoBindTypeVariables::postorder(IR::Declaration_Instance *decl) {
 const IR::Node *DoBindTypeVariables::postorder(IR::MethodCallExpression *expression) {
     auto type = typeMap->getType(getOriginal(), true);
     typeMap->setType(expression, type);
-    if (typeMap->isCompileTimeConstant(getOriginal<IR::Expression>()))
+    if (typeMap->isCompileTimeConstant(getOriginal<IR::Expression>())) {
         typeMap->setCompileTimeConstant(expression);
-    if (!expression->typeArguments->empty()) return expression;
+    }
+    if (!expression->typeArguments->empty()) {
+        return expression;
+    }
     type = typeMap->getType(expression->method, true);
     BUG_CHECK(type->is<IR::IMayBeGenericType>(), "%1%: unexpected type %2% for method",
               expression->method, type);
     auto mt = type->to<IR::IMayBeGenericType>();
-    if (mt->getTypeParameters()->empty()) return expression;
+    if (mt->getTypeParameters()->empty()) {
+        return expression;
+    }
     auto typeArgs = new IR::Vector<IR::Type>();
     for (auto p : mt->getTypeParameters()->parameters) {
         auto type = getVarValue(p, getOriginal());
-        if (type == nullptr) return expression;
+        if (type == nullptr) {
+            return expression;
+        }
         typeArgs->push_back(type);
     }
     expression->typeArguments = typeArgs;
@@ -117,16 +133,22 @@ const IR::Node *DoBindTypeVariables::postorder(IR::MethodCallExpression *express
 }
 
 const IR::Node *DoBindTypeVariables::postorder(IR::ConstructorCallExpression *expression) {
-    if (expression->constructedType->is<IR::Type_Specialized>()) return expression;
+    if (expression->constructedType->is<IR::Type_Specialized>()) {
+        return expression;
+    }
     auto type = typeMap->getType(getOriginal(), true);
     BUG_CHECK(type->is<IR::IMayBeGenericType>(), "%1%: unexpected type %2% for expression",
               expression, type);
     auto mt = type->to<IR::IMayBeGenericType>();
-    if (mt->getTypeParameters()->empty()) return expression;
+    if (mt->getTypeParameters()->empty()) {
+        return expression;
+    }
     auto typeArgs = new IR::Vector<IR::Type>();
     for (auto p : mt->getTypeParameters()->parameters) {
         auto type = getVarValue(p, getOriginal());
-        if (type == nullptr) return expression;
+        if (type == nullptr) {
+            return expression;
+        }
         typeArgs->push_back(type);
     }
     expression->constructedType =
@@ -138,7 +160,9 @@ const IR::Node *DoBindTypeVariables::postorder(IR::ConstructorCallExpression *ex
 const IR::Node *DoBindTypeVariables::insertTypes(const IR::Node *node) {
     CHECK_NULL(node);
     CHECK_NULL(newTypes);
-    if (newTypes->empty()) return node;
+    if (newTypes->empty()) {
+        return node;
+    }
     newTypes->push_back(node);
     auto result = newTypes;
     newTypes = new IR::IndexedVector<IR::Node>();

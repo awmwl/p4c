@@ -24,17 +24,25 @@ LookupScope::LookupScope(const IrNamespace *ns)
       name(ns ? ns->name : nullptr) {}
 
 IrNamespace *LookupScope::resolve(const IrNamespace *in) const {
-    if (global) return &IrNamespace::global();
-    if (!in) in = &IrNamespace::global();
+    if (global) {
+        return &IrNamespace::global();
+    }
+    if (!in) {
+        in = &IrNamespace::global();
+    }
     if (this->in) {
         in = this->in->resolve(in);
         return in->lookupChild(name);
     }
     while (in) {
-        if (auto *found = in->lookupChild(name)) return found;
+        if (auto *found = in->lookupChild(name)) {
+            return found;
+        }
         in = in->parent;
     }
-    if (name == "IR") return &IrNamespace::global();
+    if (name == "IR") {
+        return &IrNamespace::global();
+    }
     return nullptr;
 }
 
@@ -42,15 +50,23 @@ NamedType::NamedType(const IrClass *cl)
     : lookup(new LookupScope(cl->containedIn)), name(cl->name), resolved(cl) {}
 
 const IrClass *NamedType::resolve(const IrNamespace *in) const {
-    if (resolved) return resolved;
-    if (!in) in = LookupScope().resolve(in);
+    if (resolved) {
+        return resolved;
+    }
+    if (!in) {
+        in = LookupScope().resolve(in);
+    }
     if (lookup) {
         in = lookup->resolve(in);
-        if (!in) return nullptr;
+        if (!in) {
+            return nullptr;
+        }
         return (resolved = in->lookupClass(name));
     }
     while (in) {
-        if (auto *found = in->lookupClass(name)) return (resolved = found);
+        if (auto *found = in->lookupClass(name)) {
+            return (resolved = found);
+        }
         in = in->parent;
     }
     return nullptr;
@@ -112,8 +128,12 @@ NamedType &NamedType::SourceInfo() {
 }
 
 cstring NamedType::toString() const {
-    if (resolved) return resolved->fullName();
-    if (!lookup && name == "ID") return "IR::ID";  // hack -- ID is in namespace IR
+    if (resolved) {
+        return resolved->fullName();
+    }
+    if (!lookup && name == "ID") {
+        return "IR::ID";  // hack -- ID is in namespace IR
+    }
     return lookup ? lookup->toString() + name : name;
 }
 
@@ -123,9 +143,13 @@ cstring TemplateInstantiation::toString() const {
     const char *sep = "";
     for (auto arg : args) {
         rv += sep;
-        if (arg->isResolved() && !base->isResolved()) rv += "const ";
+        if (arg->isResolved() && !base->isResolved()) {
+            rv += "const ";
+        }
         rv += arg->toString().c_str();
-        if (arg->isResolved() && !base->isResolved()) rv += " *";
+        if (arg->isResolved() && !base->isResolved()) {
+            rv += " *";
+        }
         sep = ", ";
     }
     rv += '>';
@@ -134,7 +158,9 @@ cstring TemplateInstantiation::toString() const {
 
 cstring ReferenceType::toString() const {
     cstring rv = base->toString();
-    if (isConst) rv += " const";
+    if (isConst) {
+        rv += " const";
+    }
     rv += " &";
     return rv;
 }
@@ -144,7 +170,9 @@ ReferenceType ReferenceType::OstreamRef(&NamedType::Ostream()), ReferenceType::V
 
 cstring PointerType::toString() const {
     cstring rv = base->toString();
-    if (isConst) rv += " const";
+    if (isConst) {
+        rv += " const";
+    }
     rv += " *";
     return rv;
 }
@@ -157,7 +185,9 @@ cstring ArrayType::declSuffix() const {
 
 const IrClass *FunctionType::resolve(const IrNamespace *ns) const {
     ret->resolve(ns);
-    for (auto arg : args) arg->resolve(ns);
+    for (auto arg : args) {
+        arg->resolve(ns);
+    }
     return nullptr;
 }
 
@@ -167,9 +197,13 @@ cstring FunctionType::toString() const {
     const char *sep = "";
     for (auto arg : args) {
         result += sep;
-        if (arg->isResolved()) result += "const ";
+        if (arg->isResolved()) {
+            result += "const ";
+        }
         result += arg->toString().c_str();
-        if (arg->isResolved()) result += "*";
+        if (arg->isResolved()) {
+            result += "*";
+        }
         sep = ", ";
     }
     result += ")";

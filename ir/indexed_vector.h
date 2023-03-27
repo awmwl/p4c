@@ -42,7 +42,9 @@ class IndexedVector : public Vector<T> {
                            // expect the validity check to succeed.
 
     void insertInMap(const T *a) {
-        if (a == nullptr || !a->template is<IDeclaration>()) return;
+        if (a == nullptr || !a->template is<IDeclaration>()) {
+            return;
+        }
         auto decl = a->template to<IDeclaration>();
         auto name = decl->getName().name;
         auto previous = declarations.find(name);
@@ -55,12 +57,18 @@ class IndexedVector : public Vector<T> {
         }
     }
     void removeFromMap(const T *a) {
-        if (a == nullptr) return;
+        if (a == nullptr) {
+            return;
+        }
         auto decl = a->template to<IDeclaration>();
-        if (decl == nullptr) return;
+        if (decl == nullptr) {
+            return;
+        }
         cstring name = decl->getName().name;
         auto it = declarations.find(name);
-        if (it == declarations.end()) BUG("%1% does not exist", a);
+        if (it == declarations.end()) {
+            BUG("%1% does not exist", a);
+        }
         declarations.erase(it);
     }
 
@@ -72,7 +80,9 @@ class IndexedVector : public Vector<T> {
     IndexedVector(const IndexedVector &) = default;
     IndexedVector(IndexedVector &&) = default;
     IndexedVector(const std::initializer_list<const T *> &a) : Vector<T>(a) {
-        for (auto el : *this) insertInMap(el);
+        for (auto el : *this) {
+            insertInMap(el);
+        }
     }
     IndexedVector &operator=(const IndexedVector &) = default;
     IndexedVector &operator=(IndexedVector &&) = default;
@@ -94,13 +104,17 @@ class IndexedVector : public Vector<T> {
 
     const IDeclaration *getDeclaration(cstring name) const {
         auto it = declarations.find(name);
-        if (it == declarations.end()) return nullptr;
+        if (it == declarations.end()) {
+            return nullptr;
+        }
         return it->second;
     }
     template <class U>
     const U *getDeclaration(cstring name) const {
         auto it = declarations.find(name);
-        if (it == declarations.end()) return nullptr;
+        if (it == declarations.end()) {
+            return nullptr;
+        }
         return it->second->template to<U>();
     }
     Util::Enumerator<const IDeclaration *> *getDeclarations() const {
@@ -113,7 +127,9 @@ class IndexedVector : public Vector<T> {
     }
     template <typename ForwardIter>
     iterator insert(iterator i, ForwardIter b, ForwardIter e) {
-        for (auto it = b; it != e; ++it) insertInMap(*it);
+        for (auto it = b; it != e; ++it) {
+            insertInMap(*it);
+        }
         return Vector<T>::insert(i, b, e);
     }
     iterator replace(iterator i, const T *v) {
@@ -160,7 +176,9 @@ class IndexedVector : public Vector<T> {
         insertInMap(a);
     }
     void pop_back() {
-        if (Vector<T>::empty()) BUG("pop_back from empty IndexedVector");
+        if (Vector<T>::empty()) {
+            BUG("pop_back from empty IndexedVector");
+        }
         auto last = Vector<T>::back();
         removeFromMap(last);
         Vector<T>::pop_back();
@@ -203,10 +221,14 @@ class IndexedVector : public Vector<T> {
     void toJSON(JSONGenerator &json) const override;
     static IndexedVector<T> *fromJSON(JSONLoader &json);
     void validate() const override {
-        if (invalid) return;  // don't crash the compiler because an error happened
+        if (invalid) {
+            return;  // don't crash the compiler because an error happened
+        }
         for (auto el : *this) {
             auto decl = el->template to<IR::IDeclaration>();
-            if (!decl) continue;
+            if (!decl) {
+                continue;
+            }
             auto it = declarations.find(decl->getName());
             BUG_CHECK(it != declarations.end() && it->second->getNode() == el->getNode(),
                       "invalid element %1%", el);

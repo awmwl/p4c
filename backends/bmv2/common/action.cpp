@@ -21,22 +21,30 @@ limitations under the License.
 namespace BMV2 {
 
 cstring ActionConverter::jsonAssignment(const IR::Type *type, bool inParser) {
-    if (!inParser && type->is<IR::Type_Varbits>()) return "assign_VL";
-    if (type->is<IR::Type_HeaderUnion>()) return "assign_union";
-    if (type->is<IR::Type_Header>() || type->is<IR::Type_Struct>()) return "assign_header";
+    if (!inParser && type->is<IR::Type_Varbits>()) {
+        return "assign_VL";
+    }
+    if (type->is<IR::Type_HeaderUnion>()) {
+        return "assign_union";
+    }
+    if (type->is<IR::Type_Header>() || type->is<IR::Type_Struct>()) {
+        return "assign_header";
+    }
     if (auto ts = type->to<IR::Type_Stack>()) {
         auto et = ts->elementType;
-        if (et->is<IR::Type_HeaderUnion>())
+        if (et->is<IR::Type_HeaderUnion>()) {
             return "assign_union_stack";
-        else
+        } else {
             return "assign_header_stack";
+        }
     }
-    if (inParser)
+    if (inParser) {
         // Unfortunately set can do some things that assign cannot,
         // e.g., handle lookahead on the RHS.
         return "set";
-    else
+    } else {
         return "assign";
+    }
 }
 
 void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
@@ -175,12 +183,16 @@ void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
                 } else {
                     json = ExternConverter::cvtExternObject(ctxt, em, mc, s, emitExterns);
                 }
-                if (json) result->append(json);
+                if (json) {
+                    result->append(json);
+                }
                 continue;
             } else if (mi->is<P4::ExternFunction>()) {
                 auto ef = mi->to<P4::ExternFunction>();
                 auto json = ExternConverter::cvtExternFunction(ctxt, ef, mc, s, emitExterns);
-                if (json) result->append(json);
+                if (json) {
+                    result->append(json);
+                }
                 continue;
             }
         }
@@ -191,17 +203,19 @@ void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
 void ActionConverter::convertActionParams(const IR::ParameterList *parameters,
                                           Util::JsonArray *params) {
     for (auto p : *parameters->getEnumerator()) {
-        if (!ctxt->refMap->isUsed(p))
+        if (!ctxt->refMap->isUsed(p)) {
             warn(ErrorType::WARN_UNUSED, "Unused action parameter %1%", p);
+        }
 
         auto param = new Util::JsonObject();
         param->emplace("name", p->externalName());
         auto type = ctxt->typeMap->getType(p, true);
         // TODO: added IR::Type_Enum here to support PSA_MeterColor_t
         // should re-consider how to support action parameters that is neither bit<> nor int<>
-        if (!(type->is<IR::Type_Bits>() || type->is<IR::Type_Enum>()))
+        if (!(type->is<IR::Type_Bits>() || type->is<IR::Type_Enum>())) {
             ::error(ErrorType::ERR_INVALID,
                     "%1%: action parameters must be bit<> or int<> on this target", p);
+        }
         param->emplace("bitwidth", type->width_bits());
         params->append(param);
     }

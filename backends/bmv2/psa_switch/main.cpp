@@ -46,9 +46,13 @@ int main(int argc, char *const argv[]) {
     options.compilerVersion = BMV2_PSA_VERSION_STRING;
 
     if (options.process(argc, argv) != nullptr) {
-        if (options.loadIRFromJson == false) options.setInputFile();
+        if (options.loadIRFromJson == false) {
+            options.setInputFile();
+        }
     }
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
 
     auto hook = options.getDebugHook();
 
@@ -61,7 +65,9 @@ int main(int argc, char *const argv[]) {
     if (options.loadIRFromJson == false) {
         program = P4::parseP4File(options);
 
-        if (program == nullptr || ::errorCount() > 0) return 1;
+        if (program == nullptr || ::errorCount() > 0) {
+            return 1;
+        }
         try {
             P4::P4COptionPragmaParser optionsPragmaParser;
             program->apply(P4::ApplyOptionsPragmas(optionsPragmaParser));
@@ -73,7 +79,9 @@ int main(int argc, char *const argv[]) {
             std::cerr << bug.what() << std::endl;
             return 1;
         }
-        if (program == nullptr || ::errorCount() > 0) return 1;
+        if (program == nullptr || ::errorCount() > 0) {
+            return 1;
+        }
     } else {
         std::filebuf fb;
         if (fb.open(options.file, std::ios::in) == nullptr) {
@@ -91,20 +99,27 @@ int main(int argc, char *const argv[]) {
     }
 
     P4::serializeP4RuntimeIfRequired(program, options);
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
 
     BMV2::PsaSwitchMidEnd midEnd(options);
     midEnd.addDebugHook(hook);
     try {
         toplevel = midEnd.process(program);
-        if (::errorCount() > 1 || toplevel == nullptr || toplevel->getMain() == nullptr) return 1;
-        if (options.dumpJsonFile)
+        if (::errorCount() > 1 || toplevel == nullptr || toplevel->getMain() == nullptr) {
+            return 1;
+        }
+        if (options.dumpJsonFile) {
             JSONGenerator(*openFile(options.dumpJsonFile, true), true) << program << std::endl;
+        }
     } catch (const std::exception &bug) {
         std::cerr << bug.what() << std::endl;
         return 1;
     }
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
 
     auto backend =
         new BMV2::PsaSwitchBackend(options, &midEnd.refMap, &midEnd.typeMap, &midEnd.enumMap);
@@ -117,7 +132,9 @@ int main(int argc, char *const argv[]) {
         std::cerr << bug.what() << std::endl;
         return 1;
     }
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
 
     if (!options.outputFile.isNullOrEmpty()) {
         std::ostream *out = openFile(options.outputFile, false);

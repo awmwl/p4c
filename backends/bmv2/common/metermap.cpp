@@ -45,10 +45,11 @@ void DirectMeterMap::setTable(const IR::IDeclaration *meter, const IR::P4Table *
                 table, meter);
         return;
     }
-    if (info->table != nullptr)
+    if (info->table != nullptr) {
         ::error(ErrorType::ERR_INVALID,
                 "%1%: Direct meters cannot be attached to multiple tables %2% and %3%", meter,
                 table, info->table);
+    }
     info->table = table;
 }
 
@@ -56,7 +57,9 @@ void DirectMeterMap::setTable(const IR::IDeclaration *meter, const IR::P4Table *
  * Helper function to check if two expressions are syntactically identical
  */
 static bool checkSame(const IR::Expression *expr0, const IR::Expression *expr1) {
-    if (expr0->node_type_name() != expr1->node_type_name()) return false;
+    if (expr0->node_type_name() != expr1->node_type_name()) {
+        return false;
+    }
     if (auto pe0 = expr0->to<IR::PathExpression>()) {
         auto pe1 = expr1->to<IR::PathExpression>();
         return pe0->path->name == pe1->path->name && pe0->path->absolute == pe1->path->absolute;
@@ -73,16 +76,19 @@ static bool checkSame(const IR::Expression *expr0, const IR::Expression *expr1) 
 void DirectMeterMap::setDestination(const IR::IDeclaration *meter,
                                     const IR::Expression *destination) {
     auto info = getInfo(meter);
-    if (info == nullptr) info = createInfo(meter);
+    if (info == nullptr) {
+        info = createInfo(meter);
+    }
     if (info->destinationField == nullptr) {
         info->destinationField = destination;
     } else {
         bool same = checkSame(destination, info->destinationField);
-        if (!same)
+        if (!same) {
             ::error(ErrorType::ERR_INVALID,
                     "all meter operations must write to the same destination,"
                     " however %1% and %2% are different",
                     destination, info->destinationField);
+        }
     }
 }
 

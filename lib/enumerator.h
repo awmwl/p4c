@@ -224,7 +224,9 @@ class FilterEnumerator final : public Enumerator<T> {
         while (this->input->moveNext()) {
             this->current = this->input->getCurrent();
             bool match = this->filter(this->current);
-            if (match) return true;
+            if (match) {
+                return true;
+            }
         }
         this->state = EnumeratorState::PastEnd;
         return false;
@@ -286,10 +288,11 @@ class AsEnumerator final : public Enumerator<S> {
 
     bool moveNext() {
         bool result = this->input->moveNext();
-        if (result)
+        if (result) {
             this->state = EnumeratorState::Valid;
-        else
+        } else {
             this->state = EnumeratorState::PastEnd;
+        }
         return result;
     }
 
@@ -373,14 +376,18 @@ class ConcatEnumerator final : public Enumerator<T> {
     bool advance() {
         if (this->state == EnumeratorState::NotStarted) {
             bool start = this->inputs->moveNext();
-            if (!start) goto theend;
+            if (!start) {
+                goto theend;
+            }
         }
 
         this->state = EnumeratorState::Valid;
         bool more;
         do {
             Enumerator<T> *currentInput = this->inputs->getCurrent();
-            if (currentInput == nullptr) throw std::logic_error("Null iterator in concatenation");
+            if (currentInput == nullptr) {
+                throw std::logic_error("Null iterator in concatenation");
+            }
             bool moreCurrent = currentInput->moveNext();
             if (moreCurrent) {
                 this->currentResult = currentInput->getCurrent();
@@ -398,7 +405,9 @@ class ConcatEnumerator final : public Enumerator<T> {
  public:
     void reset() {
         this->inputs->reset();
-        while (this->inputs->moveNext()) this->inputs->getCurrent()->reset();
+        while (this->inputs->moveNext()) {
+            this->inputs->getCurrent()->reset();
+        }
         this->inputs->reset();
         Enumerator<T>::reset();
     }
@@ -459,7 +468,9 @@ Enumerator<T> *Enumerator<T>::where(std::function<bool(const T &)> filter) {
 template <typename T>
 uint64_t Enumerator<T>::count() {
     uint64_t found = 0;
-    while (this->moveNext()) found++;
+    while (this->moveNext()) {
+        found++;
+    }
     return found;
 }
 
@@ -497,7 +508,9 @@ Enumerator<typename Iter::value_type> *Enumerator<T>::createEnumerator(Iter begi
 template <typename T>
 std::vector<T> *Enumerator<T>::toVector() {
     auto result = new std::vector<T>();
-    while (moveNext()) result->push_back(getCurrent());
+    while (moveNext()) {
+        result->push_back(getCurrent());
+    }
     return result;
 }
 
@@ -518,24 +531,32 @@ Enumerator<T> *Enumerator<T>::concat(Enumerator<T> *other) {
 template <typename T>
 T Enumerator<T>::next() {
     bool next = moveNext();
-    if (!next) throw std::logic_error("There is no element for `next()'");
+    if (!next) {
+        throw std::logic_error("There is no element for `next()'");
+    }
     return getCurrent();
 }
 
 template <typename T>
 T Enumerator<T>::single() {
     bool next = moveNext();
-    if (!next) throw std::logic_error("There is no element for `single()'");
+    if (!next) {
+        throw std::logic_error("There is no element for `single()'");
+    }
     T result = getCurrent();
     next = moveNext();
-    if (next) throw std::logic_error("There are multiple elements when calling `single()'");
+    if (next) {
+        throw std::logic_error("There are multiple elements when calling `single()'");
+    }
     return result;
 }
 
 template <typename T>
 T Enumerator<T>::nextOrDefault() {
     bool next = moveNext();
-    if (!next) return T{};
+    if (!next) {
+        return T{};
+    }
     return getCurrent();
 }
 
@@ -543,7 +564,9 @@ T Enumerator<T>::nextOrDefault() {
 
 template <typename T>
 T EnumeratorHandle<T>::operator*() const {
-    if (enumerator == nullptr) throw std::logic_error("Dereferencing end() iterator");
+    if (enumerator == nullptr) {
+        throw std::logic_error("Dereferencing end() iterator");
+    }
     return enumerator->getCurrent();
 }
 
@@ -555,8 +578,12 @@ const EnumeratorHandle<T> &EnumeratorHandle<T>::operator++() {
 
 template <typename T>
 bool EnumeratorHandle<T>::operator!=(const EnumeratorHandle<T> &other) const {
-    if (this->enumerator == other.enumerator) return true;
-    if (other.enumerator != nullptr) throw std::logic_error("Comparison with different iterator");
+    if (this->enumerator == other.enumerator) {
+        return true;
+    }
+    if (other.enumerator != nullptr) {
+        throw std::logic_error("Comparison with different iterator");
+    }
     return this->enumerator->state == EnumeratorState::Valid;
 }
 

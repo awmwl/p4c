@@ -77,7 +77,9 @@ static inline Util::JsonObject *transformAnnotation(const cstring &annotation) {
 template <typename It>
 static inline Util::JsonArray *transformAnnotations(const It &first, const It &last) {
     auto *annotations = new Util::JsonArray();
-    for (auto it = first; it != last; it++) annotations->append(transformAnnotation(*it));
+    for (auto it = first; it != last; it++) {
+        annotations->append(transformAnnotation(*it));
+    }
     return annotations;
 }
 
@@ -99,7 +101,9 @@ static inline auto findP4InfoObject(const It &first, const It &last, P4Id object
     using T = typename std::iterator_traits<It>::value_type;
     auto desiredObject = std::find_if(
         first, last, [&](const T &object) { return object.preamble().id() == objectId; });
-    if (desiredObject == last) return nullptr;
+    if (desiredObject == last) {
+        return nullptr;
+    }
     return &*desiredObject;
 }
 
@@ -151,7 +155,9 @@ static inline Util::JsonObject *makeType(cstring type, T defaultValue) {
 static inline Util::JsonObject *makeTypeBool(boost::optional<bool> defaultValue = boost::none) {
     auto *typeObj = new Util::JsonObject();
     typeObj->emplace("type", "bool");
-    if (defaultValue != boost::none) typeObj->emplace("default_value", *defaultValue);
+    if (defaultValue != boost::none) {
+        typeObj->emplace("default_value", *defaultValue);
+    }
     return typeObj;
 }
 
@@ -160,7 +166,9 @@ static inline Util::JsonObject *makeTypeBytes(int width,
     auto *typeObj = new Util::JsonObject();
     typeObj->emplace("type", "bytes");
     typeObj->emplace("width", width);
-    if (defaultValue != boost::none) typeObj->emplace("default_value", *defaultValue);
+    if (defaultValue != boost::none) {
+        typeObj->emplace("default_value", *defaultValue);
+    }
     return typeObj;
 }
 
@@ -169,9 +177,13 @@ static inline Util::JsonObject *makeTypeEnum(const std::vector<cstring> &choices
     auto *typeObj = new Util::JsonObject();
     typeObj->emplace("type", "string");
     auto *choicesArray = new Util::JsonArray();
-    for (auto choice : choices) choicesArray->append(choice);
+    for (auto choice : choices) {
+        choicesArray->append(choice);
+    }
     typeObj->emplace("choices", choicesArray);
-    if (defaultValue != boost::none) typeObj->emplace("default_value", *defaultValue);
+    if (defaultValue != boost::none) {
+        typeObj->emplace("default_value", *defaultValue);
+    }
     return typeObj;
 }
 
@@ -214,12 +226,13 @@ static inline boost::optional<cstring> transformMatchType(
 }
 
 static inline boost::optional<cstring> transformOtherMatchType(std::string matchType) {
-    if (matchType == "atcam_partition_index")
+    if (matchType == "atcam_partition_index") {
         return cstring("ATCAM");
-    else if (matchType == "dleft_hash")
+    } else if (matchType == "dleft_hash") {
         return cstring("DLEFT_HASH");
-    else
+    } else {
         return boost::none;
+    }
 }
 
 template <typename It>

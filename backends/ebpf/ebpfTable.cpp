@@ -86,8 +86,9 @@ void EBPFTable::initKey() {
     if (keyGenerator != nullptr) {
         unsigned fieldNumber = 0;
         for (auto c : keyGenerator->keyElements) {
-            if (c->matchType->path->name.name == "selector")
+            if (c->matchType->path->name.name == "selector") {
                 continue;  // this match type is intended for ActionSelector, not table itself
+            }
 
             auto type = program->typeMap->getType(c->expression);
             auto ebpfType = EBPFTypeFactory::instance->create(type);
@@ -109,16 +110,22 @@ void EBPFTable::initKey() {
 // - Validates if match fields in ternary tables are sorted by size
 //   in descending order (ignores selector fields).
 void EBPFTable::validateKeys() const {
-    if (keyGenerator == nullptr) return;
+    if (keyGenerator == nullptr) {
+        return;
+    }
 
     if (isTernaryTable()) {
         unsigned last_key_size = std::numeric_limits<unsigned>::max();
         for (auto it : keyGenerator->keyElements) {
-            if (it->matchType->path->name.name == "selector") continue;
+            if (it->matchType->path->name.name == "selector") {
+                continue;
+            }
 
             auto type = program->typeMap->getType(it->expression);
             auto ebpfType = EBPFTypeFactory::instance->create(type);
-            if (!ebpfType->is<IHasWidth>()) continue;
+            if (!ebpfType->is<IHasWidth>()) {
+                continue;
+            }
 
             unsigned width = ebpfType->to<IHasWidth>()->widthInBits();
             if (width > last_key_size) {
@@ -333,7 +340,9 @@ void EBPFTable::emitValueStructStructure(CodeBuilder *builder) {
     for (auto a : actionList->actionList) {
         auto adecl = program->refMap->getDeclaration(a->getPath(), true);
         auto action = adecl->getNode()->to<IR::P4Action>();
-        if (action->name.originalName == P4::P4CoreLibrary::instance.noAction.name) continue;
+        if (action->name.originalName == P4::P4CoreLibrary::instance.noAction.name) {
+            continue;
+        }
         cstring name = EBPFObject::externalName(action);
         emitActionArguments(builder, action, name);
     }
@@ -460,7 +469,9 @@ void EBPFTable::emitKey(CodeBuilder *builder, cstring keyName) {
     for (auto c : keyGenerator->keyElements) {
         auto ebpfType = ::get(keyTypes, c);
         cstring fieldName = ::get(keyFieldNames, c);
-        if (fieldName == nullptr || ebpfType == nullptr) continue;
+        if (fieldName == nullptr || ebpfType == nullptr) {
+            continue;
+        }
         bool memcpy = false;
         EBPFScalarType *scalar = nullptr;
         cstring swap;
@@ -491,8 +502,9 @@ void EBPFTable::emitKey(CodeBuilder *builder, cstring keyName) {
 
         bool isLPMKeyBigEndian = false;
         if (isLPMTable()) {
-            if (c->matchType->path->name.name == P4::P4CoreLibrary::instance.lpmMatch.name)
+            if (c->matchType->path->name.name == P4::P4CoreLibrary::instance.lpmMatch.name) {
                 isLPMKeyBigEndian = true;
+            }
         }
 
         builder->emitIndent();
@@ -503,9 +515,13 @@ void EBPFTable::emitKey(CodeBuilder *builder, cstring keyName) {
             builder->appendFormat("[0]), %d)", scalar->bytesRequired());
         } else {
             builder->appendFormat("%s.%s = ", keyName.c_str(), fieldName.c_str());
-            if (isLPMKeyBigEndian) builder->appendFormat("%s(", swap.c_str());
+            if (isLPMKeyBigEndian) {
+                builder->appendFormat("%s(", swap.c_str());
+            }
             codeGen->visit(c->expression);
-            if (isLPMKeyBigEndian) builder->append(")");
+            if (isLPMKeyBigEndian) {
+                builder->append(")");
+            }
         }
         builder->endOfStatement(true);
 
@@ -656,7 +672,9 @@ void EBPFTable::emitInitializer(CodeBuilder *builder) {
 
     // Emit code for table initializer
     auto entries = t->getEntries();
-    if (entries == nullptr) return;
+    if (entries == nullptr) {
+        return;
+    }
 
     builder->emitIndent();
     builder->blockStart();
@@ -730,7 +748,9 @@ void EBPFTable::emitInitializer(CodeBuilder *builder) {
 }
 
 void EBPFTable::emitLookup(CodeBuilder *builder, cstring key, cstring value) {
-    if (cacheEnabled()) emitCacheLookup(builder, key, value);
+    if (cacheEnabled()) {
+        emitCacheLookup(builder, key, value);
+    }
 
     if (!isTernaryTable()) {
         builder->target->emitTableLookup(builder, dataMapName, key, value);
@@ -1086,10 +1106,13 @@ EBPFValueSet::EBPFValueSet(const EBPFProgram *program, const IR::P4ValueSet *p4v
     // validate size
     if (pvs->size->is<IR::Constant>()) {
         auto sc = pvs->size->to<IR::Constant>();
-        if (sc->fitsUint()) size = sc->asUnsigned();
-        if (size == 0)
+        if (sc->fitsUint()) {
+            size = sc->asUnsigned();
+        }
+        if (size == 0) {
             ::error(ErrorType::ERR_OVERLIMIT,
                     "Size must be a positive value less than 2^32, got %1% entries", pvs->size);
+        }
     } else {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
                 "Size of value_set must be know at compilation time: %1%", pvs->size);
@@ -1175,7 +1198,9 @@ void EBPFValueSet::emitKeyInitializer(CodeBuilder *builder, const IR::SelectExpr
     for (unsigned int i = 0; i < fieldNames.size(); i++) {
         bool useMemcpy = true;
         if (fieldNames.at(i).second->is<IR::Type_Bits>()) {
-            if (fieldNames.at(i).second->to<IR::Type_Bits>()->width_bits() <= 64) useMemcpy = false;
+            if (fieldNames.at(i).second->to<IR::Type_Bits>()->width_bits() <= 64) {
+                useMemcpy = false;
+            }
         }
         builder->emitIndent();
 

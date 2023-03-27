@@ -69,12 +69,13 @@ struct DpdkProgramStructure {
     IR::IndexedVector<IR::DpdkDeclaration> &get_globals() { return variables; }
 
     bool hasVisited(const IR::Type_StructLike *st) {
-        if (auto h = st->to<IR::Type_Header>())
+        if (auto h = st->to<IR::Type_Header>()) {
             return header_types.count(h->getName());
-        else if (auto s = st->to<IR::Type_Struct>())
+        } else if (auto s = st->to<IR::Type_Struct>()) {
             return metadata_types.count(s->getName());
-        else if (auto u = st->to<IR::Type_HeaderUnion>())
+        } else if (auto u = st->to<IR::Type_HeaderUnion>()) {
             return header_union_types.count(u->getName());
+        }
         return false;
     }
 

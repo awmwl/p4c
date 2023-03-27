@@ -218,10 +218,16 @@ void forAllEvaluatedBlocks(const IR::Block *block, Func function) {
         // Add child blocks to the frontier if we haven't already visited them.
         for (auto evaluatedChild : evaluatedBlock->constantValue) {
             // child block may be nullptr due to optional argument.
-            if (!evaluatedChild.second) continue;
-            if (!evaluatedChild.second->is<IR::Block>()) continue;
+            if (!evaluatedChild.second) {
+                continue;
+            }
+            if (!evaluatedChild.second->is<IR::Block>()) {
+                continue;
+            }
             auto evaluatedChildBlock = evaluatedChild.second->to<IR::Block>();
-            if (visited.find(evaluatedChildBlock) != visited.end()) continue;
+            if (visited.find(evaluatedChildBlock) != visited.end()) {
+                continue;
+            }
             frontier.insert(evaluatedChildBlock);
         }
     }
@@ -244,7 +250,9 @@ void addAnnotations(Message *message, const IR::IAnnotated *annotated, UnaryPred
     CHECK_NULL(message);
 
     // Synthesized resources may have no annotations.
-    if (annotated == nullptr) return;
+    if (annotated == nullptr) {
+        return;
+    }
 
     for (const IR::Annotation *annotation : annotated->getAnnotations()->annotations) {
         // Always add all structured annotations.
@@ -254,14 +262,22 @@ void addAnnotations(Message *message, const IR::IAnnotated *annotated, UnaryPred
         }
         // Don't output the @name or @id annotations; they're represented
         // elsewhere in P4Info messages.
-        if (annotation->name == IR::Annotation::nameAnnotation) continue;
-        if (annotation->name == "id") continue;
+        if (annotation->name == IR::Annotation::nameAnnotation) {
+            continue;
+        }
+        if (annotation->name == "id") {
+            continue;
+        }
 
         // Don't output the @brief or @description annotations; they're
         // represented using the documentation fields.
-        if (annotation->name == "brief" || annotation->name == "description") continue;
+        if (annotation->name == "brief" || annotation->name == "description") {
+            continue;
+        }
 
-        if (p(annotation->name)) continue;
+        if (p(annotation->name)) {
+            continue;
+        }
 
         message->add_annotations(serializeOneAnnotation(annotation));
     }
@@ -280,7 +296,9 @@ void addDocumentation(Message *message, const IR::IAnnotated *annotated) {
     CHECK_NULL(message);
 
     // Synthesized resources may have no annotations.
-    if (annotated == nullptr) return;
+    if (annotated == nullptr) {
+        return;
+    }
 
     ::p4::config::v1::Documentation doc;
     bool hasDoc = false;
@@ -307,7 +325,9 @@ void addDocumentation(Message *message, const IR::IAnnotated *annotated) {
         }
     }
 
-    if (hasDoc) message->mutable_doc()->CopyFrom(doc);
+    if (hasDoc) {
+        message->mutable_doc()->CopyFrom(doc);
+    }
 }
 
 /// Set all the fields in the @preamble, including the 'annotations' and 'doc'
@@ -463,7 +483,9 @@ boost::optional<Counterlike<Kind>> getDirectCounterlike(const IR::P4Table *table
                                                         ReferenceMap *refMap, TypeMap *typeMap) {
     auto propertyName = CounterlikeTraits<Kind>::directPropertyName();
     auto instance = getExternInstanceFromProperty(table, propertyName, refMap, typeMap);
-    if (!instance) return boost::none;
+    if (!instance) {
+        return boost::none;
+    }
     return Counterlike<Kind>::fromDirect(*instance, table);
 }
 

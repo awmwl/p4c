@@ -179,7 +179,9 @@ ParserOptions::ParserOptions() : Util::Options(defaultMessage) {
         "--disable-annotations", "annotations",
         [this](const char *arg) {
             auto copy = strdup(arg);
-            while (auto name = strsep(&copy, ",")) disabledAnnotations.insert(name);
+            while (auto name = strsep(&copy, ",")) {
+                disabledAnnotations.insert(name);
+            }
             return true;
         },
         "Specify a (comma separated) list of annotations that should be "
@@ -255,7 +257,9 @@ ParserOptions::ParserOptions() : Util::Options(defaultMessage) {
         "--top4", "pass1[,pass2]",
         [this](const char *arg) {
             auto copy = strdup(arg);
-            while (auto pass = strsep(&copy, ",")) top4.push_back(pass);
+            while (auto pass = strsep(&copy, ",")) {
+                top4.push_back(pass);
+            }
             return true;
         },
         "[Compiler debugging] Dump the P4 representation after\n"
@@ -315,11 +319,14 @@ namespace {
 
 bool setIncludePathIfExists(const char *&includePathOut, const char *possiblePath) {
     struct stat st;
-    if (!(stat(possiblePath, &st) >= 0 && S_ISDIR(st.st_mode))) return false;
-    if (auto path = realpath(possiblePath, NULL))
+    if (!(stat(possiblePath, &st) >= 0 && S_ISDIR(st.st_mode))) {
+        return false;
+    }
+    if (auto path = realpath(possiblePath, NULL)) {
         includePathOut = path;
-    else
+    } else {
         includePathOut = strdup(possiblePath);
+    }
     return true;
 }
 
@@ -371,9 +378,13 @@ const char *ParserOptions::getIncludePath() {
     // line for the preprocessor
     char *driverP4IncludePath =
         isv1() ? getenv("P4C_14_INCLUDE_PATH") : getenv("P4C_16_INCLUDE_PATH");
-    if (driverP4IncludePath != nullptr) path += (cstring(" -I") + cstring(driverP4IncludePath));
+    if (driverP4IncludePath != nullptr) {
+        path += (cstring(" -I") + cstring(driverP4IncludePath));
+    }
     path += cstring(" -I") + (isv1() ? p4_14includePath : p4includePath);
-    if (!isv1()) path += cstring(" -I") + p4includePath + cstring("/bmv2");
+    if (!isv1()) {
+        path += cstring(" -I") + p4includePath + cstring("/bmv2");
+    }
     return path.c_str();
 }
 
@@ -390,12 +401,18 @@ FILE *ParserOptions::preprocess() {
         std::string cmd("cpp");
 #endif
 
-        if (file == nullptr) file = "";
-        if (file.find(' ')) file = cstring("\"") + file + "\"";
+        if (file == nullptr) {
+            file = "";
+        }
+        if (file.find(' ')) {
+            file = cstring("\"") + file + "\"";
+        }
         cmd += cstring(" -C -undef -nostdinc -x assembler-with-cpp") + " " + preprocessor_options +
                getIncludePath() + " " + file;
 
-        if (Log::verbose()) std::cerr << "Invoking preprocessor " << std::endl << cmd << std::endl;
+        if (Log::verbose()) {
+            std::cerr << "Invoking preprocessor " << std::endl << cmd << std::endl;
+        }
         in = popen(cmd.c_str(), "r");
         if (in == nullptr) {
             ::error(ErrorType::ERR_IO, "Error invoking preprocessor");
@@ -410,7 +427,9 @@ FILE *ParserOptions::preprocess() {
         size_t len = 0;
         ssize_t read;
 
-        while ((read = getline(&line, &len, in)) != -1) printf("%s", line);
+        while ((read = getline(&line, &len, in)) != -1) {
+            printf("%s", line);
+        }
         closeInput(in);
         return nullptr;
     }
@@ -420,11 +439,12 @@ FILE *ParserOptions::preprocess() {
 void ParserOptions::closeInput(FILE *inputStream) const {
     if (close_input) {
         int exitCode = pclose(inputStream);
-        if (WIFEXITED(exitCode) && WEXITSTATUS(exitCode) == 4)
+        if (WIFEXITED(exitCode) && WEXITSTATUS(exitCode) == 4) {
             ::error(ErrorType::ERR_IO, "input file %s does not exist", file);
-        else if (exitCode != 0)
+        } else if (exitCode != 0) {
             ::error(ErrorType::ERR_IO, "Preprocessor returned exit code %d; aborting compilation",
                     exitCode);
+        }
     }
 }
 
@@ -441,9 +461,13 @@ bool ParserOptions::isv1() const { return langVersion == ParserOptions::Frontend
 
 void ParserOptions::dumpPass(const char *manager, unsigned seq, const char *pass,
                              const IR::Node *node) const {
-    if (strncmp(pass, "P4::", 4) == 0) pass += 4;
+    if (strncmp(pass, "P4::", 4) == 0) {
+        pass += 4;
+    }
     cstring name = cstring(manager) + "_" + Util::toString(seq) + "_" + pass;
-    if (Log::verbose()) std::cerr << name << std::endl;
+    if (Log::verbose()) {
+        std::cerr << name << std::endl;
+    }
 
     for (auto s : top4) {
         bool match = false;
@@ -463,12 +487,16 @@ void ParserOptions::dumpPass(const char *manager, unsigned seq, const char *pass
         if (match) {
             cstring suffix = cstring("-") + name;
             cstring filename = file;
-            if (filename == "-") filename = "tmp.p4";
+            if (filename == "-") {
+                filename = "tmp.p4";
+            }
 
             cstring fileName = makeFileName(dumpFolder, filename, suffix);
             auto stream = openFile(fileName, true);
             if (stream != nullptr) {
-                if (Log::verbose()) std::cerr << "Writing program to " << fileName << std::endl;
+                if (Log::verbose()) {
+                    std::cerr << "Writing program to " << fileName << std::endl;
+                }
                 P4::ToP4 toP4(stream, Log::verbose(), file);
                 if (noIncludes) {
                     toP4.setnoIncludesArg(true);
@@ -498,7 +526,9 @@ DebugHook ParserOptions::getDebugHook() const {
 /* static */ P4CContext &P4CContext::get() { return CompileContextStack::top<P4CContext>(); }
 
 const P4CConfiguration &P4CContext::getConfig() {
-    if (CompileContextStack::isEmpty()) return DefaultP4CConfiguration::get();
+    if (CompileContextStack::isEmpty()) {
+        return DefaultP4CConfiguration::get();
+    }
     return get().getConfigImpl();
 }
 

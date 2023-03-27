@@ -37,7 +37,9 @@ class EBPFChecksumPSA : public EBPFObject {
                     int type);
 
     void emitVariables(CodeBuilder *builder) {
-        if (engine) engine->emitVariables(builder, declaration);
+        if (engine) {
+            engine->emitVariables(builder, declaration);
+        }
     }
 
     virtual void processMethod(CodeBuilder *builder, cstring method,

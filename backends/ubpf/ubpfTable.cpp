@@ -219,7 +219,9 @@ void UBPFTable::setTableSize(const IR::TableBlock *table) {
                               // For instance, 2^17 causes error while loading program.
 
     auto sz = table->container->getSizeProperty();
-    if (sz == nullptr) return;
+    if (sz == nullptr) {
+        return;
+    }
 
     auto pConstant = sz->to<IR::Constant>();
     if (pConstant->asInt() <= 0) {
@@ -281,9 +283,10 @@ void UBPFTable::emitKeyType(EBPF::CodeBuilder *builder) {
             auto mtdecl = program->refMap->getDeclaration(c->matchType->path, true);
             auto matchType = mtdecl->getNode()->to<IR::Declaration_ID>();
             if (matchType->name.name != P4::P4CoreLibrary::instance.exactMatch.name &&
-                matchType->name.name != P4::P4CoreLibrary::instance.lpmMatch.name)
+                matchType->name.name != P4::P4CoreLibrary::instance.lpmMatch.name) {
                 ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Match of type %1% not supported",
                         c->matchType);
+            }
             key_idx++;
         }
     }
@@ -374,7 +377,9 @@ void UBPFTable::emitTypes(EBPF::CodeBuilder *builder) {
 }
 
 void UBPFTable::emitKey(EBPF::CodeBuilder *builder, cstring keyName) {
-    if (keyGenerator == nullptr) return;
+    if (keyGenerator == nullptr) {
+        return;
+    }
     for (auto c : keyGenerator->keyElements) {
         auto ebpfType = ::get(keyTypes, c);
         cstring fieldName = ::get(keyFieldNames, c);

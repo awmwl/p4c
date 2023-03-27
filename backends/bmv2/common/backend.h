@@ -95,7 +95,9 @@ class SkipControls : public P4::ActionSynthesisPolicy {
  public:
     explicit SkipControls(const std::set<cstring> *skip) : skip(skip) { CHECK_NULL(skip); }
     bool convert(const Visitor::Context *, const IR::P4Control *control) override {
-        if (skip->find(control->name) != skip->end()) return false;
+        if (skip->find(control->name) != skip->end()) {
+            return false;
+        }
         return true;
     }
 };
@@ -115,7 +117,9 @@ class ProcessControls : public P4::RemoveComplexExpressionsPolicy {
         CHECK_NULL(process);
     }
     bool convert(const IR::P4Control *control) const {
-        if (process->find(control->name) != process->end()) return true;
+        if (process->find(control->name) != process->end()) {
+            return true;
+        }
         return false;
     }
 };
@@ -146,7 +150,9 @@ class RenameUserMetadata : public Transform {
     const IR::Node *postorder(IR::Type_Struct *type) override {
         // Clone the user metadata type
         auto orig = getOriginal<IR::Type_Struct>();
-        if (userMetaType->name != orig->name) return type;
+        if (userMetaType->name != orig->name) {
+            return type;
+        }
 
         auto vec = new IR::IndexedVector<IR::Node>();
         LOG2("Creating clone of " << orig);
@@ -160,7 +166,9 @@ class RenameUserMetadata : public Transform {
         for (auto f : type->fields) {
             auto anno = f->getAnnotation(IR::Annotation::nameAnnotation);
             cstring suffix = "";
-            if (anno != nullptr) suffix = anno->getName();
+            if (anno != nullptr) {
+                suffix = anno->getName();
+            }
             if (suffix.startsWith(".")) {
                 // We can't change the name of this field.
                 // Hopefully the user knows what they are doing.
@@ -168,10 +176,11 @@ class RenameUserMetadata : public Transform {
                 continue;
             }
 
-            if (!suffix.isNullOrEmpty())
+            if (!suffix.isNullOrEmpty()) {
                 suffix = cstring(".") + suffix;
-            else
+            } else {
                 suffix = cstring(".") + f->name;
+            }
             cstring newName = namePrefix + suffix;
             auto stringLit = new IR::StringLiteral(newName);
             LOG2("Renaming " << f << " to " << newName);
@@ -189,8 +198,9 @@ class RenameUserMetadata : public Transform {
     const IR::Node *preorder(IR::Type_Name *type) override {
         // Find any reference to the user metadata type that is used and replace them
         auto decl = refMap->getDeclaration(type->path);
-        if (decl == userMetaType)
+        if (decl == userMetaType) {
             type->path = new IR::Path(type->path->srcInfo, IR::ID(type->path->srcInfo, namePrefix));
+        }
         LOG2("Replacing reference with " << type);
         return type;
     }

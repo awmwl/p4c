@@ -30,23 +30,25 @@ class InlineControlFlow : public Transform {
     const IR::V1Program *global;
 
     const IR::Node *preorder(IR::Apply *a) override {
-        if (global && !global->get<IR::V1Table>(a->name))
+        if (global && !global->get<IR::V1Table>(a->name)) {
             error("%s: No table named %s", a->srcInfo, a->name);
+        }
         return a;
     }
     const IR::Node *preorder(IR::Primitive *p) override {
         if (auto cf = global ? global->get<IR::V1Control>(p->name) : 0) {
             const IR::V1Control *control;
-            if (auto act = findContext<IR::ActionFunction>())
+            if (auto act = findContext<IR::ActionFunction>()) {
                 error("%s: Trying to call control flow %s in action %s", p->srcInfo, p->name,
                       act->name);
-            else if (auto table = findContext<IR::V1Table>())
+            } else if (auto table = findContext<IR::V1Table>()) {
                 error("%s: Trying to call control flow %s in table %s", p->srcInfo, p->name,
                       table->name);
-            else if ((control = findContext<IR::V1Control>()) && control->name == p->name)
+            } else if ((control = findContext<IR::V1Control>()) && control->name == p->name) {
                 error("%s: Recursive call to control flow %s", p->srcInfo, p->name);
-            else
+            } else {
                 return cf->code;
+            }
         }
         return p;
     }

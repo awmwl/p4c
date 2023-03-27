@@ -47,7 +47,9 @@ class EliminateInvalidHeaders final : public PassManager {
  public:
     EliminateInvalidHeaders(ReferenceMap *refMap, TypeMap *typeMap,
                             TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoEliminateInvalidHeaders(refMap));
         setName("EliminateInvalidHeaders");

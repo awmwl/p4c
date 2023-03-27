@@ -82,7 +82,9 @@ void UBPFControlBodyTranslator::processChecksumReplace2(const P4::ExternFunction
     auto v = function->expr->arguments;
     bool first = true;
     for (auto arg : *v) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         visit(arg);
     }
@@ -94,7 +96,9 @@ void UBPFControlBodyTranslator::processChecksumReplace4(const P4::ExternFunction
     auto v = function->expr->arguments;
     bool first = true;
     for (auto arg : *v) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         visit(arg);
     }
@@ -126,8 +130,9 @@ cstring UBPFControlBodyTranslator::createHashKeyInstance(const P4::ExternFunctio
     builder->endOfStatement(true);
     unsigned idx = 0;
     for (auto f : ubpfList->elements) {
-        if (!f->type)  // If nullptr it's a padding.
+        if (!f->type) {  // If nullptr it's a padding.
             continue;
+        }
         builder->emitIndent();
         builder->appendFormat("%s.%s = ", hashKeyInstance, f->name);
         auto c = dataArgument->components.at(idx);
@@ -257,7 +262,9 @@ bool UBPFControlBodyTranslator::preorder(const IR::PathExpression *expression) {
     auto decl = control->program->refMap->getDeclaration(expression->path, true);
     auto param = decl->getNode()->to<IR::Parameter>();
     if (param != nullptr) {
-        if (toDereference.count(param) > 0) builder->append("*");
+        if (toDereference.count(param) > 0) {
+            builder->append("*");
+        }
         auto subst = ::get(substitution, param);
         if (subst != nullptr) {
             builder->append(subst->name);
@@ -386,7 +393,9 @@ bool UBPFControlBodyTranslator::preorder(const IR::BlockStatement *s) {
         builder->emitIndent();
         visit(a);
     }
-    if (!s->components.empty()) builder->newline();
+    if (!s->components.empty()) {
+        builder->newline();
+    }
     builder->blockEnd(false);
     return false;
 }
@@ -413,10 +422,11 @@ bool UBPFControlBodyTranslator::preorder(const IR::IfStatement *statement) {
     }
 
     builder->append("if (");
-    if (isHit)
+    if (isHit) {
         builder->append(control->hitVariable);
-    else
+    } else {
         visit(statement->condition);
+    }
     builder->append(") ");
     if (!statement->ifTrue->is<IR::BlockStatement>()) {
         builder->blockStart();
@@ -519,8 +529,9 @@ bool UBPFControlBodyTranslator::comparison(const IR::Operation_Relation *b) {
         visit(b->right);
         builder->append(")");
     } else {
-        if (!et->is<EBPF::IHasWidth>())
+        if (!et->is<EBPF::IHasWidth>()) {
             BUG("%1%: Comparisons for type %2% not yet implemented", type);
+        }
         unsigned width = et->to<EBPF::IHasWidth>()->implementationWidthInBits();
         builder->append("memcmp(&");
         visit(b->left);
@@ -620,16 +631,24 @@ void UBPFControl::emitDeclaration(EBPF::CodeBuilder *builder, const IR::Declarat
 }
 
 void UBPFControl::emitTableTypes(EBPF::CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitTypes(builder);
+    for (auto it : tables) {
+        it.second->emitTypes(builder);
+    }
 }
 
 void UBPFControl::emitTableInstances(EBPF::CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitInstance(builder);
-    for (auto it : registers) it.second->emitInstance(builder);
+    for (auto it : tables) {
+        it.second->emitInstance(builder);
+    }
+    for (auto it : registers) {
+        it.second->emitInstance(builder);
+    }
 }
 
 void UBPFControl::emitTableInitializers(EBPF::CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitInitializer(builder);
+    for (auto it : tables) {
+        it.second->emitInitializer(builder);
+    }
 }
 
 bool UBPFControl::build() {

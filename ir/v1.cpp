@@ -125,23 +125,29 @@ static const std::map<cstring, primitive_info_t> prim_info = {
 void IR::Primitive::typecheck() const {
     if (prim_info.count(name)) {
         auto &info = prim_info.at(name);
-        if (operands.size() < info.min_operands)
+        if (operands.size() < info.min_operands) {
             error(ErrorType::ERR_INSUFFICIENT, "%s: not enough operands for primitive %s", srcInfo,
                   name);
-        if (operands.size() > info.max_operands)
+        }
+        if (operands.size() > info.max_operands) {
             error(ErrorType::ERR_OVERLIMIT, "%s: too many operands for primitive %s", srcInfo,
                   name);
+        }
     } else {
         /*error("%s: unknown primitive %s", srcInfo, name);*/ }
 }
 
 bool IR::Primitive::isOutput(int operand_index) const {
-        if (prim_info.count(name)) return (prim_info.at(name).out_operands >> operand_index) & 1;
+        if (prim_info.count(name)) {
+            return (prim_info.at(name).out_operands >> operand_index) & 1;
+        }
         return false;
 }
 
 unsigned IR::Primitive::inferOperandTypes() const {
-        if (prim_info.count(name)) return prim_info.at(name).type_match_operands;
+        if (prim_info.count(name)) {
+            return prim_info.at(name).type_match_operands;
+        }
         return 0;
 }
 
@@ -152,8 +158,11 @@ int IR::Stateful::index_width() const {
 }
 
 static int inferIndexWidth(const IR::Expression *obj) {
-        if (auto *glob = obj->to<IR::GlobalRef>())
-            if (auto *sful = glob->obj->to<IR::Stateful>()) return sful->index_width();
+        if (auto *glob = obj->to<IR::GlobalRef>()) {
+            if (auto *sful = glob->obj->to<IR::Stateful>()) {
+                return sful->index_width();
+            }
+        }
         return 32;
 }
 
@@ -161,7 +170,9 @@ const IR::Type *IR::Primitive::inferOperandType(int operand) const {
         const IR::Type *rv = IR::Type::Unknown::get();
         unsigned infer = 0;
 
-        if (prim_info.count(name)) infer = prim_info.at(name).type_match_operands;
+        if (prim_info.count(name)) {
+            infer = prim_info.at(name).type_match_operands;
+        }
 
         if ((infer >> operand) & 1) {
             for (auto o : operands) {
@@ -173,30 +184,42 @@ const IR::Type *IR::Primitive::inferOperandType(int operand) const {
             }
             return rv;
         }
-        if (name == "truncate") return IR::Type::Bits::get(32);
-        if ((name == "count" || name == "execute_meter") && operand == 1)
+        if (name == "truncate") {
+            return IR::Type::Bits::get(32);
+        }
+        if ((name == "count" || name == "execute_meter") && operand == 1) {
             return IR::Type::Bits::get(inferIndexWidth(operands.at(0)));
-        if (name.startsWith("execute_stateful") && operand == 1) return IR::Type::Bits::get(32);
+        }
+        if (name.startsWith("execute_stateful") && operand == 1) {
+            return IR::Type::Bits::get(32);
+        }
         if ((name == "clone_ingress_pkt_to_egress" || name == "clone_i2e" ||
              name == "clone_egress_pkt_to_egress" || name == "clone_e2e") &&
             operand == 0) {
             return IR::Type::Bits::get(32);
         }
-        if ((name == "execute") && operand == 2)
+        if ((name == "execute") && operand == 2) {
             return IR::Type::Bits::get(inferIndexWidth(operands.at(0)));
-        if (name == "modify_field_conditionally" && operand == 1) return IR::Type::Bits::get(1);
-        if (name == "register_read" && operand == 2)
+        }
+        if (name == "modify_field_conditionally" && operand == 1) {
+            return IR::Type::Bits::get(1);
+        }
+        if (name == "register_read" && operand == 2) {
             return IR::Type::Bits::get(inferIndexWidth(operands.at(1)));
-        if (name == "register_write" && operand == 1)
+        }
+        if (name == "register_write" && operand == 1) {
             return IR::Type::Bits::get(inferIndexWidth(operands.at(0)));
+        }
         if (name == "shift_left" && operand == 1) {
-            if (operands.at(0)->type->width_bits() > operands.at(1)->type->width_bits())
+            if (operands.at(0)->type->width_bits() > operands.at(1)->type->width_bits()) {
                 return operands.at(0)->type;
+            }
             return IR::Type::Unknown::get();
         }
         if (name == "shift_right" && operand == 1) {
-            if (operands.at(0)->type->width_bits() > operands.at(1)->type->width_bits())
+            if (operands.at(0)->type->width_bits() > operands.at(1)->type->width_bits()) {
                 return operands.at(0)->type;
+            }
             return IR::Type::Unknown::get();
         }
         return rv;

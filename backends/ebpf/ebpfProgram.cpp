@@ -30,11 +30,12 @@ namespace EBPF {
 
 bool EBPFProgram::build() {
     auto pack = toplevel->getMain();
-    if (pack->type->name != "ebpfFilter")
+    if (pack->type->name != "ebpfFilter") {
         ::warning(ErrorType::WARN_INVALID,
                   "%1%: the main ebpf package should be called ebpfFilter"
                   "; are you using the wrong architecture?",
                   pack->type->name);
+    }
 
     if (pack->getConstructorParameters()->size() != 2) {
         ::error(ErrorType::ERR_EXPECTED, "Expected toplevel package %1% to have 2 parameters",
@@ -46,13 +47,17 @@ bool EBPFProgram::build() {
     BUG_CHECK(pb != nullptr, "No parser block found");
     parser = new EBPFParser(this, pb, typeMap);
     bool success = parser->build();
-    if (!success) return success;
+    if (!success) {
+        return success;
+    }
 
     auto cb = pack->getParameterValue(model.filter.filter.name)->to<IR::ControlBlock>();
     BUG_CHECK(cb != nullptr, "No control block found");
     control = new EBPFControl(this, cb, parser->headers);
     success = control->build();
-    if (!success) return success;
+    if (!success) {
+        return success;
+    }
 
     return true;
 }
@@ -62,12 +67,13 @@ void EBPFProgram::emitC(CodeBuilder *builder, cstring header) {
 
     // Find the last occurrence of a folder slash (Linux only)
     const char *header_stripped = header.findlast('/');
-    if (header_stripped)
+    if (header_stripped) {
         // Remove the path from the header
         builder->appendFormat("#include \"%s\"", header_stripped + 1);
-    else
+    } else {
         // There is no prepended path, just include the header
         builder->appendFormat("#include \"%s\"", header.c_str());
+    }
     builder->newline();
 
     builder->target->emitIncludes(builder);
@@ -157,7 +163,9 @@ void EBPFProgram::emitTypes(CodeBuilder *builder) {
             !d->is<IR::Type_Parser>() && !d->is<IR::Type_Control>() && !d->is<IR::Type_Typedef>() &&
             !d->is<IR::Type_Error>()) {
             auto type = EBPFTypeFactory::instance->create(d->to<IR::Type>());
-            if (type == nullptr) continue;
+            if (type == nullptr) {
+                continue;
+            }
             type->emit(builder);
             builder->newline();
         }

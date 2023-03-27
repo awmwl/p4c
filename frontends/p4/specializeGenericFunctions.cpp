@@ -19,19 +19,33 @@ limitations under the License.
 namespace P4 {
 
 bool FindFunctionSpecializations::preorder(const IR::MethodCallExpression *mce) {
-    if (!mce->typeArguments->size()) return false;
+    if (!mce->typeArguments->size()) {
+        return false;
+    }
     // We only specialize if the type arguments are not type variables
     for (auto arg : *mce->typeArguments) {
         auto type = specMap->typeMap->getTypeType(arg, true);
-        if (type->is<IR::ITypeVar>()) return false;
+        if (type->is<IR::ITypeVar>()) {
+            return false;
+        }
     }
 
     const IR::Node *insert = findContext<IR::P4Parser>();
-    if (!insert) insert = findContext<IR::Function>();
-    if (!insert) insert = findContext<IR::P4Control>();
-    if (!insert) insert = findContext<IR::Declaration_Constant>();
-    if (!insert) insert = findContext<IR::Declaration_Instance>();
-    if (!insert) insert = findContext<IR::P4Action>();
+    if (!insert) {
+        insert = findContext<IR::Function>();
+    }
+    if (!insert) {
+        insert = findContext<IR::P4Control>();
+    }
+    if (!insert) {
+        insert = findContext<IR::Declaration_Constant>();
+    }
+    if (!insert) {
+        insert = findContext<IR::Declaration_Instance>();
+    }
+    if (!insert) {
+        insert = findContext<IR::P4Action>();
+    }
     CHECK_NULL(insert);
     MethodInstance *mi = MethodInstance::resolve(mce, specMap->refMap, specMap->typeMap);
     if (auto func = mi->to<FunctionCall>()) {
@@ -43,7 +57,9 @@ bool FindFunctionSpecializations::preorder(const IR::MethodCallExpression *mce) 
 
 const IR::Node *SpecializeFunctions::insert(const IR::Node *before) {
     auto specs = specMap->getInsertions(getOriginal());
-    if (specs == nullptr) return before;
+    if (specs == nullptr) {
+        return before;
+    }
     LOG2(specs->size() << " instantiations before " << dbp(before));
     specs->push_back(before);
     return specs;

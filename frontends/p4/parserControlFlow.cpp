@@ -81,7 +81,9 @@ const IR::Node *DoRemoveParserControlFlow::postorder(IR::ParserState *state) {
     }
     currentState->components = *currentComponents;
 
-    if (states->empty()) return state;
+    if (states->empty()) {
+        return state;
+    }
     states->push_back(currentState);
     return states;
 }

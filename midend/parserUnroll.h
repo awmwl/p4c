@@ -279,7 +279,7 @@ class RewriteAllParsers : public Transform {
             newParser->states.push_back(outOfBoundsState);
         }
         for (auto &i : rewriter->current.result->states) {
-            for (auto &j : *i.second)
+            for (auto &j : *i.second) {
                 if (j->newState) {
                     if (rewriter->hasOutOfboundState &&
                         j->newState->name.name == "stateOutOfBound") {
@@ -287,6 +287,7 @@ class RewriteAllParsers : public Transform {
                     }
                     newParser->states.push_back(j->newState);
                 }
+            }
         }
         // adding accept/reject
         newParser->states.push_back(new IR::ParserState(IR::ParserState::accept, nullptr));

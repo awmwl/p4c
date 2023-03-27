@@ -52,7 +52,9 @@ struct AutoStdioInputStream {
 struct AutoStdioInputStream {
     explicit AutoStdioInputStream(FILE *in) {
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), in)) stream << buffer;
+        while (fgets(buffer, sizeof(buffer), in)) {
+            stream << buffer;
+        }
     }
 
     std::istream &get() { return stream; }
@@ -119,7 +121,9 @@ bool P4ParserDriver::parse(AbstractP4Lexer &lexer, const char *sourceFile,
     P4Parser parser(*this, lexer);
 
 #ifdef YYDEBUG
-    if (const char *p = getenv("YYDEBUG")) parser.set_debug_level(atoi(p));
+    if (const char *p = getenv("YYDEBUG")) {
+        parser.set_debug_level(atoi(p));
+    }
     structure->setDebug(parser.debug_level() != 0);
 #endif
 
@@ -127,7 +131,9 @@ bool P4ParserDriver::parse(AbstractP4Lexer &lexer, const char *sourceFile,
     sources->mapLine(sourceFile, sourceLine);
 
     // Parse.
-    if (parser.parse() != 0) return false;
+    if (parser.parse() != 0) {
+        return false;
+    }
     structure->endParse();
     return true;
 }
@@ -138,7 +144,9 @@ bool P4ParserDriver::parse(AbstractP4Lexer &lexer, const char *sourceFile,
 
     P4ParserDriver driver;
     P4Lexer lexer(in);
-    if (!driver.parse(lexer, sourceFile, sourceLine)) return nullptr;
+    if (!driver.parse(lexer, sourceFile, sourceLine)) {
+        return nullptr;
+    }
     return new IR::P4Program(driver.nodes->srcInfo, *driver.nodes);
 }
 
@@ -293,14 +301,18 @@ V1ParserDriver::V1ParserDriver() : global(new IR::V1Program) {}
     V1Parser parser(driver, lexer);
 
 #ifdef YYDEBUG
-    if (const char *p = getenv("YYDEBUG")) parser.set_debug_level(atoi(p));
+    if (const char *p = getenv("YYDEBUG")) {
+        parser.set_debug_level(atoi(p));
+    }
 #endif
 
     // Provide an initial source location.
     driver.sources->mapLine(sourceFile, sourceLine);
 
     // Parse.
-    if (parser.parse() != 0) return nullptr;
+    if (parser.parse() != 0) {
+        return nullptr;
+    }
     return driver.global;
 }
 
@@ -318,14 +330,18 @@ IR::Constant *V1ParserDriver::constantFold(IR::Expression *expr) {
 
 IR::Vector<IR::Expression> V1ParserDriver::makeExpressionList(const IR::NameList *list) {
     IR::Vector<IR::Expression> rv;
-    for (auto &name : list->names) rv.push_back(new IR::StringLiteral(name));
+    for (auto &name : list->names) {
+        rv.push_back(new IR::StringLiteral(name));
+    }
     return rv;
 }
 
 void V1ParserDriver::clearPragmas() { currentPragmas.clear(); }
 
 void V1ParserDriver::addPragma(IR::Annotation *pragma) {
-    if (!P4CContext::get().options().isAnnotationDisabled(pragma)) currentPragmas.push_back(pragma);
+    if (!P4CContext::get().options().isAnnotationDisabled(pragma)) {
+        currentPragmas.push_back(pragma);
+    }
 }
 
 IR::Vector<IR::Annotation> V1ParserDriver::takePragmasAsVector() {
@@ -335,7 +351,9 @@ IR::Vector<IR::Annotation> V1ParserDriver::takePragmasAsVector() {
 }
 
 const IR::Annotations *V1ParserDriver::takePragmasAsAnnotations() {
-    if (currentPragmas.empty()) return IR::Annotations::empty;
+    if (currentPragmas.empty()) {
+        return IR::Annotations::empty;
+    }
     auto *rv = new IR::Annotations(currentPragmas);
     currentPragmas.clear();
     return rv;

@@ -38,12 +38,16 @@ using namespace IndentCtl;
 static int dbprint_index = -1;
 
 int DBPrint::dbgetflags(std::ostream &out) {
-    if (dbprint_index < 0) dbprint_index = out.xalloc();
+    if (dbprint_index < 0) {
+        dbprint_index = out.xalloc();
+    }
     return out.iword(dbprint_index);
 }
 
 int DBPrint::dbsetflags(std::ostream &out, int val, int mask) {
-    if (dbprint_index < 0) dbprint_index = out.xalloc();
+    if (dbprint_index < 0) {
+        dbprint_index = out.xalloc();
+    }
     auto &flags = out.iword(dbprint_index);
     int rv = flags;
     flags = (flags & ~mask) | val;
@@ -71,7 +75,9 @@ void IR::Annotation::dbprint(std::ostream &out) const {
         out << sep << e;
         sep = ", ";
     }
-    if (*sep != '(') out << ')';
+    if (*sep != '(') {
+        out << ')';
+    }
 }
 
 void IR::Block::dbprint_recursive(std::ostream &out) const {
@@ -100,8 +106,12 @@ std::ostream &operator<<(std::ostream &out, const IR::Vector<IR::Expression> &v)
         }
         out << "{";
     }
-    for (auto e : v) out << Log::endl << setprec(0) << e << setprec(prec);
-    if (prec) out << " }";
+    for (auto e : v) {
+        out << Log::endl << setprec(0) << e << setprec(prec);
+    }
+    if (prec) {
+        out << " }";
+    }
     return out;
 }
 
@@ -110,6 +120,8 @@ void dbprint(const IR::Node &n) { std::cout << n << std::endl; }
 void dbprint(const std::set<const IR::Expression *> s) {
     std::cout << indent << " {";
     int i = 0;
-    for (auto el : s) std::cout << Log::endl << '[' << i++ << "] " << el;
+    for (auto el : s) {
+        std::cout << Log::endl << '[' << i++ << "] " << el;
+    }
     std::cout << " }" << unindent << Log::endl;
 }

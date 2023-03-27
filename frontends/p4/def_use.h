@@ -70,18 +70,19 @@ class StorageLocation : public IHasDbPrint {
 class BaseLocation : public StorageLocation {
  public:
     BaseLocation(const IR::Type *type, cstring name) : StorageLocation(type, name) {
-        if (auto tt = type->to<IR::Type_Tuple>())
+        if (auto tt = type->to<IR::Type_Tuple>()) {
             BUG_CHECK(tt->getSize() == 0, "%1%: tuples with fields are not base locations", tt);
-        else if (auto ts = type->to<IR::Type_StructLike>())
+        } else if (auto ts = type->to<IR::Type_StructLike>()) {
             BUG_CHECK(ts->fields.size() == 0, "%1%: structs with fields are not base locations",
                       tt);
-        else
+        } else {
             BUG_CHECK(type->is<IR::Type_Bits>() || type->is<IR::Type_Enum>() ||
                           type->is<IR::Type_Boolean>() || type->is<IR::Type_Var>() ||
                           type->is<IR::Type_Error>() || type->is<IR::Type_Varbits>() ||
                           type->is<IR::Type_Newtype>() || type->is<IR::Type_SerEnum>() ||
                           type->is<IR::Type_List>(),
                       "%1%: unexpected type", type);
+        }
     }
     void addValidBits(LocationSet *) const override {}
     void addLastIndexField(LocationSet *) const override {}
@@ -107,7 +108,9 @@ class WithFieldsLocation : public StorageLocation {
         return Values(fieldLocations);
     }
     void dbprint(std::ostream &out) const override {
-        for (auto f : fieldLocations) out << *f.second << " ";
+        for (auto f : fieldLocations) {
+            out << *f.second << " ";
+        }
     }
 };
 
@@ -167,7 +170,9 @@ class ArrayLocation : public IndexedLocation {
     void setLastIndexField(const StorageLocation *location) { lastIndexField = location; }
     const StorageLocation *getLastIndexField() const { return lastIndexField; }
     void dbprint(std::ostream &out) const override {
-        for (unsigned i = 0; i < elements.size(); i++) out << *elements.at(i) << " ";
+        for (unsigned i = 0; i < elements.size(); i++) {
+            out << *elements.at(i) << " ";
+        }
     }
     void addValidBits(LocationSet *result) const override;
     void removeHeaders(LocationSet *) const override {}  // no results added
@@ -216,7 +221,9 @@ class LocationSet : public IHasDbPrint {
     }
     ordered_set<const StorageLocation *>::const_iterator end() const { return locations.cend(); }
     void dbprint(std::ostream &out) const override {
-        if (locations.empty()) out << "LocationSet::empty";
+        if (locations.empty()) {
+            out << "LocationSet::empty";
+        }
         for (auto l : locations) {
             l->dbprint(out);
             out << " ";
@@ -245,12 +252,16 @@ class StorageMap : public IHasDbPrint {
         CHECK_NULL(decl);
         auto type = typeMap->getType(decl->getNode(), true);
         auto loc = factory.create(type, decl->getName() + "/" + decl->externalName());
-        if (loc != nullptr) storage.emplace(decl, loc);
+        if (loc != nullptr) {
+            storage.emplace(decl, loc);
+        }
         return loc;
     }
     StorageLocation *getOrAdd(const IR::IDeclaration *decl) {
         auto s = getStorage(decl);
-        if (s != nullptr) return s;
+        if (s != nullptr) {
+            return s;
+        }
         return add(decl);
     }
     StorageLocation *getStorage(const IR::IDeclaration *decl) const {
@@ -259,7 +270,9 @@ class StorageMap : public IHasDbPrint {
         return result;
     }
     void dbprint(std::ostream &out) const override {
-        for (auto &it : storage) out << it.first << ": " << it.second << Log::endl;
+        for (auto &it : storage) {
+            out << it.first << ": " << it.second << Log::endl;
+        }
     }
 };
 
@@ -294,17 +307,21 @@ class ProgramPoint : public IHasDbPrint {
         } else {
             bool first = true;
             for (auto n : stack) {
-                if (!first) out << "//";
-                if (!n)
+                if (!first) {
+                    out << "//";
+                }
+                if (!n) {
                     out << "After end";
-                else
+                } else {
                     out << dbp(n);
+                }
                 first = false;
             }
             auto l = stack.back();
             if (l != nullptr &&
-                (l->is<IR::AssignmentStatement>() || l->is<IR::MethodCallStatement>()))
+                (l->is<IR::AssignmentStatement>() || l->is<IR::MethodCallStatement>())) {
                 out << "[[" << l << "]]";
+            }
         }
     }
     const IR::Node *last() const { return stack.empty() ? nullptr : stack.back(); }
@@ -340,7 +357,9 @@ class ProgramPoints : public IHasDbPrint {
     bool operator==(const ProgramPoints &other) const;
     void dbprint(std::ostream &out) const override {
         out << "{";
-        for (auto p : points) out << p << " ";
+        for (auto p : points) {
+            out << p << " ";
+        }
         out << "}";
     }
     size_t size() const { return points.size(); }
@@ -392,10 +411,14 @@ class Definitions : public IHasDbPrint {
         if (unreachable) {
             out << "  Unreachable" << Log::endl;
         }
-        if (definitions.empty()) out << "  Empty definitions";
+        if (definitions.empty()) {
+            out << "  Empty definitions";
+        }
         bool first = true;
         for (auto d : definitions) {
-            if (!first) out << Log::endl;
+            if (!first) {
+                out << Log::endl;
+            }
             out << "  " << *d.first << "=>" << *d.second;
             first = false;
         }
@@ -440,7 +463,9 @@ class AllDefinitions : public IHasDbPrint {
         atPoint[point] = defs;
     }
     void dbprint(std::ostream &out) const override {
-        for (auto e : atPoint) out << e.first << " => " << e.second << Log::endl;
+        for (auto e : atPoint) {
+            out << e.first << " => " << e.second << Log::endl;
+        }
     }
 };
 
@@ -505,8 +530,12 @@ class ComputeWriteSet : public Inspector, public IHasDbPrint {
         writes.emplace(expression, loc);
     }
     void dbprint(std::ostream &out) const override {
-        if (writes.empty()) out << "No writes";
-        for (auto &it : writes) out << it.first << " writes " << it.second << Log::endl;
+        if (writes.empty()) {
+            out << "No writes";
+        }
+        for (auto &it : writes) {
+            out << it.first << " writes " << it.second << Log::endl;
+        }
     }
 
  public:

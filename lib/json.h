@@ -90,8 +90,9 @@ class JsonValue final : public IJson {
 
  private:
     JsonValue(Kind kind) : tag(kind) {  // NOLINT
-        if (kind == Kind::String || kind == Kind::Number)
+        if (kind == Kind::String || kind == Kind::Number) {
             throw std::logic_error("Incorrect constructor called");
+        }
     }
 
     static big_int makeValue(long long v);
@@ -139,7 +140,9 @@ class JsonArray final : public IJson, public std::vector<IJson *> {
         return this;
     }
     JsonArray *concatenate(const Util::JsonArray *other) {
-        for (auto v : *other) append(v);
+        for (auto v : *other) {
+            append(v);
+        }
         return this;
     }
     JsonArray(std::initializer_list<IJson *> data) : std::vector<IJson *>(data) {}  // NOLINT

@@ -56,7 +56,9 @@ class MoveConstructorsImpl : public Transform {
     }
 
     const IR::Node *preorder(IR::IndexedVector<IR::Declaration> *declarations) override {
-        if (convert != Region::InParserStateful) return declarations;
+        if (convert != Region::InParserStateful) {
+            return declarations;
+        }
 
         bool changes = false;
         auto result = new IR::Vector<IR::Declaration>();
@@ -73,12 +75,16 @@ class MoveConstructorsImpl : public Transform {
             cmap.clear();
         }
         prune();
-        if (changes) return result;
+        if (changes) {
+            return result;
+        }
         return declarations;
     }
 
     const IR::Node *postorder(IR::P4Parser *parser) override {
-        if (cmap.empty()) return parser;
+        if (cmap.empty()) {
+            return parser;
+        }
         for (auto e : cmap.tmpName) {
             auto cce = e.first;
             auto decl = new IR::Declaration_Instance(cce->srcInfo, e.second, cce->constructedType,
@@ -116,7 +122,9 @@ class MoveConstructorsImpl : public Transform {
     }
 
     const IR::Node *postorder(IR::P4Control *control) override {
-        if (cmap.empty()) return control;
+        if (cmap.empty()) {
+            return control;
+        }
         IR::IndexedVector<IR::Declaration> newDecls;
         for (auto e : cmap.tmpName) {
             auto cce = e.first;
@@ -135,7 +143,9 @@ class MoveConstructorsImpl : public Transform {
     }  // skip
 
     const IR::Node *postorder(IR::ConstructorCallExpression *expression) override {
-        if (convert == Region::Outside) return expression;
+        if (convert == Region::Outside) {
+            return expression;
+        }
         auto tmpvar = refMap->newName("tmp");
         auto tmpref = new IR::PathExpression(IR::ID(expression->srcInfo, tmpvar));
         cmap.add(expression, tmpvar);

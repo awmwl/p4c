@@ -72,10 +72,11 @@ class FindLocationSets : public Inspector {
         auto decl = storageMap->refMap->getDeclaration(expression->path, true);
         auto storage = storageMap->getStorage(decl);
         const LocationSet *result;
-        if (storage != nullptr)
+        if (storage != nullptr) {
             result = new LocationSet(storage);
-        else
+        } else {
             result = LocationSet::empty;
+        }
         set(expression, result);
         return false;
     }
@@ -83,7 +84,9 @@ class FindLocationSets : public Inspector {
     bool preorder(const IR::Member *expression) {
         visit(expression->expr);
         auto type = storageMap->typeMap->getType(expression, true);
-        if (type->is<IR::Type_Method>()) return false;
+        if (type->is<IR::Type_Method>()) {
+            return false;
+        }
         auto storage = get(expression->expr);
 
         auto basetype = storageMap->typeMap->getType(expression->expr, true);
@@ -158,7 +161,9 @@ class FindLocationSets : public Inspector {
     const LocationSet *locations(const IR::Expression *expression) {
         (void)expression->apply(*this);
         auto ls = get(expression);
-        if (ls != nullptr) return ls->canonicalize();
+        if (ls != nullptr) {
+            return ls->canonicalize();
+        }
         return nullptr;
     }
 };
@@ -220,7 +225,9 @@ class ComputeNewNames : public Inspector {
 
 // Add a @name annotation ONLY.
 static const IR::Annotations *setNameAnnotation(cstring name, const IR::Annotations *annos) {
-    if (annos == nullptr) annos = IR::Annotations::empty;
+    if (annos == nullptr) {
+        annos = IR::Annotations::empty;
+    }
     return annos->addOrReplace(IR::Annotation::nameAnnotation, new IR::StringLiteral(name));
 }
 
@@ -302,10 +309,11 @@ class Substitutions : public SubstituteParameters {
         }
 
         cstring newName;
-        if (renameMap->isRenamed(decl))
+        if (renameMap->isRenamed(decl)) {
             newName = renameMap->getName(decl);
-        else
+        } else {
             newName = expression->path->name;
+        }
         IR::ID newid(expression->path->srcInfo, newName, expression->path->name.originalName);
         auto newpath = new IR::Path(newid, expression->path->absolute);
         auto result = new IR::PathExpression(newpath);
@@ -356,7 +364,9 @@ void InlineList::analyze() {
         // This is quadratic, but hopefully the call graph is not too large
         for (auto m : inlineMap) {
             auto inl = m.second;
-            if (inl->caller == c) toInline.push_back(inl);
+            if (inl->caller == c) {
+                toInline.push_back(inl);
+            }
         }
     }
 
@@ -364,12 +374,16 @@ void InlineList::analyze() {
 }
 
 InlineSummary *InlineList::next() {
-    if (toInline.size() == 0) return nullptr;
+    if (toInline.size() == 0) {
+        return nullptr;
+    }
     auto result = new InlineSummary();
     std::set<const IR::IContainer *> processing;
     while (!toInline.empty()) {
         auto toadd = toInline.back();
-        if (processing.find(toadd->callee) != processing.end()) break;
+        if (processing.find(toadd->callee) != processing.end()) {
+            break;
+        }
         toInline.pop_back();
         result->add(toadd);
         processing.emplace(toadd->caller);
@@ -382,25 +396,34 @@ InlineSummary *InlineList::next() {
 void DiscoverInlining::postorder(const IR::MethodCallStatement *statement) {
     LOG4("Visiting " << dbp(statement) << statement);
     auto mi = MethodInstance::resolve(statement, refMap, typeMap);
-    if (!mi->isApply()) return;
+    if (!mi->isApply()) {
+        return;
+    }
     auto am = mi->to<P4::ApplyMethod>();
     CHECK_NULL(am);
-    if (!am->applyObject->is<IR::Type_Control>() && !am->applyObject->is<IR::Type_Parser>()) return;
+    if (!am->applyObject->is<IR::Type_Control>() && !am->applyObject->is<IR::Type_Parser>()) {
+        return;
+    }
     auto instantiation = am->object->to<IR::Declaration_Instance>();
-    if (instantiation != nullptr)
+    if (instantiation != nullptr) {
         inlineList->addInvocation(instantiation, statement);
-    else
+    } else {
         BUG_CHECK(am->object->is<IR::Parameter>(), "%1% expected a constructor parameter",
                   am->object);
+    }
 }
 
 void DiscoverInlining::visit_all(const IR::Block *block) {
     for (auto it : block->constantValue) {
-        if (it.second == nullptr) continue;
+        if (it.second == nullptr) {
+            continue;
+        }
         if (it.second->is<IR::Block>()) {
             visit(it.second->getNode());
         }
-        if (::errorCount() > 0) return;
+        if (::errorCount() > 0) {
+            return;
+        }
     }
 }
 
@@ -418,7 +441,9 @@ bool DiscoverInlining::preorder(const IR::ControlBlock *block) {
     }
 
     visit_all(block);
-    if (::errorCount() > 0) return false;
+    if (::errorCount() > 0) {
+        return false;
+    }
     visit(block->container->body);
     return false;
 }
@@ -436,7 +461,9 @@ bool DiscoverInlining::preorder(const IR::ParserBlock *block) {
         inlineList->addInstantiation(parent->container, callee, instance);
     }
     visit_all(block);
-    if (::errorCount() > 0) return false;
+    if (::errorCount() > 0) {
+        return false;
+    }
     visit(block->container->states, "states");
     return false;
 }
@@ -509,7 +536,9 @@ void GeneralInliner::inline_subst(P4Block *caller,
             const IR::MethodCallStatement *call = nullptr;
             const IR::MethodCallStatement *firstCall = nullptr;  // to get directionless parameters
             for (auto m : workToDo->callToInstance) {
-                if (m.second != inst) continue;
+                if (m.second != inst) {
+                    continue;
+                }
                 if (call) {
                     if (!call->equiv(*m.first)) {
                         call = nullptr;
@@ -537,7 +566,9 @@ void GeneralInliner::inline_subst(P4Block *caller,
                 for (auto param1 : *mi->substitution.getParametersInArgumentOrder()) {
                     auto ls1 = ::get(locationSets, param1);
                     for (auto param2 : *mi->substitution.getParametersInArgumentOrder()) {
-                        if (param1 == param2) continue;
+                        if (param1 == param2) {
+                            continue;
+                        }
                         auto ls2 = ::get(locationSets, param2);
                         if (ls1->overlaps(ls2)) {
                             LOG4("Arg for " << dbp(param1) << " aliases with arg for "
@@ -584,7 +615,9 @@ void GeneralInliner::inline_subst(P4Block *caller,
                and once again at the call site (where we do additional
                substitutions, including the callee parameters). */
             auto clone = substs->rename<P4Block>(refMap, callee);
-            for (auto i : clone->*blockLocals) locals.push_back(i);
+            for (auto i : clone->*blockLocals) {
+                locals.push_back(i);
+            }
         }
     }
     caller->*blockLocals = locals;
@@ -610,17 +643,22 @@ const IR::Node *GeneralInliner::preorder(IR::P4Control *caller) {
 }
 
 const IR::Node *GeneralInliner::preorder(IR::MethodCallStatement *statement) {
-    if (workToDo == nullptr) return statement;
+    if (workToDo == nullptr) {
+        return statement;
+    }
     auto orig = getOriginal<IR::MethodCallStatement>();
-    if (workToDo->callToInstance.find(orig) == workToDo->callToInstance.end()) return statement;
+    if (workToDo->callToInstance.find(orig) == workToDo->callToInstance.end()) {
+        return statement;
+    }
     LOG3("Inlining invocation " << dbp(orig));
     auto decl = workToDo->callToInstance[orig];
     CHECK_NULL(decl);
 
     auto called = workToDo->declToCallee[decl];
-    if (!called->is<IR::P4Control>())
+    if (!called->is<IR::P4Control>()) {
         // Parsers are inlined in the ParserState processor
         return statement;
+    }
 
     auto callee = called->to<IR::P4Control>();
     IR::IndexedVector<IR::StatOrDecl> body;
@@ -645,7 +683,7 @@ const IR::Node *GeneralInliner::preorder(IR::MethodCallStatement *statement) {
             // already set; the value must be the same, or else we cannot compile
             auto initializer = mi->substitution.lookup(param);
             auto prev = substs->paramSubst.lookup(param);
-            if (!initializer->equiv(*prev))
+            if (!initializer->equiv(*prev)) {
                 // This is a compile-time constant, since this is a non-directional
                 // parameter, so the value should be independent on the context.
                 ::error(ErrorType::ERR_INVALID,
@@ -653,6 +691,7 @@ const IR::Node *GeneralInliner::preorder(IR::MethodCallStatement *statement) {
                         "same value in all invocations; two different substitutions are "
                         "%2% and %3%",
                         param, initializer, prev);
+            }
             continue;
         }
     }
@@ -749,7 +788,9 @@ class RenameStates : public Transform {
         }
         cstring newName = ::get(stateRenameMap, state->name.name);
         state->name.name = newName;
-        if (state->selectExpression != nullptr) visit(state->selectExpression);
+        if (state->selectExpression != nullptr) {
+            visit(state->selectExpression);
+        }
         prune();
         return state;
     }
@@ -811,7 +852,7 @@ const IR::Node *GeneralInliner::preorder(IR::ParserState *state) {
                 // already set; the value must be the same, or else we cannot compile
                 auto prev = substs->paramSubst.lookup(param);
                 CHECK_NULL(prev);
-                if (!initializer->equiv(*prev))
+                if (!initializer->equiv(*prev)) {
                     // This is a compile-time constant, since this is a non-directional
                     // parameter, so the value should be independent on the context.
                     ::error(ErrorType::ERR_INVALID,
@@ -819,6 +860,7 @@ const IR::Node *GeneralInliner::preorder(IR::ParserState *state) {
                             "same value in all invocations; two different substitutions are "
                             "%2% and %3%",
                             param, initializer, prev);
+                }
                 continue;
             }
         }
@@ -861,7 +903,9 @@ const IR::Node *GeneralInliner::preorder(IR::ParserState *state) {
                                             new IR::PathExpression(newStartName));
         states->push_back(newState);
         for (auto s : renamed->to<IR::P4Parser>()->states) {
-            if (s->name == IR::ParserState::accept || s->name == IR::ParserState::reject) continue;
+            if (s->name == IR::ParserState::accept || s->name == IR::ParserState::reject) {
+                continue;
+            }
             states->push_back(s);
         }
 

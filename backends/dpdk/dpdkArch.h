@@ -409,10 +409,11 @@ class LogicalExpressionUnroll : public Inspector {
     static bool is_logical(const IR::Operation_Binary *bin) {
         if (bin->is<IR::LAnd>() || bin->is<IR::LOr>() || bin->is<IR::Leq>() || bin->is<IR::Equ>() ||
             bin->is<IR::Neq>() || bin->is<IR::Grt>() || bin->is<IR::Lss>() || bin->is<IR::Geq>() ||
-            bin->is<IR::Leq>())
+            bin->is<IR::Leq>()) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 
     explicit LogicalExpressionUnroll(P4::ReferenceMap *refMap) : refMap(refMap) {
@@ -606,9 +607,10 @@ class InjectInternetChecksumIntermediateValue : public Transform {
 
     const IR::Node *postorder(IR::Type_Struct *s) override {
         if (s->name.name == structure->header_type) {
-            if (structure->csum_map.size() > 0)
+            if (structure->csum_map.size() > 0) {
                 s->fields.push_back(new IR::StructField(
                     IR::ID("cksum_state"), new IR::Type_Name(IR::ID("cksum_state_t"))));
+            }
         }
         return s;
     }
@@ -640,11 +642,12 @@ class CollectExternDeclaration : public Inspector {
                             "%1%: expected type of meter as the only argument", d);
                 } else {
                     /* Check if the Direct meter is of PACKETS (0) type */
-                    if (d->arguments->at(0)->expression->to<IR::Constant>()->asUnsigned() == 0)
+                    if (d->arguments->at(0)->expression->to<IR::Constant>()->asUnsigned() == 0) {
                         warn(ErrorType::WARN_UNSUPPORTED,
                              "%1%: Packet metering is not supported."
                              " Falling back to byte metering.",
                              d);
+                    }
                 }
             } else {
                 // unsupported extern type
@@ -659,11 +662,12 @@ class CollectExternDeclaration : public Inspector {
                             "%1%: expected number of meters and type of meter as arguments", d);
                 } else {
                     /* Check if the meter is of PACKETS (0) type */
-                    if (d->arguments->at(1)->expression->to<IR::Constant>()->asUnsigned() == 0)
+                    if (d->arguments->at(1)->expression->to<IR::Constant>()->asUnsigned() == 0) {
                         warn(ErrorType::WARN_UNSUPPORTED,
                              "%1%: Packet metering is not supported."
                              " Falling back to byte metering.",
                              d);
+                    }
                 }
             } else if (externTypeName == "Counter") {
                 if (d->arguments->size() != 2) {
@@ -868,7 +872,9 @@ class SwitchHandler {
                     new IR::PathExpression(IR::ID(get<0>(pair))), get<1>(pair));
                 body->push_back(assn);
             }
-            for (auto s : action->body->components) body->push_back(s);
+            for (auto s : action->body->components) {
+                body->push_back(s);
+            }
             action->body = body;
             actionCaseMap.erase(action->name.name);
         }
@@ -1152,7 +1158,9 @@ class HaveNonHeaderLargeOperandAssignment : public Inspector {
     explicit HaveNonHeaderLargeOperandAssignment(bool &is_all_arg_header_fields)
         : is_all_arg_header_fields(is_all_arg_header_fields) {}
     bool preorder(const IR::AssignmentStatement *assn) override {
-        if (!is_all_arg_header_fields) return false;
+        if (!is_all_arg_header_fields) {
+            return false;
+        }
         if ((isLargeFieldOperand(assn->left) && !isLargeFieldOperand(assn->right) &&
              !isInsideHeader(assn->right)) ||
             (isLargeFieldOperand(assn->left) && assn->right->is<IR::Constant>()) ||
@@ -1175,7 +1183,9 @@ class HaveNonHeaderChecksumArgs : public Inspector {
     HaveNonHeaderChecksumArgs(P4::TypeMap *typeMap, bool &is_all_arg_header_fields)
         : typeMap(typeMap), is_all_arg_header_fields(is_all_arg_header_fields) {}
     bool preorder(const IR::MethodCallExpression *mce) override {
-        if (!is_all_arg_header_fields) return false;
+        if (!is_all_arg_header_fields) {
+            return false;
+        }
         if (auto *m = mce->method->to<IR::Member>()) {
             if (auto *type = typeMap->getType(m->expr)->to<IR::Type_Extern>()) {
                 if (type->name == "InternetChecksum") {

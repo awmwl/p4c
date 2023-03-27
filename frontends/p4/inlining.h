@@ -63,7 +63,9 @@ class SymRenameMap {
         CHECK_NULL(decl);
         BUG_CHECK(!name.isNullOrEmpty() && !extName.isNullOrEmpty(), "Empty name");
         LOG3("setNewName " << dbp(decl) << " to " << name);
-        if (internalName.find(decl) != internalName.end()) BUG("%1%: already renamed", decl);
+        if (internalName.find(decl) != internalName.end()) {
+            BUG("%1%: already renamed", decl);
+        }
         internalName.emplace(decl, name);
         externalName.emplace(decl, extName);
     }
@@ -283,10 +285,11 @@ struct InlineSummary : public IHasDbPrint {
             const IR::MethodCallStatement *call = nullptr;
             for (auto m : callToInstance) {
                 if (m.second == instance) {
-                    if (call == nullptr)
+                    if (call == nullptr) {
                         call = m.first;
-                    else
+                    } else {
                         return nullptr;
+                    }
                 }
             }
             return call;
@@ -296,8 +299,9 @@ struct InlineSummary : public IHasDbPrint {
 
     void add(const CallInfo *cci) {
         callerToWork[cci->caller].declToCallee[cci->instantiation] = cci->callee;
-        for (auto mcs : cci->invocations)
+        for (auto mcs : cci->invocations) {
             callerToWork[cci->caller].callToInstance[mcs] = cci->instantiation;
+        }
     }
     void dbprint(std::ostream &out) const {
         out << "Inline " << callerToWork.size() << " call sites";
@@ -339,8 +343,12 @@ class InlineList {
         CHECK_NULL(replacement);
         LOG3("Replacing " << dbp(container) << " with " << dbp(replacement));
         for (auto e : toInline) {
-            if (e->callee == container) e->callee = replacement;
-            if (e->caller == container) e->caller = replacement;
+            if (e->callee == container) {
+                e->callee = replacement;
+            }
+            if (e->caller == container) {
+                e->caller = replacement;
+            }
         }
     }
 

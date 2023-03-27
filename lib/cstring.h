@@ -229,10 +229,14 @@ class cstring {
 
     // trim leading and trailing whitespace (or other)
     cstring trim(const char *ws = " \t\r\n") const {
-        if (!str) return *this;
+        if (!str) {
+            return *this;
+        }
         const char *start = str + strspn(str, ws);
         size_t len = strlen(start);
-        while (len > 0 && strchr(ws, start[len - 1])) --len;
+        while (len > 0 && strchr(ws, start[len - 1])) {
+            --len;
+        }
         return cstring(start, len);
     }
 
@@ -251,7 +255,9 @@ class cstring {
     static cstring join(Iterator begin, Iterator end, const char *delim = ", ") {
         std::stringstream ss;
         for (auto current = begin; current != end; ++current) {
-            if (begin != current) ss << delim;
+            if (begin != current) {
+                ss << delim;
+            }
             ss << *current;
         }
         return cstring(ss.str());
@@ -335,7 +341,9 @@ inline std::string &operator+=(std::string &a, cstring b) {
 
 template <class T>
 cstring cstring::make_unique(const T &inuse, cstring base, int &counter, char sep) {
-    if (!inuse.count(base)) return base;
+    if (!inuse.count(base)) {
+        return base;
+    }
 
     char suffix[12];
     cstring rv = base;

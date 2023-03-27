@@ -119,7 +119,9 @@ class ConvertEnums : public PassManager {
     ConvertEnums(ReferenceMap *refMap, TypeMap *typeMap, ChooseEnumRepresentation *policy,
                  TypeChecking *typeChecking = nullptr)
         : convertEnums(new DoConvertEnums(policy, typeMap)) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(convertEnums);
         passes.push_back(new ClearTypeMap(typeMap));

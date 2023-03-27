@@ -56,13 +56,18 @@ class ParameterSubstitution : public IHasDbPrint {
     }
 
     bool contains(const IR::Parameter *param) const {
-        if (!containsName(param->name.name)) return false;
+        if (!containsName(param->name.name)) {
+            return false;
+        }
         return true;
     }
 
     const IR::Parameter *findParameter(const IR::Argument *argument) const {
-        for (auto p : *getParametersInOrder())
-            if (lookup(p) == argument) return p;
+        for (auto p : *getParametersInOrder()) {
+            if (lookup(p) == argument) {
+                return p;
+            }
+        }
         return nullptr;
     }
 
@@ -81,17 +86,21 @@ class ParameterSubstitution : public IHasDbPrint {
     /// Returns parameters in the order of the parameter list.
     /// Only works if parameters were inserted using populate.
     Util::Enumerator<const IR::Parameter *> *getParametersInOrder() const {
-        if (paramList == nullptr) return new Util::EmptyEnumerator<const IR::Parameter *>;
+        if (paramList == nullptr) {
+            return new Util::EmptyEnumerator<const IR::Parameter *>;
+        }
         return paramList->getEnumerator();
     }
 
     void dbprint(std::ostream &out) const {
         if (paramList != nullptr) {
-            for (auto s : *paramList->getEnumerator())
+            for (auto s : *paramList->getEnumerator()) {
                 out << dbp(s) << "=>" << dbp(lookup(s)) << std::endl;
+            }
         } else {
-            for (auto s : parametersByName)
+            for (auto s : parametersByName) {
                 out << dbp(s.second) << "=>" << dbp(lookupByName(s.first)) << std::endl;
+            }
         }
     }
 };

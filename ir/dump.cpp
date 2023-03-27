@@ -34,14 +34,21 @@ class IRDumper : public Inspector {
     bool source;
     bool preorder(const IR::Node *n) override {
         if (auto ctxt = getContext()) {
-            if (unsigned(ctxt->depth) > maxdepth) return false;
-            if (ctxt->parent && ctxt->parent->child_name && ignore == ctxt->parent->child_name)
+            if (unsigned(ctxt->depth) > maxdepth) {
                 return false;
+            }
+            if (ctxt->parent && ctxt->parent->child_name && ignore == ctxt->parent->child_name) {
+                return false;
+            }
             out << indent_t(ctxt->depth);
-            if (ctxt->child_name) out << ctxt->child_name << ": ";
+            if (ctxt->child_name) {
+                out << ctxt->child_name << ": ";
+            }
         }
         out << "[" << n->id << "] ";
-        if (source && n->srcInfo) out << "(" << n->srcInfo.toPositionString() << ") ";
+        if (source && n->srcInfo) {
+            out << "(" << n->srcInfo.toPositionString() << ") ";
+        }
         out << n->node_type_name();
         n->dump_fields(out);
         if (dumped.count(n)) {
@@ -53,7 +60,9 @@ class IRDumper : public Inspector {
         return true;
     }
     bool preorder(const IR::Expression *e) override {
-        if (!preorder(static_cast<const IR::Node *>(e))) return false;
+        if (!preorder(static_cast<const IR::Node *>(e))) {
+            return false;
+        }
         visit(e->type, "type");
         return true;
     }
@@ -61,7 +70,9 @@ class IRDumper : public Inspector {
         return preorder(static_cast<const IR::Node *>(c));
     }
     void postorder(const IR::Node *n) override {
-        if (getChildrenVisited() == 0) dumped.erase(n);
+        if (getChildrenVisited() == 0) {
+            dumped.erase(n);
+        }
     }
 
  public:
@@ -105,14 +116,17 @@ void dump_notype(uintptr_t p, unsigned maxdepth) {
 void dump_notype(uintptr_t p) { dump_notype(p, ~0U); }
 
 void dump(std::ostream &out, const Visitor::Context *ctxt) {
-    if (!ctxt) return;
+    if (!ctxt) {
+        return;
+    }
     dump(ctxt->parent);
     out << indent_t(ctxt->depth - 1);
     if (ctxt->parent) {
-        if (ctxt->parent->child_name)
+        if (ctxt->parent->child_name) {
             out << ctxt->parent->child_name << ": ";
-        else
+        } else {
             out << ctxt->parent->child_index << ": ";
+        }
     }
     if (ctxt->original != ctxt->node) {
         out << "<" << static_cast<const void *>(ctxt->original) << ":[" << ctxt->original->id

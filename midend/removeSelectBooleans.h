@@ -50,7 +50,9 @@ class RemoveSelectBooleans : public PassManager {
  public:
     RemoveSelectBooleans(ReferenceMap *refMap, TypeMap *typeMap,
                          TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoRemoveSelectBooleans(typeMap));
         passes.push_back(new ClearTypeMap(typeMap));  // some types have changed

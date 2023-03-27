@@ -179,7 +179,9 @@ void cstring::construct_from_literal(const char *string, std::size_t length) {
 size_t cstring::cache_size(size_t &count) {
     size_t rv = 0;
     count = cache().size();
-    for (auto &s : cache()) rv += sizeof(s) + s.length();
+    for (auto &s : cache()) {
+        rv += sizeof(s) + s.length();
+    }
     return rv;
 }
 
@@ -187,12 +189,16 @@ cstring cstring::newline = cstring("\n");
 cstring cstring::empty = cstring("");
 
 bool cstring::startsWith(const cstring &prefix) const {
-    if (prefix.isNullOrEmpty()) return true;
+    if (prefix.isNullOrEmpty()) {
+        return true;
+    }
     return size() >= prefix.size() && memcmp(str, prefix.str, prefix.size()) == 0;
 }
 
 bool cstring::endsWith(const cstring &suffix) const {
-    if (suffix.isNullOrEmpty()) return true;
+    if (suffix.isNullOrEmpty()) {
+        return true;
+    }
     return size() >= suffix.size() &&
            memcmp(str + size() - suffix.size(), suffix.str, suffix.size()) == 0;
 }
@@ -200,20 +206,27 @@ bool cstring::endsWith(const cstring &suffix) const {
 cstring cstring::before(const char *at) const { return substr(0, at - str); }
 
 cstring cstring::substr(size_t start, size_t length) const {
-    if (size() <= start) return cstring::empty;
+    if (size() <= start) {
+        return cstring::empty;
+    }
     std::string s = str;
     return s.substr(start, length);
 }
 
 cstring cstring::replace(char c, char with) const {
     char *dup = strdup(c_str());
-    for (char *p = dup; *p; ++p)
-        if (*p == c) *p = with;
+    for (char *p = dup; *p; ++p) {
+        if (*p == c) {
+            *p = with;
+        }
+    }
     return cstring(dup);
 }
 
 cstring cstring::replace(cstring search, cstring replace) const {
-    if (search.isNullOrEmpty() || isNullOrEmpty()) return *this;
+    if (search.isNullOrEmpty() || isNullOrEmpty()) {
+        return *this;
+    }
 
     std::string s_str = str;
     std::string s_search = search.str;
@@ -229,7 +242,9 @@ cstring cstring::replace(cstring search, cstring replace) const {
 
 cstring cstring::indent(size_t amount) const {
     std::string spaces = "";
-    for (size_t i = 0; i < amount; i++) spaces += " ";
+    for (size_t i = 0; i < amount; i++) {
+        spaces += " ";
+    }
     cstring spc = cstring("\n") + spaces;
     return cstring(spaces) + replace("\n", spc);
 }

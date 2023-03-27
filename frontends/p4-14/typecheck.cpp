@@ -39,8 +39,9 @@ class TypeCheck::AssignInitialTypes : public Transform {
         BUG_CHECK(currentNode == getCurrentNode<NodeType>(),
                   "Expected to be called on the visitor's current node");
         currentNode->type = type;
-        if (type != getOriginal<NodeType>()->type)
+        if (type != getOriginal<NodeType>()->type) {
             LOG3("Set initial type " << type << " for expression " << currentNode);
+        }
     }
     const IR::Node *preorder(IR::V1Program *glob) override {
         global = glob;
@@ -48,8 +49,11 @@ class TypeCheck::AssignInitialTypes : public Transform {
     }
 
     const IR::Node *preorder(IR::PathExpression *ref) override {
-        if (auto af = findContext<IR::ActionFunction>())
-            if (auto arg = af->arg(ref->path->name)) return arg;
+        if (auto af = findContext<IR::ActionFunction>()) {
+            if (auto arg = af->arg(ref->path->name)) {
+                return arg;
+            }
+        }
         const Visitor::Context *prop_ctxt = nullptr;
         if (auto prop = findContext<IR::Property>(prop_ctxt)) {
             if (auto bbox = prop_ctxt->parent->node->to<IR::Declaration_Instance>()) {
@@ -63,9 +67,10 @@ class TypeCheck::AssignInitialTypes : public Transform {
         }
         if (auto bbox = findContext<IR::Declaration_Instance>()) {
             if (auto bbox_type = bbox->type->to<IR::Type_Extern>()) {
-                if (auto attr = bbox_type->attributes.get<IR::Attribute>(ref->path->name))
+                if (auto attr = bbox_type->attributes.get<IR::Attribute>(ref->path->name)) {
                     return new IR::AttributeRef(ref->srcInfo, attr->type, bbox->name, bbox_type,
                                                 attr);
+                }
             } else if (global && !bbox->type->is<IR::Type_Name>()) {
                 BUG("extern type is not extern_type?");
             }
@@ -74,12 +79,15 @@ class TypeCheck::AssignInitialTypes : public Transform {
     }
 
     const IR::Node *preorder(IR::Metadata *m) override {
-        if (!global) return m;
-        if (auto ht = global->get<IR::v1HeaderType>(m->type_name))
+        if (!global) {
+            return m;
+        }
+        if (auto ht = global->get<IR::v1HeaderType>(m->type_name)) {
             setType(m, ht->as_metadata);
-        else
+        } else {
             error(ErrorType::ERR_TYPE_ERROR, "%s: No header type %s defined", m->srcInfo,
                   m->type_name);
+        }
         return m;
     }
 
@@ -89,30 +97,42 @@ class TypeCheck::AssignInitialTypes : public Transform {
     }
 
     const IR::Node *preorder(IR::HeaderOrMetadata *hm) override {
-        if (!global) return hm;
-        if (auto ht = global->get<IR::v1HeaderType>(hm->type_name))
+        if (!global) {
+            return hm;
+        }
+        if (auto ht = global->get<IR::v1HeaderType>(hm->type_name)) {
             setType(hm, ht->as_header);
-        else
+        } else {
             error(ErrorType::ERR_TYPE_ERROR, "%s: No header type %s defined", hm->srcInfo,
                   hm->type_name);
+        }
         return hm;
     }
 
     const IR::Node *preorder(IR::ActionSelector *sel) override {
-        if (!global) return sel;
-        if (sel->key_fields != nullptr) return sel;
+        if (!global) {
+            return sel;
+        }
+        if (sel->key_fields != nullptr) {
+            return sel;
+        }
         const IR::FieldListCalculation *kf = nullptr;
-        if (sel->key.name && (kf = global->get<IR::FieldListCalculation>(sel->key)))
+        if (sel->key.name && (kf = global->get<IR::FieldListCalculation>(sel->key))) {
             sel->key_fields = kf;
-        else
+        } else {
             error(ErrorType::ERR_TYPE_ERROR, "%s: Key must coordinate to a field_list_calculation",
                   sel->srcInfo);
+        }
         return sel;
     }
 
     const IR::Node *preorder(IR::FieldListCalculation *flc) override {
-        if (!global) return flc;
-        if (flc->input_fields != nullptr) return flc;
+        if (!global) {
+            return flc;
+        }
+        if (flc->input_fields != nullptr) {
+            return flc;
+        }
         if (!flc->input || flc->input->names.empty()) {
             error(ErrorType::ERR_TYPE_ERROR, "%s: no input in field_list_calculation",
                   flc->srcInfo);
@@ -146,20 +166,25 @@ class TypeCheck::AssignInitialTypes : public Transform {
     const IR::Node *preorder(IR::Property *prop) override {
         if (auto di = findContext<IR::Declaration_Instance>()) {
             auto ext = di->type->to<IR::Type_Extern>();
-            if (!ext && !global) return prop;
-            if (!ext && di->type->is<IR::Type_Name>()) return prop;
+            if (!ext && !global) {
+                return prop;
+            }
+            if (!ext && di->type->is<IR::Type_Name>()) {
+                return prop;
+            }
             BUG_CHECK(ext, "%s is not an extern", di);
             if (auto attr = ext->attributes[prop->name]) {
-                if (attr->type->is<IR::Type::String>())
+                if (attr->type->is<IR::Type::String>()) {
                     prune();
-                else if (attr->type->is<IR::Type_AnyTable>())
+                } else if (attr->type->is<IR::Type_AnyTable>()) {
                     prop_update<IR::V1Table>(prop, "table");
-                else if (attr->type->is<IR::Type_Counter>())
+                } else if (attr->type->is<IR::Type_Counter>()) {
                     prop_update<IR::Counter>(prop, "counter");
-                else if (attr->type->is<IR::Type_Meter>())
+                } else if (attr->type->is<IR::Type_Meter>()) {
                     prop_update<IR::Meter>(prop, "meter");
-                else if (attr->type->is<IR::Type_Register>())
+                } else if (attr->type->is<IR::Type_Register>()) {
                     prop_update<IR::Register>(prop, "register");
+                }
             } else {
                 error(ErrorType::ERR_TYPE_ERROR, "No property name %s in extern %s", prop->name,
                       ext->name);
@@ -169,7 +194,9 @@ class TypeCheck::AssignInitialTypes : public Transform {
     }
 
     const IR::Node *postorder(IR::PathExpression *ref) override {
-        if (!global) return ref;
+        if (!global) {
+            return ref;
+        }
         IR::Node *new_node = ref;
         // There might be multiple different objects in the program with this name.
         // If there are, we need to infer which to use based on the context.
@@ -207,12 +234,15 @@ class TypeCheck::AssignInitialTypes : public Transform {
         } else if (/*auto obj = */ global->get<IR::Node>(ref->path->name)) {
             /* FIXME -- is something, should probably be typechecked */
         } else if (getParent<IR::Member>()) {
-            if (ref->path->name != "latest")
+            if (ref->path->name != "latest") {
                 error(ErrorType::ERR_TYPE_ERROR, "%s: No header or metadata named %s", ref->srcInfo,
                       ref->path->name);
+            }
         } else {
             if (getParent<IR::HeaderStackItemRef>()) {
-                if (ref->path->name == "next" || ref->path->name == "last") return ref;
+                if (ref->path->name == "next" || ref->path->name == "last") {
+                    return ref;
+                }
             }
             if (auto hdr = findContext<IR::Type_StructLike>()) {
                 if (auto field = hdr->getField(ref->path->name)) {
@@ -229,7 +259,9 @@ class TypeCheck::AssignInitialTypes : public Transform {
     }
 
     const IR::Node *postorder(IR::Type_Name *ref) override {
-        if (!global) return ref;
+        if (!global) {
+            return ref;
+        }
         if (auto t = global->get<IR::Type>(ref->path->name)) {
             visit(t);
             return t;
@@ -241,20 +273,23 @@ class TypeCheck::AssignInitialTypes : public Transform {
     }
 
     const IR::Node *postorder(IR::HeaderStackItemRef *ref) override {
-        if (auto ht = ref->base()->type->to<IR::Type_StructLike>())
+        if (auto ht = ref->base()->type->to<IR::Type_StructLike>()) {
             setType(ref, ht);
-        else if (auto hst = ref->base()->type->to<IR::Type_Stack>())
+        } else if (auto hst = ref->base()->type->to<IR::Type_Stack>()) {
             setType(ref, hst->elementType);
-        else
+        } else {
             error(ErrorType::ERR_TYPE_ERROR, "%s: %s is not a header", ref->base()->srcInfo,
                   ref->base()->toString());
+        }
         visit(ref->type);
         return ref;
     }
 
     const IR::Node *postorder(IR::Member *ref) override {
         if (ref->member.toString()[0] == '$') {
-            if (ref->member == "$valid") setType(ref, IR::Type::Boolean::get());
+            if (ref->member == "$valid") {
+                setType(ref, IR::Type::Boolean::get());
+            }
         } else if (auto ht = ref->expr->type->to<IR::Type_StructLike>()) {
             auto f = ht->getField(ref->member);
             if (f != nullptr) {
@@ -276,11 +311,21 @@ class TypeCheck::AssignInitialTypes : public Transform {
 
 static const IR::Type *combineTypes(const Util::SourceInfo &loc, const IR::Type *a,
                                     const IR::Type *b) {
-    if (!a || a == IR::Type::Unknown::get()) return b;
-    if (!b || b == IR::Type::Unknown::get()) return a;
-    if (a->is<IR::Type_InfInt>()) return b;
-    if (b->is<IR::Type_InfInt>()) return a;
-    if (*a == *b) return a;
+    if (!a || a == IR::Type::Unknown::get()) {
+        return b;
+    }
+    if (!b || b == IR::Type::Unknown::get()) {
+        return a;
+    }
+    if (a->is<IR::Type_InfInt>()) {
+        return b;
+    }
+    if (b->is<IR::Type_InfInt>()) {
+        return a;
+    }
+    if (*a == *b) {
+        return a;
+    }
     if (a->is<IR::Type_Bits>() && b->is<IR::Type_Bits>()) {
         auto aBits = a->to<IR::Type_Bits>();
         auto bBits = b->to<IR::Type_Bits>();
@@ -317,14 +362,16 @@ class TypeCheck::InferExpressionsBottomUp : public Modifier {
         BUG_CHECK(currentNode == getCurrentNode<IR::Expression>(),
                   "Expected to be called on the visitor's current node");
         currentNode->type = type;
-        if (type != getOriginal<IR::Expression>()->type)
+        if (type != getOriginal<IR::Expression>()->type) {
             LOG3("Inferred (up) type " << type << " for expression " << currentNode << " ["
                                        << currentNode->id << "]");
+        }
     }
     bool checkBits(const IR::Node *node, const IR::Type *type) const {
         if (type->is<IR::Type::Unknown>() || type->is<IR::Type::Bits>() ||
-            type->is<IR::Type_InfInt>())
+            type->is<IR::Type_InfInt>()) {
             return true;
+        }
         ::error(ErrorType::ERR_TYPE_ERROR, "%1%: not defined on operands of type %2%", node, type);
         return false;
     }
@@ -380,7 +427,9 @@ class TypeCheck::InferExpressionsBottomUp : public Modifier {
 static const IR::Type *inferTypeFromContext(const Visitor::Context *ctxt,
                                             const IR::V1Program *global) {
     const IR::Type *rv = IR::Type::Unknown::get();
-    if (!ctxt) return rv;
+    if (!ctxt) {
+        return rv;
+    }
     if (auto parent = ctxt->node->to<IR::Expression>()) {
         if (auto p = parent->to<IR::Operation_Relation>()) {
             const IR::Type::Bits *t, *ct = nullptr;
@@ -393,9 +442,10 @@ static const IR::Type *inferTypeFromContext(const Visitor::Context *ctxt,
             } else {
                 BUG("Unepxected child index");
             }
-            if (ct && (t = rv->to<IR::Type::Bits>()) && ct->size > t->size)
+            if (ct && (t = rv->to<IR::Type::Bits>()) && ct->size > t->size) {
                 // if both children have bit types, use the larger
                 rv = ct;
+            }
         } else if (parent->is<IR::Operation::Binary>()) {
             if ((parent->is<IR::Shl>() || parent->is<IR::Shr>()) && ctxt->child_index == 1) {
                 // don't propagate into shift count -- maybe should infer log2 bits?
@@ -453,24 +503,29 @@ class TypeCheck::InferActionArgsBottomUp : public Inspector {
         return Inspector::init_apply(root);
     }
     void postorder(const IR::Primitive *prim) override {
-        if (!global || !findContext<IR::ActionFunction>()) return;
+        if (!global || !findContext<IR::ActionFunction>()) {
+            return;
+        }
         if (auto af = global->get<IR::ActionFunction>(prim->name)) {
             auto arg = af->args.begin();
             for (auto op : prim->operands) {
                 if (arg == af->args.end()) {
-                    if (self.iterCounter == 1)
+                    if (self.iterCounter == 1) {
                         error(ErrorType::ERR_TYPE_ERROR, "%s: too many arguments to action %s",
                               prim->srcInfo, prim);
+                    }
                     break;
                 }
-                if (op->type != IR::Type::Unknown::get())
+                if (op->type != IR::Type::Unknown::get()) {
                     self.actionArgUseTypes[*arg] =
                         combineTypes(prim->srcInfo, self.actionArgUseTypes[*arg], op->type);
+                }
                 ++arg;
             }
-            if (arg != af->args.end() && self.iterCounter == 1)
+            if (arg != af->args.end() && self.iterCounter == 1) {
                 error(ErrorType::ERR_TYPE_ERROR, "%s: not enough arguments to action %s",
                       prim->srcInfo, prim);
+            }
         } else if (self.iterCounter == 1) {
             prim->typecheck();
         }
@@ -536,8 +591,12 @@ class TypeCheck::AssignActionArgTypes : public Modifier {
         if (auto *prim = ctxt->node->to<IR::Primitive>()) {
             if (auto af = global ? global->get<IR::ActionFunction>(prim->name) : nullptr) {
                 if (size_t(ctxt->child_index) < af->args.size()) {
-                    if (af->args[ctxt->child_index]->write) arg->write = true;
-                    if (af->args[ctxt->child_index]->read) arg->read = true;
+                    if (af->args[ctxt->child_index]->write) {
+                        arg->write = true;
+                    }
+                    if (af->args[ctxt->child_index]->read) {
+                        arg->read = true;
+                    }
                 }
             } else if (prim->isOutput(ctxt->child_index)) {
                 arg->write = true;
@@ -575,12 +634,16 @@ class TypeCheck::MakeImplicitCastsExplicit : public Transform, P4WriteContext {
     }
     IR::Expression *postorder(IR::Expression *op) override {
         visitAgain();
-        if (isWrite()) return op;  // don't cast lvalues
+        if (isWrite()) {
+            return op;  // don't cast lvalues
+        }
         auto *type = inferTypeFromContext(getContext(), global);
         if (type != IR::Type::Unknown::get() && !type->is<IR::Type_InfInt>() && type != op->type) {
             LOG3("Need cast " << op->type << " -> " << type << " on " << op);
             const IR::Expression *e = getOriginal<IR::Expression>();
-            if (*op != *e) e = op;  // undo Transform clone if it wasn't needed
+            if (*op != *e) {
+                e = op;  // undo Transform clone if it wasn't needed
+            }
             return makeP14Cast(type, e);
         }
         return op;

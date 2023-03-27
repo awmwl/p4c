@@ -93,8 +93,11 @@ class PassManager : virtual public Visitor, virtual public Backtrack {
     PassManager(const std::initializer_list<VisitorRef> &init) { addPasses(init); }
     void addPasses(const std::initializer_list<VisitorRef> &init) {
         never_backtracks_cache = -1;
-        for (auto &p : init)
-            if (p.visitor) passes.emplace_back(p.visitor);
+        for (auto &p : init) {
+            if (p.visitor) {
+                passes.emplace_back(p.visitor);
+            }
+        }
     }
     void removePasses(const std::vector<cstring> &exclude);
     void listPasses(std::ostream &, cstring sep) const;
@@ -104,17 +107,23 @@ class PassManager : virtual public Visitor, virtual public Backtrack {
     void setStopOnError(bool stop) { stop_on_error = stop; }
     void addDebugHook(DebugHook h, bool recursive = false) {
         debugHooks.push_back(h);
-        if (recursive)
-            for (auto pass : passes)
-                if (auto child = dynamic_cast<PassManager *>(pass))
+        if (recursive) {
+            for (auto pass : passes) {
+                if (auto child = dynamic_cast<PassManager *>(pass)) {
                     child->addDebugHook(h, recursive);
+                }
+            }
+        }
     }
     void addDebugHooks(std::vector<DebugHook> hooks, bool recursive = false) {
         debugHooks.insert(debugHooks.end(), hooks.begin(), hooks.end());
-        if (recursive)
-            for (auto pass : passes)
-                if (auto child = dynamic_cast<PassManager *>(pass))
+        if (recursive) {
+            for (auto pass : passes) {
+                if (auto child = dynamic_cast<PassManager *>(pass)) {
                     child->addDebugHooks(hooks, recursive);
+                }
+            }
+        }
     }
     void early_exit() { early_exit_flag = true; }
     PassManager *clone() const override { return new PassManager(*this); }
@@ -196,14 +205,20 @@ inline PassManager::VisitorRef::VisitorRef(std::function<const IR::Node *(const 
 class DynamicVisitor : virtual public Visitor {
     Visitor *visitor;
     profile_t init_apply(const IR::Node *root) override {
-        if (visitor) return visitor->init_apply(root);
+        if (visitor) {
+            return visitor->init_apply(root);
+        }
         return Visitor::init_apply(root);
     }
     void end_apply(const IR::Node *root) override {
-        if (visitor) visitor->end_apply(root);
+        if (visitor) {
+            visitor->end_apply(root);
+        }
     }
     const IR::Node *apply_visitor(const IR::Node *root, const char *name = 0) override {
-        if (visitor) return visitor->apply_visitor(root, name);
+        if (visitor) {
+            return visitor->apply_visitor(root, name);
+        }
         return root;
     }
 

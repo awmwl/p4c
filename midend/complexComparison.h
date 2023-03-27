@@ -50,7 +50,9 @@ class SimplifyComparisons final : public PassManager {
  public:
     SimplifyComparisons(ReferenceMap *refMap, TypeMap *typeMap,
                         TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new RemoveComplexComparisons(refMap, typeMap));
         setName("SimplifyComparisons");

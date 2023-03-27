@@ -77,7 +77,9 @@ class DoExpandLookahead : public Transform {
         return parser;
     }
     const IR::Node *postorder(IR::P4Parser *parser) override {
-        if (!newDecls.empty()) parser->parserLocals.append(newDecls);
+        if (!newDecls.empty()) {
+            parser->parserLocals.append(newDecls);
+        }
         return parser;
     }
 };
@@ -89,7 +91,9 @@ class ExpandLookahead : public PassManager {
  public:
     ExpandLookahead(ReferenceMap *refMap, TypeMap *typeMap, TypeChecking *typeChecking = nullptr,
                     bool expandHeader = true) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoExpandLookahead(refMap, typeMap, expandHeader));
         setName("ExpandLookahead");

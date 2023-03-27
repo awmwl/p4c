@@ -37,7 +37,9 @@ static inline unsigned bitcount(unsigned v) {
 static inline int floor_log2(unsigned v) {
     int rv = -1;
 #if defined(__GNUC__) || defined(__clang__)
-    if (v) rv = CHAR_BIT * sizeof(unsigned) - __builtin_clz(v) - 1;
+    if (v) {
+        rv = CHAR_BIT * sizeof(unsigned) - __builtin_clz(v) - 1;
+    }
 #else
     while (v) {
         rv++;
@@ -51,10 +53,15 @@ static inline int ceil_log2(unsigned v) { return v ? floor_log2(v - 1) + 1 : -1;
 
 static inline unsigned bitmask2bytemask(const bitvec &a) {
     int max = a.max().index();
-    if (max < 0) return 0;
+    if (max < 0) {
+        return 0;
+    }
     unsigned rv = 0;
-    for (unsigned i = 0; i <= max / 8U; i++)
-        if (a.getrange(i * 8, 8)) rv |= 1 << i;
+    for (unsigned i = 0; i <= max / 8U; i++) {
+        if (a.getrange(i * 8, 8)) {
+            rv |= 1 << i;
+        }
+    }
     return rv;
 }
 

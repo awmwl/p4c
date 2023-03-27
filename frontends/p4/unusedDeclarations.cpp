@@ -27,7 +27,9 @@ Visitor::profile_t RemoveUnusedDeclarations::init_apply(const IR::Node *node) {
 }
 
 bool RemoveUnusedDeclarations::giveWarning(const IR::Node *node) {
-    if (warned == nullptr) return false;
+    if (warned == nullptr) {
+        return false;
+    }
     auto p = warned->emplace(node);
     LOG3("Warn about " << dbp(node) << " " << p.second);
     return p.second;
@@ -81,8 +83,9 @@ const IR::Node *RemoveUnusedDeclarations::preorder(IR::P4Parser *parser) {
 
 const IR::Node *RemoveUnusedDeclarations::preorder(IR::P4Table *table) {
     if (!refMap->isUsed(getOriginal<IR::IDeclaration>())) {
-        if (giveWarning(getOriginal()))
+        if (giveWarning(getOriginal())) {
             warn(ErrorType::WARN_UNUSED, "Table %1% is not used; removing", table);
+        }
         LOG3("Removing " << table);
         table = nullptr;
     }
@@ -92,19 +95,27 @@ const IR::Node *RemoveUnusedDeclarations::preorder(IR::P4Table *table) {
 
 const IR::Node *RemoveUnusedDeclarations::preorder(IR::Declaration_Variable *decl) {
     prune();
-    if (decl->initializer == nullptr) return process(decl);
-    if (!SideEffects::check(decl->initializer, this, nullptr, nullptr)) return process(decl);
+    if (decl->initializer == nullptr) {
+        return process(decl);
+    }
+    if (!SideEffects::check(decl->initializer, this, nullptr, nullptr)) {
+        return process(decl);
+    }
     return decl;
 }
 
 const IR::Node *RemoveUnusedDeclarations::process(const IR::IDeclaration *decl) {
     LOG3("Visiting " << decl);
-    if (decl->getName().name == IR::ParserState::verify && getParent<IR::P4Program>())
+    if (decl->getName().name == IR::ParserState::verify && getParent<IR::P4Program>()) {
         return decl->getNode();
-    if (decl->getName().name.startsWith("__"))
+    }
+    if (decl->getName().name.startsWith("__")) {
         // Internal identifiers, e.g., __v1model_version
         return decl->getNode();
-    if (refMap->isUsed(getOriginal<IR::IDeclaration>())) return decl->getNode();
+    }
+    if (refMap->isUsed(getOriginal<IR::IDeclaration>())) {
+        return decl->getNode();
+    }
     LOG3("Removing " << getOriginal());
     prune();  // no need to go deeper
     return nullptr;
@@ -112,30 +123,50 @@ const IR::Node *RemoveUnusedDeclarations::process(const IR::IDeclaration *decl) 
 
 const IR::Node *RemoveUnusedDeclarations::preorder(IR::Parameter *param) {
     // Skip all things that just declare "prototypes"
-    if (findContext<IR::Type_Parser>() && !findContext<IR::P4Parser>()) return param;
-    if (findContext<IR::Type_Control>() && !findContext<IR::P4Control>()) return param;
-    if (findContext<IR::Type_Package>()) return param;
-    if (findContext<IR::Type_Method>() && !findContext<IR::Function>()) return param;
+    if (findContext<IR::Type_Parser>() && !findContext<IR::P4Parser>()) {
+        return param;
+    }
+    if (findContext<IR::Type_Control>() && !findContext<IR::P4Control>()) {
+        return param;
+    }
+    if (findContext<IR::Type_Package>()) {
+        return param;
+    }
+    if (findContext<IR::Type_Method>() && !findContext<IR::Function>()) {
+        return param;
+    }
     return warnIfUnused(param);
 }
 
 const IR::Node *RemoveUnusedDeclarations::warnIfUnused(const IR::Node *node) {
-    if (!refMap->isUsed(getOriginal<IR::IDeclaration>()))
-        if (giveWarning(getOriginal())) warn(ErrorType::WARN_UNUSED, "'%1%' is unused", node);
+    if (!refMap->isUsed(getOriginal<IR::IDeclaration>())) {
+        if (giveWarning(getOriginal())) {
+            warn(ErrorType::WARN_UNUSED, "'%1%' is unused", node);
+        }
+    }
     return node;
 }
 
 const IR::Node *RemoveUnusedDeclarations::preorder(IR::Declaration_Instance *decl) {
     // Don't delete instances; they may have consequences on the control-plane API
-    if (decl->getName().name == IR::P4Program::main && getParent<IR::P4Program>()) return decl;
+    if (decl->getName().name == IR::P4Program::main && getParent<IR::P4Program>()) {
+        return decl;
+    }
     if (!refMap->isUsed(getOriginal<IR::Declaration_Instance>())) {
-        if (giveWarning(getOriginal())) warn(ErrorType::WARN_UNUSED, "%1%: unused instance", decl);
+        if (giveWarning(getOriginal())) {
+            warn(ErrorType::WARN_UNUSED, "%1%: unused instance", decl);
+        }
         // We won't delete extern instances; these may be useful even if not references.
         auto type = decl->type;
-        if (type->is<IR::Type_Specialized>()) type = type->to<IR::Type_Specialized>()->baseType;
-        if (type->is<IR::Type_Name>())
+        if (type->is<IR::Type_Specialized>()) {
+            type = type->to<IR::Type_Specialized>()->baseType;
+        }
+        if (type->is<IR::Type_Name>()) {
             type = refMap->getDeclaration(type->to<IR::Type_Name>()->path, true)->to<IR::Type>();
-        if (!type->is<IR::Type_Extern>()) return process(decl);
+        }
+        if (!type->is<IR::Type_Extern>()) {
+            return process(decl);
+        }
         prune();
         return decl;
     }
@@ -146,10 +177,13 @@ const IR::Node *RemoveUnusedDeclarations::preorder(IR::Declaration_Instance *dec
 
 const IR::Node *RemoveUnusedDeclarations::preorder(IR::ParserState *state) {
     if (state->name == IR::ParserState::accept || state->name == IR::ParserState::reject ||
-        state->name == IR::ParserState::start)
+        state->name == IR::ParserState::start) {
         return state;
+    }
 
-    if (refMap->isUsed(getOriginal<IR::ParserState>())) return state;
+    if (refMap->isUsed(getOriginal<IR::ParserState>())) {
+        return state;
+    }
     LOG3("Removing " << state);
     prune();
     return nullptr;

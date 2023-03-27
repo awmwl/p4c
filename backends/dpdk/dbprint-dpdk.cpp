@@ -41,19 +41,24 @@ void IR::DpdkInvalidateStatement::dbprint(std::ostream &out) const {
 void IR::DpdkDropStatement::dbprint(std::ostream &out) const { out << "drop" << std::endl; }
 
 void IR::DpdkAsmProgram::dbprint(std::ostream &out) const {
-    for (auto h : headerType) out << h;
+    for (auto h : headerType) {
+        out << h;
+    }
 }
 
 void IR::DpdkListStatement::dbprint(std::ostream &out) const {
-    for (auto s : statements) out << s;
+    for (auto s : statements) {
+        out << s;
+    }
 }
 
 void IR::DpdkExtractStatement::dbprint(std::ostream &out) const {
     out << "extract " << header;
-    if (length)
+    if (length) {
         out << length << std::endl;
-    else
+    } else {
         out << std::endl;
+    }
 }
 
 void IR::DpdkLookaheadStatement::dbprint(std::ostream &out) const {

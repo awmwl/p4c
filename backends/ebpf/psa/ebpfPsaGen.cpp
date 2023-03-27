@@ -42,7 +42,9 @@ class PSAErrorCodesGen : public Inspector {
             if (decl->srcInfo.isValid()) {
                 auto sourceFile = decl->srcInfo.getSourceFile();
                 // all the error codes are located in core.p4 file, they are defined in psa.h
-                if (sourceFile.endsWith("p4include/core.p4")) continue;
+                if (sourceFile.endsWith("p4include/core.p4")) {
+                    continue;
+                }
             }
 
             builder->emitIndent();
@@ -131,8 +133,9 @@ void PSAEbpfGenerator::emitTypes(CodeBuilder *builder) const {
         type->emit(builder);
     }
 
-    if (ingress->hasAnyMeter() || egress->hasAnyMeter())
+    if (ingress->hasAnyMeter() || egress->hasAnyMeter()) {
         EBPFMeterPSA::emitValueStruct(builder, ingress->refMap);
+    }
 
     ingress->parser->emitTypes(builder);
     ingress->control->emitTableTypes(builder);
@@ -636,7 +639,9 @@ const PSAEbpfGenerator *ConvertToEbpfPSA::build(const IR::ToplevelBlock *tlb) {
             }
 
             auto type = EBPFTypeFactory::instance->create(d->to<IR::Type>());
-            if (type == nullptr) continue;
+            if (type == nullptr) {
+                continue;
+            }
             ebpfTypes.push_back(type);
         }
     }
@@ -805,7 +810,9 @@ bool ConvertToEBPFParserPSA::preorder(const IR::ParserBlock *prsr) {
     }
 
     auto ht = typemap->getType(parser->headers);
-    if (ht == nullptr) return false;
+    if (ht == nullptr) {
+        return false;
+    }
     parser->headerType = EBPFTypeFactory::instance->create(ht);
 
     parser->visitor->useAsPointerVariable(resubmit_meta->name.name);
@@ -898,7 +905,9 @@ bool ConvertToEBPFControlPSA::preorder(const IR::Declaration_Variable *decl) {
 
 bool ConvertToEBPFControlPSA::preorder(const IR::ExternBlock *instance) {
     auto di = instance->node->to<IR::Declaration_Instance>();
-    if (di == nullptr) return false;
+    if (di == nullptr) {
+        return false;
+    }
     cstring name = EBPFObject::externalName(di);
     cstring typeName = instance->type->getName().name;
 

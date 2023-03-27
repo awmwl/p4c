@@ -134,10 +134,11 @@ class CollectActionUses : public Inspector {
     bool preorder(const IR::ActionListElement *ale) {
         if (auto mce = ale->expression->to<IR::MethodCallExpression>()) {
             if (auto path = mce->method->to<IR::PathExpression>()) {
-                if (path->path->name.originalName == "NoAction")
+                if (path->path->name.originalName == "NoAction") {
                     actions.insert("NoAction");
-                else
+                } else {
                     actions.insert(path->path->name.name);
+                }
             }
         }
         return false;
@@ -151,7 +152,9 @@ class ElimUnusedActions : public Transform {
  public:
     explicit ElimUnusedActions(const ordered_set<cstring> &a) : used_actions(a) {}
     const IR::Node *postorder(IR::DpdkAction *a) override {
-        if (kept_actions.count(a->name.name) != 0) return nullptr;
+        if (kept_actions.count(a->name.name) != 0) {
+            return nullptr;
+        }
         if (used_actions.find(a->name.name) != used_actions.end()) {
             kept_actions.insert(a->name.name);
             return a;

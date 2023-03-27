@@ -21,12 +21,16 @@ namespace P4 {
 void DoSetHeaders::generateSetValid(const IR::Expression *dest, const IR::Expression *src,
                                     const IR::Type *destType, IR::Vector<IR::StatOrDecl> *insert) {
     auto structType = destType->to<IR::Type_StructLike>();
-    if (structType == nullptr) return;
+    if (structType == nullptr) {
+        return;
+    }
 
     auto srcType = typeMap->getType(src, true);
     auto list = src->to<IR::ListExpression>();
     auto si = src->to<IR::StructExpression>();
-    if (list == nullptr && si == nullptr) return;
+    if (list == nullptr && si == nullptr) {
+        return;
+    }
 
     if (structType->is<IR::Type_Header>()) {
         LOG3("Inserting setValid for " << dest);
@@ -66,7 +70,9 @@ const IR::Node *DoSetHeaders::postorder(IR::AssignmentStatement *statement) {
     auto vec = new IR::IndexedVector<IR::StatOrDecl>();
     auto destType = typeMap->getType(statement->left, true);
     generateSetValid(statement->left, statement->right, destType, vec);
-    if (vec->empty()) return statement;
+    if (vec->empty()) {
+        return statement;
+    }
     vec->push_back(statement);
     return new IR::BlockStatement(statement->srcInfo, *vec);
 }

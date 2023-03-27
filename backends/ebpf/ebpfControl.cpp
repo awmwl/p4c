@@ -37,7 +37,9 @@ bool ControlBodyTranslator::preorder(const IR::PathExpression *expression) {
     auto decl = control->program->refMap->getDeclaration(expression->path, true);
     auto param = decl->getNode()->to<IR::Parameter>();
     if (param != nullptr) {
-        if (toDereference.count(param) > 0) builder->append("*");
+        if (toDereference.count(param) > 0) {
+            builder->append("*");
+        }
         auto subst = ::get(substitution, param);
         if (subst != nullptr) {
             builder->append(subst->name);
@@ -50,15 +52,18 @@ bool ControlBodyTranslator::preorder(const IR::PathExpression *expression) {
 
 void ControlBodyTranslator::processCustomExternFunction(const P4::ExternFunction *function,
                                                         EBPFTypeFactory *typeFactory) {
-    if (!control->emitExterns)
+    if (!control->emitExterns) {
         ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Not supported", function->method);
+    }
 
     visit(function->expr->method);
     builder->append("(");
     bool first = true;
 
     for (auto p : *function->substitution.getParametersInArgumentOrder()) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         auto arg = function->substitution.lookup(p);
         if (p->direction == IR::Direction::Out || p->direction == IR::Direction::InOut) {
@@ -82,13 +87,17 @@ void ControlBodyTranslator::processFunction(const P4::ExternFunction *function) 
 }
 
 bool ControlBodyTranslator::preorder(const IR::MethodCallExpression *expression) {
-    if (commentDescriptionDepth == 0) builder->append("/* ");
+    if (commentDescriptionDepth == 0) {
+        builder->append("/* ");
+    }
     commentDescriptionDepth++;
     visit(expression->method);
     builder->append("(");
     bool first = true;
     for (auto a : *expression->arguments) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         visit(a);
     }
@@ -100,7 +109,9 @@ bool ControlBodyTranslator::preorder(const IR::MethodCallExpression *expression)
     commentDescriptionDepth--;
 
     // do not process extern when comment is generated
-    if (commentDescriptionDepth != 0) return false;
+    if (commentDescriptionDepth != 0) {
+        return false;
+    }
 
     auto mi = P4::MethodInstance::resolve(expression, control->program->refMap,
                                           control->program->typeMap);
@@ -156,10 +167,11 @@ void ControlBodyTranslator::compileEmitField(const IR::Expression *expr, cstring
                                              unsigned alignment, EBPFType *type) {
     unsigned widthToEmit = dynamic_cast<IHasWidth *>(type)->widthInBits();
     cstring swap = "";
-    if (widthToEmit == 16)
+    if (widthToEmit == 16) {
         swap = "htons";
-    else if (widthToEmit == 32)
+    } else if (widthToEmit == 32) {
         swap = "htonl";
+    }
     if (!swap.isNullOrEmpty()) {
         builder->emitIndent();
         visit(expr);
@@ -171,7 +183,9 @@ void ControlBodyTranslator::compileEmitField(const IR::Expression *expr, cstring
 
     auto program = control->program;
     unsigned bitsInFirstByte = widthToEmit % 8;
-    if (bitsInFirstByte == 0) bitsInFirstByte = 8;
+    if (bitsInFirstByte == 0) {
+        bitsInFirstByte = 8;
+    }
     unsigned bitsInCurrentByte = bitsInFirstByte;
     unsigned left = widthToEmit;
 
@@ -187,14 +201,15 @@ void ControlBodyTranslator::compileEmitField(const IR::Expression *expr, cstring
 
         BUG_CHECK((bitsToWrite > 0) && (bitsToWrite <= 8), "invalid bitsToWrite %d", bitsToWrite);
         builder->emitIndent();
-        if (alignment == 0)
+        if (alignment == 0) {
             builder->appendFormat("write_byte(%s, BYTES(%s) + %d, (%s) << %d)",
                                   program->packetStartVar.c_str(), program->offsetVar.c_str(), i,
                                   program->byteVar.c_str(), 8 - bitsToWrite);
-        else
+        } else {
             builder->appendFormat("write_partial(%s + BYTES(%s) + %d, %d, (%s) << %d)",
                                   program->packetStartVar.c_str(), program->offsetVar.c_str(), i,
                                   alignment, program->byteVar.c_str(), 8 - bitsToWrite);
+        }
         builder->endOfStatement(true);
         left -= bitsToWrite;
         bitsInCurrentByte -= bitsToWrite;
@@ -411,21 +426,30 @@ bool ControlBodyTranslator::preorder(const IR::IfStatement *statement) {
 
     // This is almost the same as the base class method
     builder->append("if (");
-    if (isHit)
+    if (isHit) {
         builder->append(control->hitVariable);
-    else
+    } else {
         visit(statement->condition);
+    }
     builder->append(") ");
-    if (!statement->ifTrue->is<IR::BlockStatement>()) builder->blockStart();
+    if (!statement->ifTrue->is<IR::BlockStatement>()) {
+        builder->blockStart();
+    }
     visit(statement->ifTrue);
-    if (!statement->ifTrue->is<IR::BlockStatement>()) builder->blockEnd(true);
+    if (!statement->ifTrue->is<IR::BlockStatement>()) {
+        builder->blockEnd(true);
+    }
     if (statement->ifFalse != nullptr) {
         builder->newline();
         builder->emitIndent();
         builder->append("else ");
-        if (!statement->ifFalse->is<IR::BlockStatement>()) builder->blockStart();
+        if (!statement->ifFalse->is<IR::BlockStatement>()) {
+            builder->blockStart();
+        }
         visit(statement->ifFalse);
-        if (!statement->ifFalse->is<IR::BlockStatement>()) builder->blockEnd(true);
+        if (!statement->ifFalse->is<IR::BlockStatement>()) {
+            builder->blockEnd(true);
+        }
     }
     return false;
 }
@@ -478,13 +502,17 @@ bool ControlBodyTranslator::preorder(const IR::SwitchStatement *statement) {
 }
 
 bool ControlBodyTranslator::preorder(const IR::StructExpression *expr) {
-    if (commentDescriptionDepth == 0) return CodeGenInspector::preorder(expr);
+    if (commentDescriptionDepth == 0) {
+        return CodeGenInspector::preorder(expr);
+    }
 
     // Dump structure for helper comment
     builder->append("{");
     bool first = true;
     for (auto c : expr->components) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         visit(c->expression);
         first = false;
     }
@@ -508,7 +536,9 @@ EBPFControl::EBPFControl(const EBPFProgram *program, const IR::ControlBlock *blo
 void EBPFControl::scanConstants() {
     for (auto c : controlBlock->constantValue) {
         auto b = c.second;
-        if (!b->is<IR::Block>()) continue;
+        if (!b->is<IR::Block>()) {
+            continue;
+        }
         if (b->is<IR::TableBlock>()) {
             auto tblblk = b->to<IR::TableBlock>();
             auto tbl = new EBPFTable(program, tblblk, codeGen);
@@ -593,7 +623,9 @@ void EBPFControl::emit(CodeBuilder *builder) {
     builder->emitIndent();
     hitType->declare(builder, hitVariable, false);
     builder->endOfStatement(true);
-    for (auto a : controlBlock->container->controlLocals) emitDeclaration(builder, a);
+    for (auto a : controlBlock->container->controlLocals) {
+        emitDeclaration(builder, a);
+    }
     builder->emitIndent();
     codeGen->setBuilder(builder);
     controlBlock->container->body->apply(*codeGen);
@@ -601,17 +633,27 @@ void EBPFControl::emit(CodeBuilder *builder) {
 }
 
 void EBPFControl::emitTableTypes(CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitTypes(builder);
-    for (auto it : counters) it.second->emitTypes(builder);
+    for (auto it : tables) {
+        it.second->emitTypes(builder);
+    }
+    for (auto it : counters) {
+        it.second->emitTypes(builder);
+    }
 }
 
 void EBPFControl::emitTableInstances(CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitInstance(builder);
-    for (auto it : counters) it.second->emitInstance(builder);
+    for (auto it : tables) {
+        it.second->emitInstance(builder);
+    }
+    for (auto it : counters) {
+        it.second->emitInstance(builder);
+    }
 }
 
 void EBPFControl::emitTableInitializers(CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitInitializer(builder);
+    for (auto it : tables) {
+        it.second->emitInitializer(builder);
+    }
 }
 
 }  // namespace EBPF

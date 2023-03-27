@@ -29,7 +29,9 @@ const IR::Node *FillEnumMap::preorder(IR::Type_Enum *type) {
         BUG_CHECK(canontype->is<IR::Type_Enum>(), "canon type of enum %s is non enum %s?", type,
                   canontype);
         repr.emplace(canontype->to<IR::Type_Enum>(), r);
-        for (auto d : type->members) r->add(d->name.name);
+        for (auto d : type->members) {
+            r->add(d->name.name);
+        }
     }
     return type;
 }

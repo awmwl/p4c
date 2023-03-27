@@ -94,7 +94,9 @@ class ProgramStructure {
             } else {
                 newName = cstring::make_unique(*allNames, obj->name, allNames->at(obj->name), '_');
             }
-            if (allNames != nullptr) allNames->insert({newName, 0});
+            if (allNames != nullptr) {
+                allNames->insert({newName, 0});
+            }
             LOG3("Discovered " << obj << " named " << newName);
             objectToNewName.emplace(obj, newName);
         }

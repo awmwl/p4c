@@ -105,9 +105,10 @@ void ParserGraphs::postorder(const IR::SelectExpression *expression) {
     // transition (..) { ... } may imply a transition to
     // "reject" - if none of the cases matches.
     for (auto c : expression->selectCases) {
-        if (c->keyset->is<IR::DefaultExpression>())
+        if (c->keyset->is<IR::DefaultExpression>()) {
             // If we have a default case this will always match
             return;
+        }
     }
     auto state = findContext<IR::ParserState>();
     auto parser = findContext<IR::P4Parser>();

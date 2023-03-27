@@ -115,8 +115,9 @@ void HeaderConverter::addTypesAndInstances(const IR::Type_StructLike *type, bool
                 auto hdrType = new IR::Type_Header(headerName, *vec);
                 ctxt->typeMap->setType(hdrType, hdrType);
                 ctxt->json->add_metadata(headerName, f->name);
-                if (visitedHeaders.find(headerName) != visitedHeaders.end())
+                if (visitedHeaders.find(headerName) != visitedHeaders.end()) {
                     continue;  // already seen
+                }
                 visitedHeaders.emplace(headerName);
                 addHeaderType(hdrType);
             } else {
@@ -144,7 +145,9 @@ void HeaderConverter::addHeaderStacks(const IR::Type_Struct *headersStruct) {
     for (auto f : headersStruct->fields) {
         auto ft = ctxt->typeMap->getType(f, true);
         auto stack = ft->to<IR::Type_Stack>();
-        if (stack == nullptr) continue;
+        if (stack == nullptr) {
+            continue;
+        }
         auto stack_name = f->controlPlaneName();
         auto stack_size = stack->getSize();
         auto type = ctxt->typeMap->getTypeType(stack->elementType, true);
@@ -168,10 +171,11 @@ void HeaderConverter::addHeaderStacks(const IR::Type_Struct *headersStruct) {
                 }
                 ids.push_back(id);
             }
-            if (isUnion)
+            if (isUnion) {
                 ctxt->json->add_header_union_stack(stack_type, stack_name, stack_size, ids);
-            else
+            } else {
                 ctxt->json->add_header_stack(stack_type, stack_name, stack_size, ids);
+            }
         } else {
             BUG("%1%: unexpected type in stack", type);
         }
@@ -238,9 +242,10 @@ void HeaderConverter::addHeaderType(const IR::Type_StructLike *st) {
             field->append(f->name.name);
             max_length += type->size;
             field->append("*");
-            if (varbitFound)
+            if (varbitFound) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
                         "%1%: headers with multiple varbit fields not supported", st);
+            }
             varbitFound = true;
         } else if (ftype->is<IR::Type_Error>()) {
             // treat as bit<32>
@@ -382,7 +387,9 @@ Visitor::profile_t HeaderConverter::init_apply(const IR::Node *node) {
             auto hdrType = new IR::Type_Header(headerName, *vec);
             ctxt->typeMap->setType(hdrType, hdrType);
             ctxt->json->add_metadata(headerName, v->name);
-            if (visitedHeaders.find(headerName) != visitedHeaders.end()) continue;  // already seen
+            if (visitedHeaders.find(headerName) != visitedHeaders.end()) {
+                continue;  // already seen
+            }
             visitedHeaders.emplace(headerName);
             addHeaderType(hdrType);
         } else if (type->is<IR::Type_Bits>()) {
@@ -443,10 +450,11 @@ bool HeaderConverter::preorder(const IR::Parameter *param) {
     auto ft = ctxt->typeMap->getType(param->getNode(), true);
     if (ft->is<IR::Type_Struct>()) {
         auto st = ft->to<IR::Type_Struct>();
-        if (visitedHeaders.find(st->getName()) != visitedHeaders.end())
+        if (visitedHeaders.find(st->getName()) != visitedHeaders.end()) {
             return false;  // already seen
-        else
+        } else {
             visitedHeaders.emplace(st->getName());
+        }
 
         if (st->getAnnotation("metadata")) {
             addHeaderType(st);

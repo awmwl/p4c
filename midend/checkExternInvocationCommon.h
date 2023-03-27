@@ -140,12 +140,13 @@ class CheckExternInvocationCommon : public Inspector {
         BUG_CHECK(pipeConstraints.count(extType), "pipe constraints not defined for %1%", extType);
         auto constraint = pipeConstraints.at(extType) & bv;
         if (!bv.empty() && constraint.empty()) {
-            if (extName != "")
+            if (extName != "") {
                 ::error(ErrorType::ERR_UNSUPPORTED, "%s %s %s cannot be used in the %s %s",
                         expr->srcInfo, extType, extName, pipe, extractBlock(bv));
-            else
+            } else {
                 ::error(ErrorType::ERR_UNSUPPORTED, "%s %s cannot be used in the %s %s",
                         expr->srcInfo, extType, pipe, extractBlock(bv));
+            }
         }
     }
 

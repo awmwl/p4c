@@ -32,7 +32,9 @@ bool DeparserBodyTranslator::preorder(const IR::MethodCallExpression *expression
     auto ext = mi->to<P4::ExternMethod>();
     if (ext != nullptr) {
         // We skip headers emit processing which is handled by DeparserHdrEmitTranslator
-        if (ext->method->name.name == p4lib.packetOut.emit.name) return false;
+        if (ext->method->name.name == p4lib.packetOut.emit.name) {
+            return false;
+        }
     }
 
     return ControlBodyTranslator::preorder(expression);
@@ -221,12 +223,16 @@ void DeparserHdrEmitTranslator::emitField(CodeBuilder *builder, cstring field,
         builder->appendFormat(".%s = %s(", field, swap);
         visit(hdrExpr);
         builder->appendFormat(".%s", field);
-        if (shift != 0) builder->appendFormat(" << %d", shift);
+        if (shift != 0) {
+            builder->appendFormat(" << %d", shift);
+        }
         builder->append(")");
         builder->endOfStatement(true);
     }
     unsigned bitsInFirstByte = widthToEmit % 8;
-    if (bitsInFirstByte == 0) bitsInFirstByte = 8;
+    if (bitsInFirstByte == 0) {
+        bitsInFirstByte = 8;
+    }
     unsigned bitsInCurrentByte = bitsInFirstByte;
     unsigned left = widthToEmit;
     for (unsigned i = 0; i < (widthToEmit + 7) / 8; i++) {
@@ -322,7 +328,9 @@ void EBPFDeparser::emitBufferAdjusts(CodeBuilder *builder) const {
 void EBPFDeparser::emit(CodeBuilder *builder) {
     codeGen->setBuilder(builder);
 
-    for (auto a : controlBlock->container->controlLocals) emitDeclaration(builder, a);
+    for (auto a : controlBlock->container->controlLocals) {
+        emitDeclaration(builder, a);
+    }
 
     emitDeparserExternCalls(builder);
     builder->newline();

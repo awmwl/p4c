@@ -27,14 +27,18 @@ std::ostream &operator<<(std::ostream &os, const bitvec &bv) {
         bool first = true;
         for (int i = bv.size - 1; i >= 0; i--) {
             if (first) {
-                if (!bv.ptr[i]) continue;
+                if (!bv.ptr[i]) {
+                    continue;
+                }
                 os << hex(bv.ptr[i]);
                 first = false;
             } else {
                 os << hex(bv.ptr[i], sizeof(bv.data) * 2, '0');
             }
         }
-        if (first) os << '0';
+        if (first) {
+            os << '0';
+        }
     }
     return os;
 }
@@ -43,7 +47,9 @@ std::istream &operator>>(std::istream &is, bitvec &bv) {
     char ch;
     while (is && isspace((ch = is.get()))) {
     }
-    if (!is) return is;
+    if (!is) {
+        return is;
+    }
     if (!isxdigit(ch)) {
         is.unget();
         is.setstate(std::ios_base::failbit);
@@ -51,12 +57,20 @@ std::istream &operator>>(std::istream &is, bitvec &bv) {
         bv.clear();
         do {
             bv <<= 4;
-            if (isdigit(ch)) bv |= ch - '0';
-            if (islower(ch)) bv |= ch - 'a' + 10;
-            if (isupper(ch)) bv |= ch - 'A' + 10;
+            if (isdigit(ch)) {
+                bv |= ch - '0';
+            }
+            if (islower(ch)) {
+                bv |= ch - 'a' + 10;
+            }
+            if (isupper(ch)) {
+                bv |= ch - 'A' + 10;
+            }
             ch = is.get();
         } while (is && isxdigit(ch));
-        if (is) is.unget();
+        if (is) {
+            is.unget();
+        }
     }
     return is;
 }
@@ -64,11 +78,19 @@ std::istream &operator>>(std::istream &is, bitvec &bv) {
 bool operator>>(const char *s, bitvec &bv) {
     bv.clear();
     while (*s) {
-        if (!isxdigit(*s)) return false;
+        if (!isxdigit(*s)) {
+            return false;
+        }
         bv <<= 4;
-        if (isdigit(*s)) bv |= *s - '0';
-        if (islower(*s)) bv |= *s - 'a' + 10;
-        if (isupper(*s)) bv |= *s - 'A' + 10;
+        if (isdigit(*s)) {
+            bv |= *s - '0';
+        }
+        if (islower(*s)) {
+            bv |= *s - 'a' + 10;
+        }
+        if (isupper(*s)) {
+            bv |= *s - 'A' + 10;
+        }
         s++;
     }
     return true;
@@ -76,22 +98,28 @@ bool operator>>(const char *s, bitvec &bv) {
 
 bitvec &bitvec::operator>>=(size_t count) {
     if (size == 1) {
-        if (count >= bits_per_unit)
+        if (count >= bits_per_unit) {
             data = 0;
-        else
+        } else {
             data >>= count;
+        }
         return *this;
     }
     int off = count / bits_per_unit;
     count %= bits_per_unit;
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++) {
         if (i + off < size) {
             ptr[i] = ptr[i + off] >> count;
-            if (count && i + off + 1 < size) ptr[i] |= ptr[i + off + 1] << (bits_per_unit - count);
+            if (count && i + off + 1 < size) {
+                ptr[i] |= ptr[i + off + 1] << (bits_per_unit - count);
+            }
         } else {
             ptr[i] = 0;
         }
-    while (size > 1 && !ptr[size - 1]) size--;
+    }
+    while (size > 1 && !ptr[size - 1]) {
+        size--;
+    }
     if (size == 1) {
         auto tmp = ptr[0];
         delete[] ptr;
@@ -102,27 +130,38 @@ bitvec &bitvec::operator>>=(size_t count) {
 
 bitvec &bitvec::operator<<=(size_t count) {
     size_t needsize = (max().index() + count + bits_per_unit) / bits_per_unit;
-    if (needsize > size) expand(needsize);
+    if (needsize > size) {
+        expand(needsize);
+    }
     if (size == 1) {
         data <<= count;
         return *this;
     }
     int off = count / bits_per_unit;
     count %= bits_per_unit;
-    for (int i = size - 1; i >= 0; i--)
+    for (int i = size - 1; i >= 0; i--) {
         if (i >= off) {
             ptr[i] = ptr[i - off] << count;
-            if (count && i > off) ptr[i] |= ptr[i - off - 1] >> (bits_per_unit - count);
+            if (count && i > off) {
+                ptr[i] |= ptr[i - off - 1] >> (bits_per_unit - count);
+            }
         } else {
             ptr[i] = 0;
         }
+    }
     return *this;
 }
 
 bitvec bitvec::getslice(size_t idx, size_t sz) const {
-    if (sz == 0) return bitvec();
-    if (idx >= size * bits_per_unit) return bitvec();
-    if (idx + sz > size * bits_per_unit) sz = size * bits_per_unit - idx;
+    if (sz == 0) {
+        return bitvec();
+    }
+    if (idx >= size * bits_per_unit) {
+        return bitvec();
+    }
+    if (idx + sz > size * bits_per_unit) {
+        sz = size * bits_per_unit - idx;
+    }
     if (size > 1) {
         bitvec rv;
         unsigned shift = idx % bits_per_unit;
@@ -130,14 +169,19 @@ bitvec bitvec::getslice(size_t idx, size_t sz) const {
         if (sz > bits_per_unit) {
             rv.expand((sz - 1) / bits_per_unit + 1);
             for (size_t i = 0; i < rv.size; i++) {
-                if (shift != 0 && i != 0) rv.ptr[i - 1] |= ptr[idx + i] << (bits_per_unit - shift);
+                if (shift != 0 && i != 0) {
+                    rv.ptr[i - 1] |= ptr[idx + i] << (bits_per_unit - shift);
+                }
                 rv.ptr[i] = ptr[idx + i] >> shift;
             }
-            if ((sz %= bits_per_unit))
+            if ((sz %= bits_per_unit)) {
                 rv.ptr[rv.size - 1] &= ~(~static_cast<uintptr_t>(1) << (sz - 1));
+            }
         } else {
             rv.data = ptr[idx] >> shift;
-            if (shift != 0 && idx + 1 < size) rv.data |= ptr[idx + 1] << (bits_per_unit - shift);
+            if (shift != 0 && idx + 1 < size) {
+                rv.data |= ptr[idx + 1] << (bits_per_unit - shift);
+            }
             rv.data &= ~(~static_cast<uintptr_t>(1) << (sz - 1));
         }
         return rv;
@@ -154,7 +198,9 @@ int bitvec::ffs(unsigned start) const {
         ++idx;
         val = ~static_cast<uintptr_t>(0);
     }
-    if (idx >= size) return -1;
+    if (idx >= size) {
+        return -1;
+    }
     unsigned rv = idx * bits_per_unit;
     rv += bv::count_trailing_zeroes(val);
     return rv;
@@ -175,7 +221,9 @@ unsigned bitvec::ffz(unsigned start) const {
 
 bool bitvec::is_contiguous() const {
     // Empty bitvec is not contiguous
-    if (empty()) return false;
+    if (empty()) {
+        return false;
+    }
     return max().index() - min().index() + 1 == popcount();
 }
 

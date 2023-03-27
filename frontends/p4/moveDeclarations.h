@@ -58,10 +58,11 @@ class MoveDeclarations : public Transform {
             prune();
             return action;
         }
-        if (findContext<IR::P4Control>() == nullptr)
+        if (findContext<IR::P4Control>() == nullptr) {
             // If we are not in a control, move to the beginning of the action.
             // Otherwise move to the control's beginning.
             push();
+        }
         return action;
     }
     const IR::Node *preorder(IR::P4Control *control) override {

@@ -101,7 +101,9 @@ bool JsonValue::operator==(const char *s) const {
     return tag == Kind::String ? cstring(s) == str : false;
 }
 bool JsonValue::operator==(const JsonValue &other) const {
-    if (tag != other.tag) return false;
+    if (tag != other.tag) {
+        return false;
+    }
     switch (tag) {
         case Kind::String:
             return str == other.str;
@@ -119,45 +121,64 @@ bool JsonValue::operator==(const JsonValue &other) const {
 void JsonArray::serialize(std::ostream &out) const {
     bool isSmall = true;
     for (auto v : *this) {
-        if (!v->is<JsonValue>()) isSmall = false;
+        if (!v->is<JsonValue>()) {
+            isSmall = false;
+        }
     }
     out << "[";
-    if (!isSmall) out << IndentCtl::indent;
+    if (!isSmall) {
+        out << IndentCtl::indent;
+    }
     bool first = true;
     for (auto v : *this) {
         if (!first) {
             out << ",";
-            if (isSmall) out << " ";
+            if (isSmall) {
+                out << " ";
+            }
         }
-        if (!isSmall) out << IndentCtl::endl;
-        if (v == nullptr)
+        if (!isSmall) {
+            out << IndentCtl::endl;
+        }
+        if (v == nullptr) {
             out << "null";
-        else
+        } else {
             v->serialize(out);
+        }
         first = false;
     }
-    if (!isSmall) out << IndentCtl::unindent << IndentCtl::endl;
+    if (!isSmall) {
+        out << IndentCtl::unindent << IndentCtl::endl;
+    }
     out << "]";
 }
 
 bool JsonValue::getBool() const {
-    if (!isBool()) throw std::logic_error("Incorrect json value kind");
+    if (!isBool()) {
+        throw std::logic_error("Incorrect json value kind");
+    }
     return tag == Kind::True;
 }
 
 cstring JsonValue::getString() const {
-    if (!isString()) throw std::logic_error("Incorrect json value kind");
+    if (!isString()) {
+        throw std::logic_error("Incorrect json value kind");
+    }
     return str;
 }
 
 big_int JsonValue::getValue() const {
-    if (!isNumber()) throw std::logic_error("Incorrect json value kind");
+    if (!isNumber()) {
+        throw std::logic_error("Incorrect json value kind");
+    }
     return value;
 }
 
 int JsonValue::getInt() const {
     big_int val = getValue();
-    if (val < INT_MIN || val > INT_MAX) throw std::logic_error("Value too large for an int");
+    if (val < INT_MIN || val > INT_MAX) {
+        throw std::logic_error("Value too large for an int");
+    }
     return int(val);
 }
 
@@ -170,21 +191,26 @@ void JsonObject::serialize(std::ostream &out) const {
     out << "{" << IndentCtl::indent;
     bool first = true;
     for (auto &it : *this) {
-        if (!first) out << ",";
+        if (!first) {
+            out << ",";
+        }
         first = false;
         out << IndentCtl::endl;
         out << "\"" << it.first << "\""
             << " : ";
-        if (it.second == nullptr)
+        if (it.second == nullptr) {
             out << "null";
-        else
+        } else {
             it.second->serialize(out);
+        }
     }
     out << IndentCtl::unindent << IndentCtl::endl << "}";
 }
 
 JsonObject *JsonObject::emplace(cstring label, IJson *value) {
-    if (label.isNullOrEmpty()) throw std::logic_error("Empty label");
+    if (label.isNullOrEmpty()) {
+        throw std::logic_error("Empty label");
+    }
     auto j = get(label);
     if (j != nullptr) {
         cstring s = value->toString();

@@ -82,9 +82,13 @@ const IR::Node *DoRemoveReturns::preorder(IR::Function *function) {
     visit(function->body);
     auto body = new IR::BlockStatement(function->body->srcInfo, function->body->annotations);
     body->push_back(decl);
-    if (retvalDecl != nullptr) body->push_back(retvalDecl);
+    if (retvalDecl != nullptr) {
+        body->push_back(retvalDecl);
+    }
     body->components.append(function->body->components);
-    if (returnsVal) body->push_back(new IR::ReturnStatement(new IR::PathExpression(returnedValue)));
+    if (returnsVal) {
+        body->push_back(new IR::ReturnStatement(new IR::PathExpression(returnedValue)));
+    }
     auto result = new IR::Function(function->srcInfo, function->name, function->type, body);
     pop();
     BUG_CHECK(stack.empty(), "Non-empty stack");
@@ -165,7 +169,9 @@ const IR::Node *DoRemoveReturns::preorder(IR::BlockStatement *statement) {
             ret = r;
         }
     }
-    if (!stack.empty()) set(ret);
+    if (!stack.empty()) {
+        set(ret);
+    }
     prune();
     return block;
 }
@@ -173,7 +179,9 @@ const IR::Node *DoRemoveReturns::preorder(IR::BlockStatement *statement) {
 const IR::Node *DoRemoveReturns::preorder(IR::IfStatement *statement) {
     push();
     visit(statement->ifTrue);
-    if (statement->ifTrue == nullptr) statement->ifTrue = new IR::EmptyStatement();
+    if (statement->ifTrue == nullptr) {
+        statement->ifTrue = new IR::EmptyStatement();
+    }
     auto rt = hasReturned();
     auto rf = TernaryBool::No;
     pop();
@@ -183,12 +191,13 @@ const IR::Node *DoRemoveReturns::preorder(IR::IfStatement *statement) {
         rf = hasReturned();
         pop();
     }
-    if (rt == TernaryBool::Yes && rf == TernaryBool::Yes)
+    if (rt == TernaryBool::Yes && rf == TernaryBool::Yes) {
         set(TernaryBool::Yes);
-    else if (rt == TernaryBool::No && rf == TernaryBool::No)
+    } else if (rt == TernaryBool::No && rf == TernaryBool::No) {
         set(TernaryBool::No);
-    else
+    } else {
         set(TernaryBool::Maybe);
+    }
     prune();
     return statement;
 }
@@ -199,9 +208,10 @@ const IR::Node *DoRemoveReturns::preorder(IR::SwitchStatement *statement) {
     for (auto &swCase : statement->cases) {
         push();
         visit(swCase);
-        if (hasReturned() != TernaryBool::No)
+        if (hasReturned() != TernaryBool::No) {
             // this is conservative: we don't check if we cover all labels.
             r = TernaryBool::Maybe;
+        }
         pop();
     }
     pop();

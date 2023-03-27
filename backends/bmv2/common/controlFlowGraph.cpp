@@ -30,7 +30,9 @@ namespace BMV2 {
 unsigned CFG::Node::crtId = 0;
 
 void CFG::EdgeSet::dbprint(std::ostream &out) const {
-    for (auto s : edges) out << " " << s;
+    for (auto s : edges) {
+        out << " " << s;
+    }
 }
 
 void CFG::Edge::dbprint(std::ostream &out) const {
@@ -53,25 +55,35 @@ void CFG::Edge::dbprint(std::ostream &out) const {
 void CFG::Node::dbprint(std::ostream &out) const { out << name << " =>" << successors; }
 
 void CFG::dbprint(std::ostream &out, CFG::Node *node, std::set<CFG::Node *> &done) const {
-    if (done.find(node) != done.end()) return;
-    for (auto p : node->predecessors.edges) dbprint(out, p->endpoint, done);
+    if (done.find(node) != done.end()) {
+        return;
+    }
+    for (auto p : node->predecessors.edges) {
+        dbprint(out, p->endpoint, done);
+    }
     out << std::endl << node;
     done.emplace(node);
 }
 
 void CFG::Node::addPredecessors(const EdgeSet *set) {
     LOG2("Add to predecessors of " << name << ":" << set);
-    if (set != nullptr) predecessors.mergeWith(set);
+    if (set != nullptr) {
+        predecessors.mergeWith(set);
+    }
 }
 
 void CFG::dbprint(std::ostream &out) const {
     out << "CFG for " << dbp(container);
     std::set<CFG::Node *> done;
-    for (auto n : allNodes) dbprint(out, n, done);
+    for (auto n : allNodes) {
+        dbprint(out, n, done);
+    }
 }
 
 void CFG::Node::computeSuccessors() {
-    for (auto e : predecessors.edges) e->getNode()->successors.emplace(e->clone(this));
+    for (auto e : predecessors.edges) {
+        e->getNode()->successors.emplace(e->clone(this));
+    }
 }
 
 bool CFG::dfs(Node *node, std::set<Node *> &visited, std::set<const IR::P4Table *> &stack) const {
@@ -86,13 +98,21 @@ bool CFG::dfs(Node *node, std::set<Node *> &visited, std::set<const IR::P4Table 
             return false;
         }
     }
-    if (visited.find(node) != visited.end()) return true;
-    if (table != nullptr) stack.emplace(table);
+    if (visited.find(node) != visited.end()) {
+        return true;
+    }
+    if (table != nullptr) {
+        stack.emplace(table);
+    }
     for (auto e : node->successors.edges) {
         bool success = dfs(e->endpoint, visited, stack);
-        if (!success) return false;
+        if (!success) {
+            return false;
+        }
     }
-    if (table != nullptr) stack.erase(table);
+    if (table != nullptr) {
+        stack.erase(table);
+    }
     visited.emplace(node);
     return true;
 }
@@ -100,23 +120,33 @@ bool CFG::dfs(Node *node, std::set<Node *> &visited, std::set<const IR::P4Table 
 bool CFG::EdgeSet::isDestination(const CFG::Node *node) const {
     for (auto e : edges) {
         auto dest = e->endpoint;
-        if (dest == node) return true;
+        if (dest == node) {
+            return true;
+        }
         auto td = dest->to<TableNode>();
         auto tn = node->to<TableNode>();
-        if (td != nullptr && tn != nullptr && td->table == tn->table) return true;
+        if (td != nullptr && tn != nullptr && td->table == tn->table) {
+            return true;
+        }
     }
 
     return false;
 }
 
 bool CFG::EdgeSet::checkSame(const CFG::EdgeSet &other) const {
-    if (size() != other.size()) return false;
+    if (size() != other.size()) {
+        return false;
+    }
     // This algorithm is quadratic, but we expect these graphs to be very small
     for (auto e : edges) {
-        if (!other.isDestination(e->endpoint)) return false;
+        if (!other.isDestination(e->endpoint)) {
+            return false;
+        }
     }
     for (auto e : other.edges) {
-        if (!isDestination(e->endpoint)) return false;
+        if (!isDestination(e->endpoint)) {
+            return false;
+        }
     }
     return true;
 }
@@ -147,17 +177,25 @@ bool CFG::checkImplementable() const {
     std::set<const IR::P4Table *> stack;
     for (auto n : allNodes) {
         bool success = dfs(n, visited, stack);
-        if (!success) return false;
+        if (!success) {
+            return false;
+        }
     }
 
     std::map<const IR::P4Table *, std::set<TableNode *>> tableNodes;
     for (auto n : allNodes) {
-        if (auto tn = n->to<TableNode>()) tableNodes[tn->table].emplace(tn);
+        if (auto tn = n->to<TableNode>()) {
+            tableNodes[tn->table].emplace(tn);
+        }
     }
     for (auto it : tableNodes) {
-        if (it.second.size() == 1) continue;
+        if (it.second.size() == 1) {
+            continue;
+        }
         bool success = checkMergeable(it.second);
-        if (!success) return false;
+        if (!success) {
+            return false;
+        }
     }
 
     return true;
@@ -187,7 +225,9 @@ class CFGBuilder : public Inspector {
     }
     bool preorder(const IR::MethodCallStatement *statement) override {
         auto instance = P4::MethodInstance::resolve(statement->methodCall, refMap, typeMap);
-        if (!instance->is<P4::ApplyMethod>()) return false;
+        if (!instance->is<P4::ApplyMethod>()) {
+            return false;
+        }
         auto am = instance->to<P4::ApplyMethod>();
         if (!am->object->is<IR::P4Table>()) {
             ::error(ErrorType::ERR_INVALID, "%1%: apply method must be on a table", statement);
@@ -223,9 +263,10 @@ class CFGBuilder : public Inspector {
         live = new CFG::EdgeSet(new CFG::Edge(node, condition));
         visit(statement->ifTrue);
         auto afterTrue = live;
-        if (afterTrue == nullptr)
+        if (afterTrue == nullptr) {
             // error
             return false;
+        }
         auto result = new CFG::EdgeSet(afterTrue);
         // Else branch
         if (statement->ifFalse != nullptr) {
@@ -242,7 +283,9 @@ class CFGBuilder : public Inspector {
     bool preorder(const IR::BlockStatement *statement) override {
         for (auto s : statement->components) {
             auto stat = s->to<IR::Statement>();
-            if (stat == nullptr) continue;
+            if (stat == nullptr) {
+                continue;
+            }
             visit(stat);
         }
         // live is unchanged

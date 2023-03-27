@@ -21,13 +21,19 @@ limitations under the License.
 namespace P4 {
 
 void CheckDeprecated::warnIfDeprecated(const IR::IAnnotated *annotated, const IR::Node *errorNode) {
-    if (annotated == nullptr) return;
+    if (annotated == nullptr) {
+        return;
+    }
     auto anno = annotated->getAnnotations()->getSingle(IR::Annotation::deprecatedAnnotation);
-    if (anno == nullptr) return;
+    if (anno == nullptr) {
+        return;
+    }
 
     cstring message = "";
     for (auto a : anno->expr) {
-        if (auto str = a->to<IR::StringLiteral>()) message += str->value;
+        if (auto str = a->to<IR::StringLiteral>()) {
+            message += str->value;
+        }
     }
     ::warning(ErrorType::WARN_DEPRECATED, "%1%: Using deprecated feature %2%. %3%", errorNode,
               annotated->getNode(), message);

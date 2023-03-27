@@ -27,11 +27,12 @@ namespace UBPF {
 bool UBPFProgram::build() {
     bool success = true;
     auto pack = toplevel->getMain();
-    if (pack->type->name != "ubpf")
+    if (pack->type->name != "ubpf") {
         ::warning(ErrorType::WARN_INVALID,
                   "%1%: the main ubpf package should be called ubpf"
                   "; are you using the wrong architecture?",
                   pack->type->name);
+    }
 
     if (pack->getConstructorParameters()->size() != 3) {
         ::error(ErrorType::ERR_MODEL, "Expected toplevel package %1% to have 3 parameters",
@@ -43,14 +44,18 @@ bool UBPFProgram::build() {
     BUG_CHECK(pb != nullptr, "No parser block found");
     parser = new UBPFParser(this, pb, typeMap);
     success = parser->build();
-    if (!success) return success;
+    if (!success) {
+        return success;
+    }
 
     auto cb = pack->getParameterValue(model.pipeline.control.name)->to<IR::ControlBlock>();
     BUG_CHECK(cb != nullptr, "No control block found");
     control = new UBPFControl(this, cb, parser->headers);
     success = control->build();
 
-    if (!success) return success;
+    if (!success) {
+        return success;
+    }
 
     auto dpb = pack->getParameterValue(model.pipeline.deparser.name)->to<IR::ControlBlock>();
     BUG_CHECK(dpb != nullptr, "No deparser block found");
@@ -165,7 +170,9 @@ void UBPFProgram::emitTypes(EBPF::CodeBuilder *builder) {
             !d->is<IR::Type_Error>()) {
             CHECK_NULL(UBPFTypeFactory::instance);
             auto type = UBPFTypeFactory::instance->create(d->to<IR::Type>());
-            if (type == nullptr) continue;
+            if (type == nullptr) {
+                continue;
+            }
             type->emit(builder);
             builder->newline();
         }

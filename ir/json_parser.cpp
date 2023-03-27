@@ -25,45 +25,51 @@ limitations under the License.
 #include <boost/multiprecision/number.hpp>
 
 int JsonObject::get_id() const {
-    if (find("Node_ID") == end())
+    if (find("Node_ID") == end()) {
         return -1;
-    else
+    } else {
         return *(find("Node_ID")->second->to<JsonNumber>());
+    }
 }
 
 std::string JsonObject::get_type() const {
-    if (find("Node_Type") == end())
+    if (find("Node_Type") == end()) {
         return "";
-    else
+    } else {
         return *(dynamic_cast<JsonString *>(find("Node_Type")->second));
+    }
 }
 
 std::string JsonObject::get_filename() const {
-    if (find("filename") == end())
+    if (find("filename") == end()) {
         return "";
-    else
+    } else {
         return *(dynamic_cast<JsonString *>(find("filename")->second));
+    }
 }
 
 std::string JsonObject::get_sourceFragment() const {
-    if (find("source_fragment") == end())
+    if (find("source_fragment") == end()) {
         return "";
-    else
+    } else {
         return *(dynamic_cast<JsonString *>(find("source_fragment")->second));
+    }
 }
 
 int JsonObject::get_line() const {
-    if (find("line") == end())
+    if (find("line") == end()) {
         return -1;
-    else
+    } else {
         return *(find("line")->second->to<JsonNumber>());
+    }
 }
 
 int JsonObject::get_column() const {
-    if (find("column") == end())
+    if (find("column") == end()) {
         return -1;
-    else
+    } else {
         return *(find("column")->second->to<JsonNumber>());
+    }
 }
 
 JsonObject JsonObject::get_sourceJson() const {
@@ -81,7 +87,9 @@ static thread_local int level = 0;
 
 std::string getIndent(int l) {
     std::stringstream ss;
-    for (int i = 0; i < l * 4; i++) ss << " ";
+    for (int i = 0; i < l * 4; i++) {
+        ss << " ";
+    }
     return ss.str();
 }
 
@@ -92,8 +100,9 @@ std::ostream &operator<<(std::ostream &out, JsonData *json) {
         if (obj->size() > 0) {
             level++;
             out << std::endl;
-            for (auto &e : *obj)
+            for (auto &e : *obj) {
                 out << getIndent(level) << e.first << " : " << e.second << "," << std::endl;
+            }
             out << getIndent(--level);
         }
         out << "}";
@@ -135,7 +144,9 @@ std::istream &operator>>(std::istream &in, JsonData *&json) {
                 ordered_map<std::string, JsonData *> obj;
                 do {
                     in >> std::ws >> ch;
-                    if (ch == '}') break;
+                    if (ch == '}') {
+                        break;
+                    }
                     in.unget();
 
                     JsonData *key, *val;
@@ -152,7 +163,9 @@ std::istream &operator>>(std::istream &in, JsonData *&json) {
                 std::vector<JsonData *> vec;
                 do {
                     in >> std::ws >> ch;
-                    if (ch == ']') break;
+                    if (ch == ']') {
+                        break;
+                    }
                     in.unget();
 
                     JsonData *elem;
@@ -170,8 +183,12 @@ std::istream &operator>>(std::istream &in, JsonData *&json) {
                 getline(in, s, '"');
                 while (!s.empty() && s.back() == '\\') {
                     int bscount = 0;  // odd number of '\' chars mean the quote is escaped
-                    for (auto t = s.rbegin(); t != s.rend() && *t == '\\'; ++t) bscount++;
-                    if ((bscount & 1) == 0) break;
+                    for (auto t = s.rbegin(); t != s.rend() && *t == '\\'; ++t) {
+                        bscount++;
+                    }
+                    if ((bscount & 1) == 0) {
+                        break;
+                    }
                     s += '"';
                     std::string more;
                     getline(in, more, '"');

@@ -27,7 +27,9 @@ class CheckTableSize : public Modifier {
     CheckTableSize() { setName("CheckTableSize"); }
     bool preorder(IR::P4Table *table) override {
         auto size = table->getSizeProperty();
-        if (size == nullptr) return false;
+        if (size == nullptr) {
+            return false;
+        }
 
         bool deleteSize = false;
         auto key = table->getKey();

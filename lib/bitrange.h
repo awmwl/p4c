@@ -31,7 +31,9 @@ class bitranges {
         iter &operator++() {
             if (ptr) {
                 range.first = range.second = ptr.index();
-                while (++ptr && range.second + 1 == ptr.index()) ++range.second;
+                while (++ptr && range.second + 1 == ptr.index()) {
+                    ++range.second;
+                }
             } else {
                 valid = false;
             }

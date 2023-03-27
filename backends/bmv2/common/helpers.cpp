@@ -27,10 +27,11 @@ const cstring V1ModelProperties::jsonMetadataParameterName = "standard_metadata"
 const cstring V1ModelProperties::validField = "$valid$";
 
 Util::IJson *nodeName(const CFG::Node *node) {
-    if (node->name.isNullOrEmpty())
+    if (node->name.isNullOrEmpty()) {
         return Util::JsonValue::null;
-    else
+    } else {
         return new Util::JsonValue(node->name);
+    }
 }
 
 Util::JsonArray *mkArrayField(Util::JsonObject *parent, cstring name) {
@@ -155,8 +156,9 @@ cstring ConversionContext::createCalculation(cstring algo, const IR::Expression 
     auto calc = new Util::JsonObject();
     calc->emplace("name", calcName);
     calc->emplace("id", nextId("calculations"));
-    if (sourcePositionNode != nullptr)
+    if (sourcePositionNode != nullptr) {
         calc->emplace_non_null("source_info", sourcePositionNode->sourceInfoJsonObj());
+    }
     calc->emplace("algo", algo);
     auto listFields = convertToList(fields, typeMap);
     if (!listFields) {
@@ -180,7 +182,9 @@ cstring ConversionContext::createCalculation(cstring algo, const IR::Expression 
 /// Converts expr into a ListExpression or returns nullptr if not
 /// possible
 const IR::ListExpression *convertToList(const IR::Expression *expr, P4::TypeMap *typeMap) {
-    if (auto l = expr->to<IR::ListExpression>()) return l;
+    if (auto l = expr->to<IR::ListExpression>()) {
+        return l;
+    }
 
     // expand it into a list
     auto list = new IR::ListExpression({});
@@ -190,7 +194,9 @@ const IR::ListExpression *convertToList(const IR::Expression *expr, P4::TypeMap 
         return nullptr;
     }
     if (auto se = expr->to<IR::StructExpression>()) {
-        for (auto f : se->components) list->push_back(f->expression);
+        for (auto f : se->components) {
+            list->push_back(f->expression);
+        }
     } else {
         for (auto f : st->fields) {
             auto e = new IR::Member(expr, f->name);

@@ -22,14 +22,18 @@ namespace P4 {
 
 bool TypeSpecializationMap::same(const TypeSpecialization *spec,
                                  const IR::Type_Specialized *right) const {
-    if (!spec->specialized->baseType->equiv(*right->baseType)) return false;
+    if (!spec->specialized->baseType->equiv(*right->baseType)) {
+        return false;
+    }
     BUG_CHECK(spec->argumentTypes->size() == right->arguments->size(),
               "Type %1% and %2% specialized with different number of arguments?", spec->specialized,
               right);
     for (size_t i = 0; i < spec->argumentTypes->size(); i++) {
         auto argl = spec->argumentTypes->at(i);
         auto argr = typeMap->getType(right->arguments->at(i), true);
-        if (!typeMap->equivalent(argl, argr)) return false;
+        if (!typeMap->equivalent(argl, argr)) {
+            return false;
+        }
     }
     return true;
 }
@@ -37,7 +41,9 @@ bool TypeSpecializationMap::same(const TypeSpecialization *spec,
 void TypeSpecializationMap::add(const IR::Type_Specialized *t, const IR::Type_StructLike *decl,
                                 const IR::Node *insertion) {
     auto it = map.find(t);
-    if (it != map.end()) return;
+    if (it != map.end()) {
+        return;
+    }
 
     // First check if we have another specialization with the same
     // type arguments, in that case reuse it
@@ -53,14 +59,18 @@ void TypeSpecializationMap::add(const IR::Type_Specialized *t, const IR::Type_St
     LOG3("Found to specialize: " << dbp(t) << "(" << t << ") with name " << name
                                  << " insert before " << dbp(insertion));
     auto argTypes = new IR::Vector<IR::Type>();
-    for (auto a : *t->arguments) argTypes->push_back(typeMap->getType(a, true));
+    for (auto a : *t->arguments) {
+        argTypes->push_back(typeMap->getType(a, true));
+    }
     TypeSpecialization *s = new TypeSpecialization(name, t, decl, insertion, argTypes);
     map.emplace(t, s);
 }
 
 TypeSpecialization *TypeSpecializationMap::get(const IR::Type_Specialized *type) const {
     for (auto it : map) {
-        if (same(it.second, type)) return it.second;
+        if (same(it.second, type)) {
+            return it.second;
+        }
     }
     return nullptr;
 }
@@ -92,12 +102,13 @@ class ContainsTypeVariable : public Inspector {
 void FindTypeSpecializations::postorder(const IR::Type_Specialized *type) {
     auto baseType = specMap->typeMap->getTypeType(type->baseType, true);
     auto st = baseType->to<IR::Type_StructLike>();
-    if (st == nullptr || st->typeParameters->size() == 0)
+    if (st == nullptr || st->typeParameters->size() == 0) {
         // nothing to specialize
         return;
+    }
     for (auto tp : *type->arguments) {
         auto argType = specMap->typeMap->getTypeType(tp, true);
-        if (ContainsTypeVariable::inspect(argType))
+        if (ContainsTypeVariable::inspect(argType)) {
             // If type argument contains a type variable, for example, in
             // the field f:
             // struct G<T> { T field; }
@@ -105,17 +116,32 @@ void FindTypeSpecializations::postorder(const IR::Type_Specialized *type) {
             // then we won't specialize this now, but only when encountered in
             // specialized instances of G, e.g., G<bit<32>>.
             return;
+        }
     }
     // Find location where the specialization is to be inserted.
     // This can be before a Parser, Control, or a toplevel instance declaration
     const IR::Node *insert = findContext<IR::P4Parser>();
-    if (!insert) insert = findContext<IR::Function>();
-    if (!insert) insert = findContext<IR::P4Control>();
-    if (!insert) insert = findContext<IR::Type_Declaration>();
-    if (!insert) insert = findContext<IR::Declaration_Constant>();
-    if (!insert) insert = findContext<IR::Declaration_Variable>();
-    if (!insert) insert = findContext<IR::Declaration_Instance>();
-    if (!insert) insert = findContext<IR::P4Action>();
+    if (!insert) {
+        insert = findContext<IR::Function>();
+    }
+    if (!insert) {
+        insert = findContext<IR::P4Control>();
+    }
+    if (!insert) {
+        insert = findContext<IR::Type_Declaration>();
+    }
+    if (!insert) {
+        insert = findContext<IR::Declaration_Constant>();
+    }
+    if (!insert) {
+        insert = findContext<IR::Declaration_Variable>();
+    }
+    if (!insert) {
+        insert = findContext<IR::Declaration_Instance>();
+    }
+    if (!insert) {
+        insert = findContext<IR::P4Action>();
+    }
     CHECK_NULL(insert);
     specMap->add(type, st, insert);
 }
@@ -145,7 +171,9 @@ const IR::Node *CreateSpecializedTypes::postorder(IR::Type_Declaration *type) {
 
 const IR::Node *CreateSpecializedTypes::insert(const IR::Node *before) {
     auto specs = specMap->getSpecializations(getOriginal());
-    if (specs == nullptr) return before;
+    if (specs == nullptr) {
+        return before;
+    }
     LOG2(specs->size() << " instantiations before " << dbp(before));
     specs->push_back(before);
     return specs;
@@ -153,7 +181,9 @@ const IR::Node *CreateSpecializedTypes::insert(const IR::Node *before) {
 
 const IR::Node *ReplaceTypeUses::postorder(IR::Type_Specialized *type) {
     auto t = specMap->get(getOriginal<IR::Type_Specialized>());
-    if (!t) return type;
+    if (!t) {
+        return type;
+    }
     CHECK_NULL(t->replacement);
     LOG3("RTU Replacing " << dbp(type) << " with " << dbp(t->replacement));
     return t->replacement->getP4Type();
@@ -169,9 +199,13 @@ const IR::Node *ReplaceTypeUses::postorder(IR::StructExpression *expression) {
         return expression;
     }
     auto spec = st->to<IR::Type_Specialized>();
-    if (spec == nullptr) return expression;
+    if (spec == nullptr) {
+        return expression;
+    }
     auto replacement = specMap->get(spec);
-    if (replacement == nullptr) return expression;
+    if (replacement == nullptr) {
+        return expression;
+    }
     auto replType = replacement->replacement;
     LOG3("RTU Replacing " << dbp(expression->structType) << " with "
                           << dbp(replacement->replacement));

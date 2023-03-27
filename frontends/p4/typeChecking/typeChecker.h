@@ -48,7 +48,9 @@ class ClearTypeMap : public Inspector {
         // because the program is saved only *after* typechecking,
         // so if the program changes during type-checking, the
         // typeMap may not be complete.
-        if (force || !typeMap->checkMap(program)) typeMap->clear();
+        if (force || !typeMap->checkMap(program)) {
+            typeMap->clear();
+        }
         return false;  // prune()
     }
 };
@@ -345,7 +347,9 @@ class ApplyTypesToExpressions : public Transform {
     IR::Node *postorder(IR::Node *n) override {
         const IR::Node *orig = getOriginal();
         if (auto type = typeMap->getType(orig)) {
-            if (*orig != *n) typeMap->setType(n, type);
+            if (*orig != *n) {
+                typeMap->setType(n, type);
+            }
         }
         return n;
     }
@@ -355,8 +359,12 @@ class ApplyTypesToExpressions : public Transform {
             e->type = type;
             if (*orig != *e) {
                 typeMap->setType(e, type);
-                if (typeMap->isLeftValue(orig)) typeMap->setLeftValue(e);
-                if (typeMap->isCompileTimeConstant(orig)) typeMap->setCompileTimeConstant(e);
+                if (typeMap->isLeftValue(orig)) {
+                    typeMap->setLeftValue(e);
+                }
+                if (typeMap->isCompileTimeConstant(orig)) {
+                    typeMap->setCompileTimeConstant(e);
+                }
             }
         }
         return e;

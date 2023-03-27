@@ -102,7 +102,9 @@ class EBPFTablePSA : public EBPFTable {
                                    [name](std::pair<cstring, EBPFCounterPSA *> elem) -> bool {
                                        return name == elem.first;
                                    });
-        if (result != counters.end()) return result->second;
+        if (result != counters.end()) {
+            return result->second;
+        }
         return nullptr;
     }
 
@@ -110,7 +112,9 @@ class EBPFTablePSA : public EBPFTable {
         auto result = std::find_if(
             meters.begin(), meters.end(),
             [name](std::pair<cstring, EBPFMeterPSA *> elem) -> bool { return name == elem.first; });
-        if (result != meters.end()) return result->second;
+        if (result != meters.end()) {
+            return result->second;
+        }
         return nullptr;
     }
 

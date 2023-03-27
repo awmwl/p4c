@@ -25,7 +25,9 @@ void DiscoverStructure::postorder(const IR::ParameterList *paramList) {
     unsigned index = 0;
     for (auto p : *paramList->getEnumerator()) {
         structure->index.emplace(p, index);
-        if (!inAction) structure->nonActionParameters.emplace(p);
+        if (!inAction) {
+            structure->nonActionParameters.emplace(p);
+        }
         index++;
     }
 }

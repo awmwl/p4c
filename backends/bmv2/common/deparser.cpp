@@ -110,7 +110,9 @@ void DeparserConverter::convertDeparserBody(const IR::Vector<IR::StatOrDecl> *bo
                     } else {
                         json = ExternConverter::cvtExternObject(ctxt, em, mc, s, true);
                     }
-                    if (json) primitives->append(json);
+                    if (json) {
+                        primitives->append(json);
+                    }
                     ctxt->conv->simpleExpressionsOnly = true;
                     continue;
                 }
@@ -120,7 +122,9 @@ void DeparserConverter::convertDeparserBody(const IR::Vector<IR::StatOrDecl> *bo
                 auto json =
                     ExternConverter::cvtExternFunction(ctxt, ef, mc, s, /* emitExterns */ true);
                 ctxt->conv->simpleExpressionsOnly = true;
-                if (json) primitives->append(json);
+                if (json) {
+                    primitives->append(json);
+                }
                 continue;
             }
         }
@@ -146,8 +150,9 @@ bool DeparserConverter::preorder(const IR::P4Control *control) {
     ctxt->json->deparsers->append(deparserJson);
     for (auto c : control->controlLocals) {
         if (c->is<IR::Declaration_Constant>() || c->is<IR::Declaration_Variable>() ||
-            c->is<IR::P4Action>() || c->is<IR::P4Table>())
+            c->is<IR::P4Action>() || c->is<IR::P4Table>()) {
             continue;
+        }
         if (c->is<IR::Declaration_Instance>()) {
             auto bl = ctxt->structure->resourceMap.at(c);
             CHECK_NULL(bl);

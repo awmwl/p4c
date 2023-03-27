@@ -22,22 +22,32 @@ namespace Pred {
 
 /// return null cstring if not a reference to a lvalue.
 static cstring lvalueName(const IR::Expression *exp) {
-    if (auto p = exp->to<IR::PathExpression>()) return p->path->name;
+    if (auto p = exp->to<IR::PathExpression>()) {
+        return p->path->name;
+    }
     if (auto m = exp->to<IR::Member>()) {
-        if (auto base = lvalueName(m->expr)) return base + "." + m->member;
+        if (auto base = lvalueName(m->expr)) {
+            return base + "." + m->member;
+        }
     } else if (auto a = exp->to<IR::ArrayIndex>()) {
         if (auto k = a->right->to<IR::Constant>()) {
-            if (auto base = lvalueName(a->left))
+            if (auto base = lvalueName(a->left)) {
                 return base + "[" + std::to_string(k->asInt()) + "]";
+            }
         } else if (auto index = lvalueName(a->right)) {
-            if (auto base = lvalueName(a->left)) return base + "[" + index + "]";
+            if (auto base = lvalueName(a->left)) {
+                return base + "[" + index + "]";
+            }
         }
     } else if (auto s = exp->to<IR::Slice>()) {
-        if (auto base = lvalueName(s->e0))
-            if (auto h = s->e1->to<IR::Constant>())
-                if (auto l = s->e2->to<IR::Constant>())
+        if (auto base = lvalueName(s->e0)) {
+            if (auto h = s->e1->to<IR::Constant>()) {
+                if (auto l = s->e2->to<IR::Constant>()) {
                     return base + "." + std::to_string(h->asInt()) + ":" +
                            std::to_string(l->asInt());
+                }
+            }
+        }
     }
     return cstring();
 }
@@ -49,7 +59,9 @@ const IR::Node *Predication::EmptyStatementRemover::postorder(IR::EmptyStatement
 }
 
 const IR::Node *Predication::EmptyStatementRemover::postorder(IR::BlockStatement *statement) {
-    if (statement->components.empty()) return nullptr;
+    if (statement->components.empty()) {
+        return nullptr;
+    }
     return statement;
 }
 

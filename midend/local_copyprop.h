@@ -145,7 +145,9 @@ class LocalCopyPropagation : public PassManager {
         std::function<bool(const Context *, const IR::Expression *)> policy =
             [](const Context *, const IR::Expression *) -> bool { return true; },
         bool elimUnusedTables = false) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap, true);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap, true);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoLocalCopyPropagation(refMap, typeMap, policy, elimUnusedTables));
     }

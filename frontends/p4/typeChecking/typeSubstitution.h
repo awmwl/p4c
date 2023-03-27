@@ -49,7 +49,9 @@ class TypeSubstitution : public IHasDbPrint {
         CHECK_NULL(type);
         auto it = binding.find(id);
         if (it != binding.end()) {
-            if (it->second != type) return false;
+            if (it->second != type) {
+                return false;
+            }
             return true;
         }
         binding.emplace(id, type);
@@ -57,10 +59,14 @@ class TypeSubstitution : public IHasDbPrint {
     }
 
     void dbprint(std::ostream &out) const {
-        if (isIdentity()) out << "Empty substitution";
+        if (isIdentity()) {
+            out << "Empty substitution";
+        }
         bool first = true;
         for (auto it : binding) {
-            if (!first) out << std::endl;
+            if (!first) {
+                out << std::endl;
+            }
             out << dbp(it.first) << " " << it.first << " -> " << dbp(it.second) << " " << it.second;
             first = false;
         }

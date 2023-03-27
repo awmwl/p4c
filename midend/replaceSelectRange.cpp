@@ -48,7 +48,9 @@ static void expandRange(const IR::Range *r, std::vector<const IR::Mask *> *masks
         //                prefix and leave the last N bits arbitrary.
         big_int match_stride = ((big_int)1) << ((min == 0) ? floor_log2(max + 1) : ffs(min));
 
-        while (match_stride > range_size_remaining) match_stride >>= 1;
+        while (match_stride > range_size_remaining) {
+            match_stride >>= 1;
+        }
 
         big_int mask = ~(match_stride - 1) & size_mask;
 
@@ -175,7 +177,9 @@ const IR::Node *DoReplaceSelectRange::postorder(IR::SelectCase *sc) {
 
     if (auto r = keySet->to<IR::Range>()) {
         auto masks = rangeToMasks(r, 0);
-        if (!masks) return sc;
+        if (!masks) {
+            return sc;
+        }
 
         for (auto mask : *masks) {
             auto c = new IR::SelectCase(sc->srcInfo, mask, sc->state);
@@ -193,7 +197,9 @@ const IR::Node *DoReplaceSelectRange::postorder(IR::SelectCase *sc) {
         for (auto key : oldList->components) {
             if (auto r = key->to<IR::Range>()) {
                 auto masks = rangeToMasks(r, idx);
-                if (!masks) return sc;
+                if (!masks) {
+                    return sc;
+                }
 
                 newVectors = cartesianAppend(newVectors, *masks);
             } else {

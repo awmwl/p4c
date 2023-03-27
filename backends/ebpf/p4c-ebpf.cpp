@@ -61,7 +61,9 @@ void compile(EbpfOptions &options) {
         fb.close();
     } else {
         program = P4::parseP4File(options);
-        if (::errorCount() > 0) return;
+        if (::errorCount() > 0) {
+            return;
+        }
 
         P4::P4COptionPragmaParser optionsPragmaParser;
         program->apply(P4::ApplyOptionsPragmas(optionsPragmaParser));
@@ -69,14 +71,19 @@ void compile(EbpfOptions &options) {
         P4::FrontEnd frontend;
         frontend.addDebugHook(hook);
         program = frontend.run(options, program);
-        if (::errorCount() > 0) return;
+        if (::errorCount() > 0) {
+            return;
+        }
     }
     EBPF::MidEnd midend;
     midend.addDebugHook(hook);
     auto toplevel = midend.run(options, program);
-    if (options.dumpJsonFile)
+    if (options.dumpJsonFile) {
         JSONGenerator(*openFile(options.dumpJsonFile, true)) << program << std::endl;
-    if (::errorCount() > 0) return;
+    }
+    if (::errorCount() > 0) {
+        return;
+    }
 
     EBPF::run_ebpf_backend(options, toplevel, &midend.refMap, &midend.typeMap);
 }
@@ -90,9 +97,13 @@ int main(int argc, char *const argv[]) {
     options.compilerVersion = P4C_EBPF_VERSION_STRING;
 
     if (options.process(argc, argv) != nullptr) {
-        if (options.loadIRFromJson == false) options.setInputFile();
+        if (options.loadIRFromJson == false) {
+            options.setInputFile();
+        }
     }
-    if (::errorCount() > 0) exit(1);
+    if (::errorCount() > 0) {
+        exit(1);
+    }
 
     options.calculateXDP2TCMode();
     try {
@@ -102,6 +113,8 @@ int main(int argc, char *const argv[]) {
         return 1;
     }
 
-    if (Log::verbose()) std::cerr << "Done." << std::endl;
+    if (Log::verbose()) {
+        std::cerr << "Done." << std::endl;
+    }
     return ::errorCount() > 0;
 }

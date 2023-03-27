@@ -96,15 +96,21 @@ cstring ControlBodyTranslatorPSA::getParamName(const IR::PathExpression *expr) {
 }
 
 void EBPFControlPSA::emit(CodeBuilder *builder) {
-    for (auto h : hashes) h.second->emitVariables(builder);
+    for (auto h : hashes) {
+        h.second->emitVariables(builder);
+    }
     EBPFControl::emit(builder);
 }
 
 void EBPFControlPSA::emitTableTypes(CodeBuilder *builder) {
     EBPFControl::emitTableTypes(builder);
 
-    for (auto it : registers) it.second->emitTypes(builder);
-    for (auto it : meters) it.second->emitKeyType(builder);
+    for (auto it : registers) {
+        it.second->emitTypes(builder);
+    }
+    for (auto it : meters) {
+        it.second->emitKeyType(builder);
+    }
 
     //  Value type for any indirect meter is the same
     if (!meters.empty()) {
@@ -113,10 +119,18 @@ void EBPFControlPSA::emitTableTypes(CodeBuilder *builder) {
 }
 
 void EBPFControlPSA::emitTableInstances(CodeBuilder *builder) {
-    for (auto it : tables) it.second->emitInstance(builder);
-    for (auto it : counters) it.second->emitInstance(builder);
-    for (auto it : registers) it.second->emitInstance(builder);
-    for (auto it : meters) it.second->emitInstance(builder);
+    for (auto it : tables) {
+        it.second->emitInstance(builder);
+    }
+    for (auto it : counters) {
+        it.second->emitInstance(builder);
+    }
+    for (auto it : registers) {
+        it.second->emitInstance(builder);
+    }
+    for (auto it : meters) {
+        it.second->emitInstance(builder);
+    }
 }
 
 void EBPFControlPSA::emitTableInitializers(CodeBuilder *builder) {

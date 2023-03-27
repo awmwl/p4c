@@ -70,7 +70,9 @@ const IR::Vector<IR::Argument> *RemoveComplexExpressions::simplifyExpressions(
             result->push_back(arg);
         }
     }
-    if (changes) return result;
+    if (changes) {
+        return result;
+    }
     return args;
 }
 
@@ -79,12 +81,15 @@ const IR::Expression *RemoveComplexExpressions::simplifyExpression(const IR::Exp
     // Note that 'force' is not applied recursively
     if (auto list = expression->to<IR::ListExpression>()) {
         auto simpl = simplifyExpressions(&list->components);
-        if (simpl != &list->components) return new IR::ListExpression(expression->srcInfo, *simpl);
+        if (simpl != &list->components) {
+            return new IR::ListExpression(expression->srcInfo, *simpl);
+        }
         return expression;
     } else if (auto si = expression->to<IR::StructExpression>()) {
         auto simpl = simplifyExpressions(&si->components);
-        if (simpl != &si->components)
+        if (simpl != &si->components) {
             return new IR::StructExpression(si->srcInfo, si->structType, si->structType, *simpl);
+        }
         return expression;
     } else {
         ComplexExpression ce;
@@ -108,10 +113,14 @@ const IR::Vector<IR::Expression> *RemoveComplexExpressions::simplifyExpressions(
     auto result = new IR::Vector<IR::Expression>();
     for (auto e : *vec) {
         auto r = simplifyExpression(e, force);
-        if (r != e) changes = true;
+        if (r != e) {
+            changes = true;
+        }
         result->push_back(r);
     }
-    if (changes) return result;
+    if (changes) {
+        return result;
+    }
     return vec;
 }
 
@@ -128,14 +137,17 @@ const IR::IndexedVector<IR::NamedExpression> *RemoveComplexExpressions::simplify
             result->push_back(e);
         }
     }
-    if (changes) return result;
+    if (changes) {
+        return result;
+    }
     return vec;
 }
 
 const IR::Node *RemoveComplexExpressions::postorder(IR::SelectExpression *expression) {
     auto vec = simplifyExpressions(&expression->select->components);
-    if (vec != &expression->select->components)
+    if (vec != &expression->select->components) {
         expression->select = new IR::ListExpression(expression->select->srcInfo, *vec);
+    }
     return expression;
 }
 
@@ -149,17 +161,25 @@ const IR::Node *RemoveComplexExpressions::preorder(IR::P4Control *control) {
 }
 
 const IR::Node *RemoveComplexExpressions::postorder(IR::MethodCallExpression *expression) {
-    if (expression->arguments->size() == 0) return expression;
+    if (expression->arguments->size() == 0) {
+        return expression;
+    }
     auto mi = P4::MethodInstance::resolve(expression, refMap, typeMap);
-    if (mi->isApply() || mi->is<P4::BuiltInMethod>()) return expression;
+    if (mi->isApply() || mi->is<P4::BuiltInMethod>()) {
+        return expression;
+    }
 
     auto vec = simplifyExpressions(expression->arguments);
-    if (vec != expression->arguments) expression->arguments = vec;
+    if (vec != expression->arguments) {
+        expression->arguments = vec;
+    }
     return expression;
 }
 
 const IR::Node *RemoveComplexExpressions::simpleStatement(IR::Statement *statement) {
-    if (assignments.empty()) return statement;
+    if (assignments.empty()) {
+        return statement;
+    }
     auto block = new IR::BlockStatement(assignments);
     block->push_back(statement);
     assignments.clear();
@@ -174,8 +194,9 @@ const IR::Node *RemoveComplexExpressions::postorder(IR::MethodCallStatement *sta
     auto mi = P4::MethodInstance::resolve(statement, refMap, typeMap);
     if (auto em = mi->to<P4::ExternMethod>()) {
         if (em->originalExternType->name != P4::P4CoreLibrary::instance.packetIn.name ||
-            em->method->name != P4::P4CoreLibrary::instance.packetIn.lookahead.name)
+            em->method->name != P4::P4CoreLibrary::instance.packetIn.lookahead.name) {
             return simpleStatement(statement);
+        }
         auto type = em->actualMethodType->returnType;
         auto name = refMap->newName("tmp");
         LOG3("Adding variable for lookahead " << name);

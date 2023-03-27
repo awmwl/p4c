@@ -32,7 +32,9 @@ ApplyOptionsPragmas::ApplyOptionsPragmas(IOptionPragmaParser &parser) : parser(p
 
 bool ApplyOptionsPragmas::preorder(const IR::Annotation *annotation) {
     auto newOptions = parser.tryToParse(annotation);
-    if (!newOptions) return false;
+    if (!newOptions) {
+        return false;
+    }
 
     LOG1("Adding options from pragma: " << annotation);
     options.insert(options.end(), newOptions->begin(), newOptions->end());
@@ -50,7 +52,9 @@ void ApplyOptionsPragmas::end_apply() {
 boost::optional<IOptionPragmaParser::CommandLineOptions> P4COptionPragmaParser::tryToParse(
     const IR::Annotation *annotation) {
     auto pragmaName = annotation->name.name;
-    if (pragmaName == "diagnostic") return parseDiagnostic(annotation);
+    if (pragmaName == "diagnostic") {
+        return parseDiagnostic(annotation);
+    }
     return boost::none;
 }
 

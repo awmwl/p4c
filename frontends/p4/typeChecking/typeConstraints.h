@@ -45,12 +45,15 @@ class Explain : public Inspector {
         return Inspector::init_apply(node);
     }
     void postorder(const IR::Type_Var *tv) override {
-        if (explained.find(tv) != explained.end())
+        if (explained.find(tv) != explained.end()) {
             // Do not repeat explanations.
             return;
+        }
         explained.emplace(tv);
         auto val = subst->lookup(tv);
-        if (!val) return;
+        if (!val) {
+            return;
+        }
         explanation += "Where '" + tv->toString() + "' is bound to '" + val->toString() + "'\n";
         Explain erec(subst);  // recursive explain variables in this substitution
         erec.setCalledBy(this);
@@ -81,7 +84,9 @@ class TypeConstraint : public IHasDbPrint, public ICastable {
         return explainer->explanation;
     }
     cstring localError(Explain *explainer) const {
-        if (errFormat.isNullOrEmpty()) return "";
+        if (errFormat.isNullOrEmpty()) {
+            return "";
+        }
         std::string message, explanation;
         boost::format fmt = boost::format(errFormat);
         switch (errArguments.size()) {
@@ -153,11 +158,14 @@ class TypeConstraint : public IHasDbPrint, public ICastable {
         std::vector<std::string> lines;
         boost::split(lines, s, [](char c) { return c == '\n'; });
         bool lastIsEmpty = lines.at(lines.size() - 1) == "";
-        if (lastIsEmpty)
+        if (lastIsEmpty) {
             // We don't want to indent an empty line.
             lines.pop_back();
+        }
         message = cstring::join(lines.begin(), lines.end(), "\n  ");
-        if (lastIsEmpty) message += "\n";
+        if (lastIsEmpty) {
+            message += "\n";
+        }
 
         CHECK_NULL(o);
         ::errorWithSuffix(ErrorType::ERR_TYPE_ERROR, "%1%", message.c_str(), o);
@@ -185,8 +193,9 @@ class BinaryConstraint : public TypeConstraint {
     void validate() const {
         CHECK_NULL(left);
         CHECK_NULL(right);
-        if (left->is<IR::Type_Name>() || right->is<IR::Type_Name>())
+        if (left->is<IR::Type_Name>() || right->is<IR::Type_Name>()) {
             BUG("type names should not appear in unification: %1% and %2%", left, right);
+        }
     }
 
  public:

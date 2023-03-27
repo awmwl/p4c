@@ -73,13 +73,18 @@ class PsaEnumOn32Bits : public P4::ChooseEnumRepresentation {
     cstring filename;
 
     bool convert(const IR::Type_Enum *type) const override {
-        if (type->name == "PSA_PacketPath_t") return true;
-        if (type->name == "PSA_MeterColor_t") return true;
+        if (type->name == "PSA_PacketPath_t") {
+            return true;
+        }
+        if (type->name == "PSA_MeterColor_t") {
+            return true;
+        }
         if (type->srcInfo.isValid()) {
             auto sourceFile = type->srcInfo.getSourceFile();
-            if (sourceFile.endsWith(filename))
+            if (sourceFile.endsWith(filename)) {
                 // Don't convert any of the standard enums
                 return false;
+            }
         }
         return true;
     }
@@ -96,14 +101,20 @@ PsaSwitchMidEnd::PsaSwitchMidEnd(CompilerOptions &options, std::ostream *outStre
     std::function<bool(const Context *, const IR::Expression *)> policy =
         [=](const Context *, const IR::Expression *e) -> bool {
         auto mce = e->to<IR::MethodCallExpression>();
-        if (mce == nullptr) return true;
+        if (mce == nullptr) {
+            return true;
+        }
         auto mi = P4::MethodInstance::resolve(mce, &refMap, &typeMap);
         auto em = mi->to<P4::ExternMethod>();
-        if (em == nullptr) return true;
-        if (em->originalExternType->name.name == "Register" || em->method->name.name == "read")
+        if (em == nullptr) {
+            return true;
+        }
+        if (em->originalExternType->name.name == "Register" || em->method->name.name == "read") {
             return false;
-        if (em->originalExternType->name.name == "Meter" && em->method->name.name == "execute")
+        }
+        if (em->originalExternType->name.name == "Meter" && em->method->name.name == "execute") {
             return false;
+        }
         return true;
     };
     if (BMV2::PsaSwitchContext::get().options().loadIRFromJson == false) {

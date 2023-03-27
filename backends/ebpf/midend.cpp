@@ -57,9 +57,10 @@ class EnumOn32Bits : public P4::ChooseEnumRepresentation {
     bool convert(const IR::Type_Enum *type) const override {
         if (type->srcInfo.isValid()) {
             auto sourceFile = type->srcInfo.getSourceFile();
-            if (sourceFile.endsWith("_model.p4"))
+            if (sourceFile.endsWith("_model.p4")) {
                 // Don't convert any of the standard enums
                 return false;
+            }
         }
         return true;
     }
@@ -68,7 +69,9 @@ class EnumOn32Bits : public P4::ChooseEnumRepresentation {
 
 const IR::ToplevelBlock *MidEnd::run(EbpfOptions &options, const IR::P4Program *program,
                                      std::ostream *outStream) {
-    if (program == nullptr && options.listMidendPasses == 0) return nullptr;
+    if (program == nullptr && options.listMidendPasses == 0) {
+        return nullptr;
+    }
 
     bool isv1 = options.langVersion == CompilerOptions::FrontendVersion::P4_14;
     refMap.setIsV1(isv1);
@@ -131,7 +134,9 @@ const IR::ToplevelBlock *MidEnd::run(EbpfOptions &options, const IR::P4Program *
     midEnd.setName("MidEnd");
     midEnd.addDebugHooks(hooks);
     program = program->apply(midEnd);
-    if (::errorCount() > 0) return nullptr;
+    if (::errorCount() > 0) {
+        return nullptr;
+    }
 
     return evaluator->getToplevelBlock();
 }

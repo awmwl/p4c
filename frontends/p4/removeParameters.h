@@ -43,7 +43,9 @@ class ActionInvocation {
         BUG_CHECK(invocations.find(action) == invocations.end(), "%1%: action called twice",
                   action);
         invocations.emplace(action, invocation);
-        if (allParams) all.emplace(action);
+        if (allParams) {
+            all.emplace(action);
+        }
         calls.emplace(invocation);
     }
     void bindDefaultAction(const IR::P4Action *action,
@@ -65,7 +67,9 @@ class ActionInvocation {
         return calls.find(expression) != calls.end();
     }
     unsigned argsToRemove(const IR::MethodCallExpression *defaultCall) const {
-        if (defaultActions.find(defaultCall) == defaultActions.end()) return 0;
+        if (defaultActions.find(defaultCall) == defaultActions.end()) {
+            return 0;
+        }
         return ::get(defaultActions, defaultCall);
     }
 };

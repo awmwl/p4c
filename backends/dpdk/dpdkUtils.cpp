@@ -18,13 +18,16 @@ limitations under the License.
 namespace DPDK {
 bool isSimpleExpression(const IR::Expression *e) {
     if (e->is<IR::Member>() || e->is<IR::PathExpression>() || e->is<IR::Constant>() ||
-        e->is<IR::BoolLiteral>())
+        e->is<IR::BoolLiteral>()) {
         return true;
+    }
     return false;
 }
 
 bool isNonConstantSimpleExpression(const IR::Expression *e) {
-    if (e->is<IR::Member>() || e->is<IR::PathExpression>()) return true;
+    if (e->is<IR::Member>() || e->is<IR::PathExpression>()) {
+        return true;
+    }
     return false;
 }
 
@@ -32,8 +35,9 @@ bool isCommutativeBinaryOperation(const IR::Operation_Binary *bin) {
     auto right = bin->right;
     if (right->is<IR::Add>() || right->is<IR::Equ>() || right->is<IR::LOr>() ||
         right->is<IR::LAnd>() || right->is<IR::BOr>() || right->is<IR::BAnd>() ||
-        right->is<IR::BXor>())
+        right->is<IR::BXor>()) {
         return true;
+    }
     return false;
 }
 
@@ -49,9 +53,13 @@ bool isStandardMetadata(cstring name) {
 }
 
 bool isHeadersStruct(const IR::Type_Struct *st) {
-    if (!st) return false;
+    if (!st) {
+        return false;
+    }
     auto annon = st->getAnnotation("__packet_data__");
-    if (annon) return true;
+    if (annon) {
+        return true;
+    }
     return false;
 }
 bool isMetadataStruct(const IR::Type_Struct *st) {
@@ -64,32 +72,47 @@ bool isMetadataStruct(const IR::Type_Struct *st) {
 }
 
 bool isMetadataField(const IR::Expression *e) {
-    if (!e->is<IR::Member>()) return false;
-    if (e->to<IR::Member>()->expr->type->is<IR::Type_Struct>())
+    if (!e->is<IR::Member>()) {
+        return false;
+    }
+    if (e->to<IR::Member>()->expr->type->is<IR::Type_Struct>()) {
         return isMetadataStruct(e->to<IR::Member>()->expr->type->to<IR::Type_Struct>());
+    }
     return false;
 }
 
 bool isEightBitAligned(const IR::Expression *e) {
-    if (e->type->width_bits() % 8 != 0) return false;
+    if (e->type->width_bits() % 8 != 0) {
+        return false;
+    }
     return true;
 }
 
 bool isLargeFieldOperand(const IR::Expression *e) {
     auto expr = e;
-    if (auto base = e->to<IR::Cast>()) expr = base->expr;
+    if (auto base = e->to<IR::Cast>()) {
+        expr = base->expr;
+    }
     if (auto type = expr->type->to<IR::Type_Bits>()) {
         auto size = type->width_bits();
-        if (size > 64) return true;
+        if (size > 64) {
+            return true;
+        }
     }
     return false;
 }
 
 bool isInsideHeader(const IR::Expression *expr) {
     auto e = expr;
-    if (auto base = expr->to<IR::Cast>()) e = base->expr;
-    if (!e->is<IR::Member>()) return false;
-    if (e->to<IR::Member>()->expr->type->is<IR::Type_Header>()) return true;
+    if (auto base = expr->to<IR::Cast>()) {
+        e = base->expr;
+    }
+    if (!e->is<IR::Member>()) {
+        return false;
+    }
+    if (e->to<IR::Member>()->expr->type->is<IR::Type_Header>()) {
+        return true;
+    }
     return false;
 }
 
@@ -99,7 +122,9 @@ const IR::Type_Bits *getEightBitAlignedType(const IR::Type_Bits *tb) {
 }
 
 bool isDirection(const IR::Member *m) {
-    if (m == nullptr) return false;
+    if (m == nullptr) {
+        return false;
+    }
     return m->member.name == "pna_main_input_metadata_direction" ||
            m->member.name == "pna_pre_input_metadata_direction" ||
            m->member.name == "pna_main_parser_input_metadata_direction";

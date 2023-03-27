@@ -31,7 +31,9 @@ void ExternConverter::registerExternConverter(cstring name, ExternConverter *cvt
 
 ExternConverter *ExternConverter::get(cstring type) {
     static ExternConverter defaultCvt;
-    if (cvtForType && cvtForType->count(type)) return cvtForType->at(type);
+    if (cvtForType && cvtForType->count(type)) {
+        return cvtForType->at(type);
+    }
     return &defaultCvt;
 }
 
@@ -198,8 +200,9 @@ cstring ExternConverter::createCalculation(ConversionContext *ctxt, cstring algo
     auto calc = new Util::JsonObject();
     calc->emplace("name", calcName);
     calc->emplace("id", nextId("calculations"));
-    if (sourcePositionNode != nullptr)
+    if (sourcePositionNode != nullptr) {
         calc->emplace_non_null("source_info", sourcePositionNode->sourceInfoJsonObj());
+    }
     calc->emplace("algo", algo);
     fields = convertToList(fields, ctxt->typeMap);
     if (!fields) {
@@ -222,24 +225,25 @@ cstring ExternConverter::createCalculation(ConversionContext *ctxt, cstring algo
 
 cstring ExternConverter::convertHashAlgorithm(cstring algorithm) {
     cstring result;
-    if (algorithm == P4V1::V1Model::instance.algorithm.crc32.name)
+    if (algorithm == P4V1::V1Model::instance.algorithm.crc32.name) {
         result = "crc32";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.crc32_custom.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.crc32_custom.name) {
         result = "crc32_custom";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.crc16.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.crc16.name) {
         result = "crc16";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.crc16_custom.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.crc16_custom.name) {
         result = "crc16_custom";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.random.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.random.name) {
         result = "random";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.identity.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.identity.name) {
         result = "identity";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.csum16.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.csum16.name) {
         result = "csum16";
-    else if (algorithm == P4V1::V1Model::instance.algorithm.xor16.name)
+    } else if (algorithm == P4V1::V1Model::instance.algorithm.xor16.name) {
         result = "xor16";
-    else
+    } else {
         ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported algorithm %1%", algorithm);
+    }
     return result;
 }
 

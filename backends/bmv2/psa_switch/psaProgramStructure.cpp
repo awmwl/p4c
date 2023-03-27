@@ -20,7 +20,9 @@ limitations under the License.
 namespace BMV2 {
 
 void InspectPsaProgram::postorder(const IR::Declaration_Instance *di) {
-    if (!pinfo->resourceMap.count(di)) return;
+    if (!pinfo->resourceMap.count(di)) {
+        return;
+    }
     auto blk = pinfo->resourceMap.at(di);
     if (blk->is<IR::ExternBlock>()) {
         auto eb = blk->to<IR::ExternBlock>();
@@ -62,12 +64,13 @@ void InspectPsaProgram::addHeaderType(const IR::Type_StructLike *st) {
 
 void InspectPsaProgram::addHeaderInstance(const IR::Type_StructLike *st, cstring name) {
     auto inst = new IR::Declaration_Variable(name, st);
-    if (st->is<IR::Type_Header>())
+    if (st->is<IR::Type_Header>()) {
         pinfo->headers.emplace(name, inst);
-    else if (st->is<IR::Type_Struct>())
+    } else if (st->is<IR::Type_Struct>()) {
         pinfo->metadata.emplace(name, inst);
-    else if (st->is<IR::Type_HeaderUnion>())
+    } else if (st->is<IR::Type_HeaderUnion>()) {
         pinfo->header_unions.emplace(name, inst);
+    }
 }
 
 void InspectPsaProgram::addTypesAndInstances(const IR::Type_StructLike *type, bool isHeader) {
@@ -203,37 +206,43 @@ bool InspectPsaProgram::preorder(const IR::Parameter *param) {
 void InspectPsaProgram::postorder(const IR::P4Parser *p) {
     if (pinfo->block_type.count(p)) {
         auto info = pinfo->block_type.at(p);
-        if (info.first == INGRESS && info.second == PARSER)
+        if (info.first == INGRESS && info.second == PARSER) {
             pinfo->parsers.emplace("ingress", p);
-        else if (info.first == EGRESS && info.second == PARSER)
+        } else if (info.first == EGRESS && info.second == PARSER) {
             pinfo->parsers.emplace("egress", p);
+        }
     }
 }
 
 void InspectPsaProgram::postorder(const IR::P4Control *c) {
     if (pinfo->block_type.count(c)) {
         auto info = pinfo->block_type.at(c);
-        if (info.first == INGRESS && info.second == PIPELINE)
+        if (info.first == INGRESS && info.second == PIPELINE) {
             pinfo->pipelines.emplace("ingress", c);
-        else if (info.first == EGRESS && info.second == PIPELINE)
+        } else if (info.first == EGRESS && info.second == PIPELINE) {
             pinfo->pipelines.emplace("egress", c);
-        else if (info.first == INGRESS && info.second == DEPARSER)
+        } else if (info.first == INGRESS && info.second == DEPARSER) {
             pinfo->deparsers.emplace("ingress", c);
-        else if (info.first == EGRESS && info.second == DEPARSER)
+        } else if (info.first == EGRESS && info.second == DEPARSER) {
             pinfo->deparsers.emplace("egress", c);
+        }
     }
 }
 
 bool ParsePsaArchitecture::preorder(const IR::ToplevelBlock *block) {
     /// Blocks are not in IR tree, use a custom visitor to traverse
     for (auto it : block->constantValue) {
-        if (it.second->is<IR::Block>()) visit(it.second->getNode());
+        if (it.second->is<IR::Block>()) {
+            visit(it.second->getNode());
+        }
     }
     return false;
 }
 
 bool ParsePsaArchitecture::preorder(const IR::ExternBlock *block) {
-    if (block->node->is<IR::Declaration>()) structure->globals.push_back(block);
+    if (block->node->is<IR::Declaration>()) {
+        structure->globals.push_back(block);
+    }
     return false;
 }
 

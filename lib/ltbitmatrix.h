@@ -29,10 +29,14 @@ class LTBitMatrix : private bitvec {
         return r >= c ? bitvec::operator[]((r * r + r) / 2 + c) : false;
     }
     unsigned size() const {
-        if (empty()) return 0;
+        if (empty()) {
+            return 0;
+        }
         unsigned m = *max();
         unsigned r = 1;
-        while ((r * r + r) / 2 <= m) r++;
+        while ((r * r + r) / 2 <= m) {
+            r++;
+        }
         return r;
     }
     using bitvec::clear;
@@ -51,10 +55,11 @@ class LTBitMatrix : private bitvec {
         rowref(const rowref &) = default;
         rowref(rowref &&) = default;
         explicit operator bool() const {
-            if (row < bits_per_unit)
+            if (row < bits_per_unit) {
                 return self.getrange((row * row + row) / 2, row + 1) != 0;
-            else
+            } else {
                 return self.getslice((row * row + row) / 2, row + 1) ? true : false;
+            }
         }
         operator bitvec() const { return self.getslice((row * row + row) / 2, row + 1); }
     };
@@ -64,7 +69,9 @@ class LTBitMatrix : private bitvec {
         using rowref<LTBitMatrix>::rowref;
         void operator|=(bitvec a) const {
             for (size_t v : a) {
-                if (v > row) break;
+                if (v > row) {
+                    break;
+                }
                 self(row, v) = 1;
             }
         }
@@ -88,15 +95,20 @@ class LTBitMatrix : private bitvec {
 
 inline std::ostream &operator<<(std::ostream &out, const LTBitMatrix &bm) {
     for (unsigned i = 1; i < bm.size(); i++) {
-        if (i > 1) out << ' ';
-        for (unsigned j = 0; j < i; j++) out << (bm[i][j] ? '1' : '0');
+        if (i > 1) {
+            out << ' ';
+        }
+        for (unsigned j = 0; j < i; j++) {
+            out << (bm[i][j] ? '1' : '0');
+        }
     }
     return out;
 }
 
 inline bool operator>>(const char *p, LTBitMatrix &bm) {
     bitvec rv;
-    for (int i = 0; *p; ++p, ++i) switch (*p) {
+    for (int i = 0; *p; ++p, ++i) {
+        switch (*p) {
             case ' ':
                 --i;
                 break;
@@ -108,6 +120,7 @@ inline bool operator>>(const char *p, LTBitMatrix &bm) {
             default:
                 return false;
         }
+    }
     bm.bitvec::operator=(rv);
     return true;
 }

@@ -279,7 +279,9 @@ struct ConversionContext {
 
     const SelectorInput *get_selector_input(const IR::Declaration_Instance *selector) {
         auto it = selector_input_map.find(selector);
-        if (it == selector_input_map.end()) return nullptr;  // selector never used
+        if (it == selector_input_map.end()) {
+            return nullptr;  // selector never used
+        }
         return &it->second;
     }
 

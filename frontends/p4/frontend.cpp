@@ -148,7 +148,9 @@ class SetStrictStruct : public NoVisit {
 // TODO: remove skipSideEffectOrdering flag
 const IR::P4Program *FrontEnd::run(const CompilerOptions &options, const IR::P4Program *program,
                                    bool skipSideEffectOrdering, std::ostream *outStream) {
-    if (program == nullptr && options.listFrontendPasses == 0) return nullptr;
+    if (program == nullptr && options.listFrontendPasses == 0) {
+        return nullptr;
+    }
 
     bool isv1 = options.isv1();
     ReferenceMap refMap;

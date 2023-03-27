@@ -30,7 +30,9 @@ void IHasDbPrint::print() const {
 namespace Util {
 SourcePosition::SourcePosition(unsigned lineNumber, unsigned columnNumber)
     : lineNumber(lineNumber), columnNumber(columnNumber) {
-    if (lineNumber == 0) BUG("Line numbering should start at one");
+    if (lineNumber == 0) {
+        BUG("Line numbering should start at one");
+    }
 }
 
 cstring SourcePosition::toString() const {
@@ -42,10 +44,12 @@ cstring SourcePosition::toString() const {
 SourceInfo::SourceInfo(const InputSources *sources, SourcePosition start, SourcePosition end)
     : sources(sources), start(start), end(end) {
     BUG_CHECK(sources != nullptr, "Invalid InputSources in SourceInfo");
-    if (!start.isValid() || !end.isValid())
+    if (!start.isValid() || !end.isValid()) {
         BUG("Invalid source position in SourceInfo %1%-%2%", start.toString(), end.toString());
-    if (start > end)
+    }
+    if (start > end) {
         BUG("SourceInfo position start %1% after end %2%", start.toString(), end.toString());
+    }
 }
 
 cstring SourceInfo::toDebugString() const {
@@ -60,9 +64,10 @@ InputSources::InputSources() : sealed(false) {
 }
 
 void InputSources::addComment(SourceInfo srcInfo, bool singleLine, cstring body) {
-    if (!singleLine)
+    if (!singleLine) {
         // Drop the "*/"
         body = body.exceptLast(2);
+    }
     auto comment = new Comment(srcInfo, singleLine, body);
     comments.push_back(comment);
 }
@@ -70,7 +75,9 @@ void InputSources::addComment(SourceInfo srcInfo, bool singleLine, cstring body)
 /// prevent further changes
 void InputSources::seal() {
     LOG4(toDebugString());
-    if (sealed) BUG("InputSources already sealed");
+    if (sealed) {
+        BUG("InputSources already sealed");
+    }
     sealed = true;
 }
 
@@ -79,31 +86,41 @@ unsigned InputSources::lineCount() const {
     if (contents.back().empty()) {
         // do not count the last line if it is empty.
         size -= 1;
-        if (size < 0) BUG("Negative line count");
+        if (size < 0) {
+            BUG("Negative line count");
+        }
     }
     return size;
 }
 
 // Append this text to the last line
 void InputSources::appendToLastLine(StringRef text) {
-    if (sealed) BUG("Appending to sealed InputSources");
+    if (sealed) {
+        BUG("Appending to sealed InputSources");
+    }
     // Text should not contain any newline characters
     for (size_t i = 0; i < text.len; i++) {
         char c = text[i];
-        if (c == '\n') BUG("Text contains newlines");
+        if (c == '\n') {
+            BUG("Text contains newlines");
+        }
     }
     contents.back() += text.toString();
 }
 
 // Append a newline and start a new line
 void InputSources::appendNewline(StringRef newline) {
-    if (sealed) BUG("Appending to sealed InputSources");
+    if (sealed) {
+        BUG("Appending to sealed InputSources");
+    }
     contents.back() += newline.toString();
     contents.push_back("");  // start a new line
 }
 
 void InputSources::appendText(const char *text) {
-    if (text == nullptr) BUG("Null text being appended");
+    if (text == nullptr) {
+        BUG("Null text being appended");
+    }
     StringRef ref = text;
 
     while (ref.len > 0) {
@@ -145,16 +162,19 @@ cstring InputSources::getLine(unsigned lineNumber) const {
 }
 
 void InputSources::mapLine(cstring file, unsigned originalSourceLineNo) {
-    if (sealed) BUG("Changing mapping to sealed InputSources");
+    if (sealed) {
+        BUG("Changing mapping to sealed InputSources");
+    }
     unsigned lineno = getCurrentLineNumber();
     line_file_map.emplace(lineno, SourceFileLine(file, originalSourceLineNo));
 }
 
 SourceFileLine InputSources::getSourceLine(unsigned line) const {
     auto it = line_file_map.upper_bound(line);
-    if (it == line_file_map.begin())
+    if (it == line_file_map.begin()) {
         // There must be always something mapped to line 0
         BUG("No source information for line %1%", line);
+    }
     LOG3(line << " mapped to " << it->first << "," << it->second.toString());
     --it;
     LOG3(line << " corrected to " << it->first << "," << it->second.toString());
@@ -186,41 +206,53 @@ cstring InputSources::getSourceFragment(const SourcePosition &position) const {
 
 cstring carets(cstring source, unsigned start, unsigned end) {
     std::stringstream builder;
-    if (start > source.size()) start = source.size();
+    if (start > source.size()) {
+        start = source.size();
+    }
 
     unsigned i;
     for (i = 0; i < start; i++) {
         char c = source.c_str()[i];
-        if (c == ' ' || c == '\t')
+        if (c == ' ' || c == '\t') {
             builder.put(c);
-        else
+        } else {
             builder.put(' ');
+        }
     }
 
-    for (; i < std::max(end, start + 1); i++) builder.put('^');
+    for (; i < std::max(end, start + 1); i++) {
+        builder.put('^');
+    }
 
     return builder.str();
 }
 
 cstring InputSources::getSourceFragment(const SourceInfo &position) const {
-    if (!position.isValid()) return "";
+    if (!position.isValid()) {
+        return "";
+    }
 
     // If the position spans multiple lines, truncate to just the first line
-    if (position.getEnd().getLineNumber() > position.getStart().getLineNumber())
+    if (position.getEnd().getLineNumber() > position.getStart().getLineNumber()) {
         return getSourceFragment(position.getStart());
+    }
 
     cstring result = getLine(position.getStart().getLineNumber());
     // Normally result has a newline, but if not
     // then we have to add a newline
     cstring toadd = "";
-    if (result.find('\n') == nullptr) toadd = cstring::newline;
+    if (result.find('\n') == nullptr) {
+        toadd = cstring::newline;
+    }
     cstring marker =
         carets(result, position.getStart().getColumnNumber(), position.getEnd().getColumnNumber());
     return result + toadd + marker + cstring::newline;
 }
 
 cstring InputSources::getBriefSourceFragment(const SourceInfo &position) const {
-    if (!position.isValid()) return "";
+    if (!position.isValid()) {
+        return "";
+    }
 
     cstring result = getLine(position.getStart().getLineNumber());
     unsigned int start = position.getStart().getColumnNumber();
@@ -251,26 +283,36 @@ cstring InputSources::getBriefSourceFragment(const SourceInfo &position) const {
 
 cstring InputSources::toDebugString() const {
     std::stringstream builder;
-    for (auto line : contents) builder << line;
+    for (auto line : contents) {
+        builder << line;
+    }
     builder << "---------------" << std::endl;
-    for (auto lf : line_file_map) builder << lf.first << ": " << lf.second.toString() << std::endl;
+    for (auto lf : line_file_map) {
+        builder << lf.first << ": " << lf.second.toString() << std::endl;
+    }
     return cstring(builder.str());
 }
 
 ///////////////////////////////////////////////////
 
 cstring SourceInfo::toSourceFragment() const {
-    if (!isValid()) return "";
+    if (!isValid()) {
+        return "";
+    }
     return sources->getSourceFragment(*this);
 }
 
 cstring SourceInfo::toBriefSourceFragment() const {
-    if (!isValid()) return "";
+    if (!isValid()) {
+        return "";
+    }
     return sources->getBriefSourceFragment(*this);
 }
 
 cstring SourceInfo::toPositionString() const {
-    if (!isValid()) return "";
+    if (!isValid()) {
+        return "";
+    }
     SourceFileLine position = sources->getSourceLine(start.getLineNumber());
     return position.toString();
 }

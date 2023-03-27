@@ -108,7 +108,9 @@ class Visitor {
     void visit(const IR::Node *&n, const char *name = 0) { n = apply_visitor(n, name); }
     void visit(const IR::Node *const &n, const char *name = 0) {
         auto t = apply_visitor(n, name);
-        if (t != n) visitor_const_error();
+        if (t != n) {
+            visitor_const_error();
+        }
     }
     void visit(const IR::Node *&n, const char *name, int cidx) {
         ctxt->child_index = cidx;
@@ -117,7 +119,9 @@ class Visitor {
     void visit(const IR::Node *const &n, const char *name, int cidx) {
         ctxt->child_index = cidx;
         auto t = apply_visitor(n, name);
-        if (t != n) visitor_const_error();
+        if (t != n) {
+            visitor_const_error();
+        }
     }
     void visit(IR::Node *&, const char * = 0, int = 0) { BUG("Can't visit non-const pointer"); }
 #define DECLARE_VISIT_FUNCTIONS(CLASS, BASE)                           \
@@ -129,11 +133,15 @@ class Visitor {
     IRNODE_ALL_SUBCLASSES(DECLARE_VISIT_FUNCTIONS)
 #undef DECLARE_VISIT_FUNCTIONS
     void visit(IR::Node &n, const char *name = 0) {
-        if (name && ctxt) ctxt->child_name = name;
+        if (name && ctxt) {
+            ctxt->child_name = name;
+        }
         n.visit_children(*this);
     }
     void visit(const IR::Node &n, const char *name = 0) {
-        if (name && ctxt) ctxt->child_name = name;
+        if (name && ctxt) {
+            ctxt->child_name = name;
+        }
         n.visit_children(*this);
     }
     void visit(IR::Node &n, const char *name, int cidx) {
@@ -152,12 +160,16 @@ class Visitor {
     }
     template <class T>
     void parallel_visit(IR::Vector<T> &v, const char *name = 0) {
-        if (name && ctxt) ctxt->child_name = name;
+        if (name && ctxt) {
+            ctxt->child_name = name;
+        }
         v.parallel_visit_children(*this);
     }
     template <class T>
     void parallel_visit(const IR::Vector<T> &v, const char *name = 0) {
-        if (name && ctxt) ctxt->child_name = name;
+        if (name && ctxt) {
+            ctxt->child_name = name;
+        }
         v.parallel_visit_children(*this);
     }
     template <class T>
@@ -203,7 +215,9 @@ class Visitor {
 
     static cstring demangle(const char *);
     virtual const char *name() const {
-        if (!internalName) internalName = demangle(typeid(*this).name());
+        if (!internalName) {
+            internalName = demangle(typeid(*this).name());
+        }
         return internalName.c_str();
     }
     void setName(const char *name) { internalName = name; }
@@ -232,9 +246,14 @@ class Visitor {
     int getContextDepth() const { return ctxt->depth - 1; }
     template <class T>
     inline const T *findContext(const Context *&c) const {
-        if (!c) c = ctxt;
-        while ((c = c->parent))
-            if (auto *rv = dynamic_cast<const T *>(c->node)) return rv;
+        if (!c) {
+            c = ctxt;
+        }
+        while ((c = c->parent)) {
+            if (auto *rv = dynamic_cast<const T *>(c->node)) {
+                return rv;
+            }
+        }
         return nullptr;
     }
     template <class T>
@@ -244,9 +263,14 @@ class Visitor {
     }
     template <class T>
     inline const T *findOrigCtxt(const Context *&c) const {
-        if (!c) c = ctxt;
-        while ((c = c->parent))
-            if (auto *rv = dynamic_cast<const T *>(c->original)) return rv;
+        if (!c) {
+            c = ctxt;
+        }
+        while ((c = c->parent)) {
+            if (auto *rv = dynamic_cast<const T *>(c->original)) {
+                return rv;
+            }
+        }
         return nullptr;
     }
     template <class T>
@@ -256,7 +280,9 @@ class Visitor {
     }
     inline bool isInContext(const IR::Node *n) const {
         for (auto *c = ctxt; c; c = c->parent) {
-            if (c->node == n || c->original == n) return true;
+            if (c->node == n || c->original == n) {
+                return true;
+            }
         }
         return false;
     }
@@ -282,7 +308,9 @@ class Visitor {
         typename = typename std::enable_if<std::is_base_of<Util::IHasSourceInfo, T>::value>::type,
         class... Args>
     void warn(const int kind, const char *format, const T *node, Args... args) {
-        if (warning_enabled(kind)) ::warning(kind, format, node, std::forward<Args>(args)...);
+        if (warning_enabled(kind)) {
+            ::warning(kind, format, node, std::forward<Args>(args)...);
+        }
     }
 
     /// The const ref variant of the above
@@ -291,7 +319,9 @@ class Visitor {
         typename = typename std::enable_if<std::is_base_of<Util::IHasSourceInfo, T>::value>::type,
         class... Args>
     void warn(const int kind, const char *format, const T &node, Args... args) {
-        if (warning_enabled(kind)) ::warning(kind, format, node, std::forward<Args>(args)...);
+        if (warning_enabled(kind)) {
+            ::warning(kind, format, node, std::forward<Args>(args)...);
+        }
     }
 
  protected:
@@ -399,7 +429,9 @@ class Inspector : public virtual Visitor {
 #undef DECLARE_VISIT_FUNCTIONS
     void revisit_visited();
     bool visit_in_progress(const IR::Node *n) const {
-        if (visited->count(n)) return !visited->at(n).done;
+        if (visited->count(n)) {
+            return !visited->at(n).done;
+        }
         return false;
     }
 };
@@ -510,13 +542,16 @@ class ControlFlowVisitor : public virtual Visitor {
 
  public:
     void flow_merge_global_to(cstring key) override {
-        if (globals.count(key))
+        if (globals.count(key)) {
             globals.at(key).flow_merge(*this);
-        else
+        } else {
             globals.emplace(key, flow_clone());
+        }
     }
     void flow_merge_global_from(cstring key) override {
-        if (globals.count(key)) flow_merge(globals.at(key));
+        if (globals.count(key)) {
+            flow_merge(globals.at(key));
+        }
     }
     void erase_global(cstring key) override { globals.erase(key); }
     bool check_global(cstring key) override { return globals.count(key) != 0; }
@@ -536,7 +571,9 @@ class ControlFlowVisitor : public virtual Visitor {
 
     bool has_flow_joins() const override { return !!flow_join_points; }
     const flow_join_info_t *flow_join_status(const IR::Node *n) const {
-        if (!flow_join_points || !flow_join_points->count(n)) return nullptr;
+        if (!flow_join_points || !flow_join_points->count(n)) {
+            return nullptr;
+        }
         return &flow_join_points->at(n);
     }
 };
@@ -577,9 +614,13 @@ class SplitFlowVisit_base {
         auto *ctxt = v.getChildContext();
         start_index = ctxt ? ctxt->child_index : 0;
         paused = false;
-        while (!finished()) do_visit();
+        while (!finished()) {
+            do_visit();
+        }
         for (auto *cl : visitors) {
-            if (cl && cl != &v) v.flow_merge(*cl);
+            if (cl && cl != &v) {
+                v.flow_merge(*cl);
+            }
         }
     }
     virtual void dbprint(std::ostream &) const = 0;
@@ -620,10 +661,11 @@ class SplitFlowVisit : public SplitFlowVisit_base {
         if (!finished()) {
             BUG_CHECK(!paused, "trying to visit paused split_flow_visitor");
             int idx = visit_next++;
-            if (nodes.empty())
+            if (nodes.empty()) {
                 visitors.at(idx)->visit(*const_nodes.at(idx), nullptr, start_index + idx);
-            else
+            } else {
                 visitors.at(idx)->visit(*nodes.at(idx), nullptr, start_index + idx);
+            }
         }
     }
     void dbprint(std::ostream &out) const override {
@@ -637,8 +679,12 @@ class SplitFlowVisitVector : public SplitFlowVisit_base {
     const IR::Vector<N> *const_vec = nullptr;
     std::vector<const IR::Node *> result;
     void init_visit(size_t size) {
-        if (size > 0) visitors.push_back(&v);
-        while (visitors.size() < size) visitors.push_back(&v.flow_clone());
+        if (size > 0) {
+            visitors.push_back(&v);
+        }
+        while (visitors.size() < size) {
+            visitors.push_back(&v.flow_clone());
+        }
     }
 
  public:
@@ -654,10 +700,11 @@ class SplitFlowVisitVector : public SplitFlowVisit_base {
         if (!finished()) {
             BUG_CHECK(!paused, "trying to visit paused split_flow_visitor");
             int idx = visit_next++;
-            if (vec)
+            if (vec) {
                 result[idx] = visitors.at(idx)->apply_visitor(vec->at(idx));
-            else
+            } else {
                 visitors.at(idx)->visit(const_vec->at(idx), nullptr, start_index + idx);
+            }
         }
     }
     void run_visit() override {
@@ -680,11 +727,12 @@ class SplitFlowVisitVector : public SplitFlowVisit_base {
                         i = vec->insert(i, v->size() - 1, nullptr);
                         for (auto el : *v) {
                             CHECK_NULL(el);
-                            if (auto e = dynamic_cast<const N *>(el))
+                            if (auto e = dynamic_cast<const N *>(el)) {
                                 *i++ = e;
-                            else
+                            } else {
                                 BUG("visitor returned invalid type %s for Vector<%s>",
                                     el->node_type_name(), N::static_type_name());
+                            }
                         }
                     }
                 } else if (auto e = dynamic_cast<const N *>(result[idx])) {

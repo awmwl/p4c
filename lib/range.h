@@ -57,7 +57,9 @@ static inline RangeIter<T> ReverseRange(std::pair<T, T> p) {
 template <class T>
 std::ostream &operator<<(std::ostream &out, const RangeIter<T> &r) {
     out << r.cur;
-    if (r.cur + r.incr != r.fin) out << ".." << (r.fin - r.incr);
+    if (r.cur + r.incr != r.fin) {
+        out << ".." << (r.fin - r.incr);
+    }
     return out;
 }
 

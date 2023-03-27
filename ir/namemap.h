@@ -66,7 +66,9 @@ class NameMap : public Node {
         cstring name;
         elem_ref(NameMap &s, cstring n) : self(s), name(n) {}
         const T *operator=(const T *v) const {
-            if (!self.match_name(name, v)) BUG("Inserting into NameMap with incorrect name");
+            if (!self.match_name(name, v)) {
+                BUG("Inserting into NameMap with incorrect name");
+            }
             return self.symbols[name] = v;
         }
         operator const T *() const { return self.count(name) ? self.at(name) : nullptr; }
@@ -96,28 +98,36 @@ class NameMap : public Node {
     const_iterator find(cstring name) const { return symbols.find(name); }
     template <class U>
     const U *get(cstring name) const {
-        for (auto it = symbols.find(name); it != symbols.end() && it->first == name; it++)
-            if (auto rv = dynamic_cast<const U *>(it->second)) return rv;
+        for (auto it = symbols.find(name); it != symbols.end() && it->first == name; it++) {
+            if (auto rv = dynamic_cast<const U *>(it->second)) {
+                return rv;
+            }
+        }
         return nullptr;
     }
     void add(cstring name, const T *n) {
-        if (!match_name(name, n)) BUG("Inserting into NameMap with incorrect name");
+        if (!match_name(name, n)) {
+            BUG("Inserting into NameMap with incorrect name");
+        }
         symbols.emplace(std::move(name), std::move(n));
     }
     // Expects to have a single node with each name.
     // Only works for map and unordered_map
     void addUnique(cstring name, const T *n) {
         auto prev = symbols.find(name);
-        if (prev != symbols.end())
+        if (prev != symbols.end()) {
             ::error(ErrorType::ERR_DUPLICATE, "%1%: duplicated name (%2% is previous instance)", n,
                     prev->second);
+        }
         symbols.emplace(std::move(name), std::move(n));
     }
     // Expects to have a single node with each name.
     // Only works for map and unordered_map
     const T *getUnique(cstring name) const {
         auto it = symbols.find(name);
-        if (it == symbols.end()) return nullptr;
+        if (it == symbols.end()) {
+            return nullptr;
+        }
         return it->second;
     }
     elem_ref operator[](cstring name) { return elem_ref(*this, name); }
@@ -125,20 +135,31 @@ class NameMap : public Node {
     const T *&at(cstring name) { return symbols.at(name); }
     const T *const &at(cstring name) const { return symbols.at(name); }
     void check_null() const {
-        for (auto &e : symbols) CHECK_NULL(e.second);
+        for (auto &e : symbols) {
+            CHECK_NULL(e.second);
+        }
     }
 
     IRNODE_SUBCLASS(NameMap)
     bool operator==(const Node &a) const override { return a == *this; }
     bool operator==(const NameMap &a) const { return symbols == a.symbols; }
     bool equiv(const Node &a_) const override {
-        if (static_cast<const Node *>(this) == &a_) return true;
-        if (typeid(*this) != typeid(a_)) return false;
+        if (static_cast<const Node *>(this) == &a_) {
+            return true;
+        }
+        if (typeid(*this) != typeid(a_)) {
+            return false;
+        }
         auto &a = static_cast<const NameMap<T, MAP, COMP, ALLOC> &>(a_);
-        if (size() != a.size()) return false;
+        if (size() != a.size()) {
+            return false;
+        }
         auto it = a.begin();
-        for (auto &el : *this)
-            if (el.first != it->first || !el.second->equiv(*(it++)->second)) return false;
+        for (auto &el : *this) {
+            if (el.first != it->first || !el.second->equiv(*(it++)->second)) {
+                return false;
+            }
+        }
         return true;
     }
     cstring node_type_name() const override { return "NameMap<" + T::static_type_name() + ">"; }

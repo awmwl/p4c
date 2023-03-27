@@ -5,7 +5,9 @@
 namespace P4 {
 
 bool ComplexValues::isNestedStruct(const IR::Type *type) {
-    if (!type->is<IR::Type_Struct>()) return false;
+    if (!type->is<IR::Type_Struct>()) {
+        return false;
+    }
     auto st = type->to<IR::Type_Struct>();
     for (auto f : st->fields) {
         auto ftype = typeMap->getType(f, true);
@@ -42,7 +44,9 @@ void ComplexValues::explode(cstring prefix, const IR::Type_Struct *type, FieldsM
 
 const IR::Node *RemoveNestedStructs::postorder(IR::Declaration_Variable *decl) {
     auto type = values->typeMap->getType(getOriginal(), true);
-    if (!values->isNestedStruct(type)) return decl;
+    if (!values->isNestedStruct(type)) {
+        return decl;
+    }
 
     BUG_CHECK(decl->initializer == nullptr, "%1%: did not expect an initializer", decl);
     BUG_CHECK(decl->annotations->size() == 0 || (decl->annotations->size() == 1 &&
@@ -65,7 +69,9 @@ const IR::Node *RemoveNestedStructs::postorder(IR::Member *expression) {
     LOG3("Visiting " << dbp(getOriginal()));
     auto parent = getContext()->node;
     auto left = values->getTranslation(expression->expr);
-    if (left == nullptr) return expression;
+    if (left == nullptr) {
+        return expression;
+    }
     auto comp = left->getComponent(expression->member.name);
     if (comp == nullptr) {
         auto l = left->convertToExpression();
@@ -73,9 +79,10 @@ const IR::Node *RemoveNestedStructs::postorder(IR::Member *expression) {
         return e;
     }
     values->setTranslation(getOriginal<IR::Member>(), comp);
-    if (parent->is<IR::Member>())
+    if (parent->is<IR::Member>()) {
         // Translation done by parent (if necessary)
         return expression;
+    }
     auto e = comp->convertToExpression();
     return e;
 }
@@ -83,9 +90,13 @@ const IR::Node *RemoveNestedStructs::postorder(IR::Member *expression) {
 const IR::Node *RemoveNestedStructs::postorder(IR::MethodCallExpression *expression) {
     auto mi = MethodInstance::resolve(getOriginal<IR::MethodCallExpression>(), values->refMap,
                                       values->typeMap);
-    if (!mi->is<ExternMethod>() && !mi->is<ExternFunction>()) return expression;
+    if (!mi->is<ExternMethod>() && !mi->is<ExternFunction>()) {
+        return expression;
+    }
     for (auto p : mi->getActualParameters()->parameters) {
-        if (!p->hasOut()) continue;
+        if (!p->hasOut()) {
+            continue;
+        }
         if (values->isNestedStruct(p->type)) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
                     "%1%: extern functions with 'out' nested struct argument (%2%) not supported",
@@ -99,12 +110,15 @@ const IR::Node *RemoveNestedStructs::postorder(IR::PathExpression *expression) {
     LOG3("Visiting " << dbp(getOriginal()));
     auto decl = values->refMap->getDeclaration(expression->path, true);
     auto comp = values->getTranslation(decl);
-    if (comp == nullptr) return expression;
+    if (comp == nullptr) {
+        return expression;
+    }
     values->setTranslation(getOriginal<IR::PathExpression>(), comp);
     auto parent = getContext()->node;
-    if (parent->is<IR::Member>())
+    if (parent->is<IR::Member>()) {
         // translation done by parent
         return expression;
+    }
     auto list = comp->convertToExpression();
     return list;
 }

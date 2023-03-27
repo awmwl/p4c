@@ -88,10 +88,11 @@ Util::Enumerator<const IDeclaration *> *INestedNamespace::getDeclarations() cons
     Util::Enumerator<const IDeclaration *> *rv = nullptr;
     for (auto nested : getNestedNamespaces()) {
         if (nested) {
-            if (rv)
+            if (rv) {
                 rv = rv->concat(nested->getDeclarations());
-            else
+            } else {
                 rv = nested->getDeclarations();
+            }
         }
     }
     return rv ? rv : new Util::EmptyEnumerator<const IDeclaration *>;
@@ -100,29 +101,37 @@ Util::Enumerator<const IDeclaration *> *INestedNamespace::getDeclarations() cons
 bool IFunctional::callMatches(const Vector<Argument> *arguments) const {
     auto paramList = getParameters()->parameters;
     std::map<cstring, const IR::Parameter *> paramNames;
-    for (auto param : paramList) paramNames.emplace(param->name.name, param);
+    for (auto param : paramList) {
+        paramNames.emplace(param->name.name, param);
+    }
 
     size_t index = 0;
     for (auto arg : *arguments) {
-        if (paramNames.size() == 0)
+        if (paramNames.size() == 0) {
             // Too many arguments
             return false;
+        }
         cstring argName = arg->name;
-        if (argName.isNullOrEmpty()) argName = paramList.at(index)->name.name;
+        if (argName.isNullOrEmpty()) {
+            argName = paramList.at(index)->name.name;
+        }
 
         auto it = paramNames.find(argName);
-        if (it == paramNames.end())
+        if (it == paramNames.end()) {
             // Argument name does not match a parameter
             return false;
-        else
+        } else {
             paramNames.erase(it);
+        }
         index++;
     }
     // Check if all remaining parameters have default values
     // or are optional.
     for (auto it : paramNames) {
         auto param = it.second;
-        if (!param->isOptional() && !param->defaultValue) return false;
+        if (!param->isOptional() && !param->defaultValue) {
+            return false;
+        }
     }
     return true;
 }
@@ -144,22 +153,27 @@ void IGeneralNamespace::checkDuplicateDeclarations() const {
 void P4Parser::checkDuplicates() const {
     for (auto decl : states) {
         auto prev = parserLocals.getDeclaration(decl->getName().name);
-        if (prev != nullptr)
+        if (prev != nullptr) {
             ::error(ErrorType::ERR_DUPLICATE, "State %1% has same name as %2%", decl, prev);
+        }
     }
 }
 
 bool Type_Stack::sizeKnown() const { return size->is<Constant>(); }
 
 size_t Type_Stack::getSize() const {
-    if (!sizeKnown()) BUG("%1%: Size not yet known", size);
+    if (!sizeKnown()) {
+        BUG("%1%: Size not yet known", size);
+    }
     auto cst = size->to<IR::Constant>();
     if (!cst->fitsInt()) {
         ::error(ErrorType::ERR_OVERLIMIT, "Index too large: %1%", cst);
         return 0;
     }
     int size = cst->asInt();
-    if (size < 0) ::error(ErrorType::ERR_OVERLIMIT, "Illegal array size: %1%", cst);
+    if (size < 0) {
+        ::error(ErrorType::ERR_OVERLIMIT, "Illegal array size: %1%", cst);
+    }
     return static_cast<size_t>(size);
 }
 
@@ -167,7 +181,9 @@ const Method *Type_Extern::lookupMethod(IR::ID name, const Vector<Argument> *arg
     const Method *result = nullptr;
     bool reported = false;
     for (auto m : methods) {
-        if (m->name != name) continue;
+        if (m->name != name) {
+            continue;
+        }
         if (m->callMatches(arguments)) {
             if (result == nullptr) {
                 result = m;
@@ -195,8 +211,12 @@ const Type_Method *Type_Control::getApplyMethodType() const {
 
 const IR::Path *ActionListElement::getPath() const {
     auto expr = expression;
-    if (expr->is<IR::MethodCallExpression>()) expr = expr->to<IR::MethodCallExpression>()->method;
-    if (expr->is<IR::PathExpression>()) return expr->to<IR::PathExpression>()->path;
+    if (expr->is<IR::MethodCallExpression>()) {
+        expr = expr->to<IR::MethodCallExpression>()->method;
+    }
+    if (expr->is<IR::PathExpression>()) {
+        return expr->to<IR::PathExpression>()->path;
+    }
     BUG("%1%: unexpected expression", expression);
 }
 
@@ -207,8 +227,9 @@ const Type_Method *P4Table::getApplyMethodType() const {
         ::error(ErrorType::ERR_INVALID, "%1%: table does not contain a list of actions", this);
         return nullptr;
     }
-    if (!actions->value->is<IR::ActionList>())
+    if (!actions->value->is<IR::ActionList>()) {
         BUG("Action property is not an IR::ActionList, but %1%", actions);
+    }
     auto alv = actions->value->to<IR::ActionList>();
     auto hit = new IR::StructField(IR::Type_Table::hit, IR::Type_Boolean::get());
     auto miss = new IR::StructField(IR::Type_Table::miss, IR::Type_Boolean::get());
@@ -223,11 +244,12 @@ const Type_Method *Type_Table::getApplyMethodType() const { return table->getApp
 void Block::setValue(const Node *node, const CompileTimeValue *value) {
     CHECK_NULL(node);
     auto it = constantValue.find(node);
-    if (it != constantValue.end())
+    if (it != constantValue.end()) {
         BUG_CHECK(value->equiv(*constantValue[node]), "%1% already set in %2% to %3%, not %4%",
                   node, this, value, constantValue[node]);
-    else
+    } else {
         constantValue[node] = value;
+    }
 }
 
 void InstantiatedBlock::instantiate(std::vector<const CompileTimeValue *> *args) {
@@ -253,8 +275,12 @@ const IR::CompileTimeValue *InstantiatedBlock::getParameterValue(cstring paramNa
 
 const IR::CompileTimeValue *InstantiatedBlock::findParameterValue(cstring paramName) const {
     auto *param = getConstructorParameters()->getDeclByName(paramName);
-    if (!param) return nullptr;
-    if (!param->is<IR::Parameter>()) return nullptr;
+    if (!param) {
+        return nullptr;
+    }
+    if (!param->is<IR::Parameter>()) {
+        return nullptr;
+    }
     return getValue(param->getNode());
 }
 
@@ -282,7 +308,9 @@ const IR::PackageBlock *ToplevelBlock::getMain() const {
         return nullptr;
     }
     auto block = getValue(main->getNode());
-    if (block == nullptr) return nullptr;
+    if (block == nullptr) {
+        return nullptr;
+    }
     BUG_CHECK(block->is<IR::PackageBlock>(), "%1%: toplevel block is not a package", block);
     return block->to<IR::PackageBlock>();
 }

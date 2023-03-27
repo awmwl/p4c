@@ -165,7 +165,9 @@ class SynthesizeActions : public PassManager {
     SynthesizeActions(ReferenceMap *refMap, TypeMap *typeMap,
                       ActionSynthesisPolicy *policy = nullptr,
                       TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoSynthesizeActions(refMap, typeMap, policy));
         setName("SynthesizeActions");
@@ -176,7 +178,9 @@ class MoveActionsToTables : public PassManager {
  public:
     MoveActionsToTables(ReferenceMap *refMap, TypeMap *typeMap,
                         TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoMoveActionsToTables(refMap, typeMap));
         setName("MoveActionsToTables");

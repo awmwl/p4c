@@ -22,7 +22,9 @@ namespace P4 {
 
 const IR::Node *DoHandleNoMatch::postorder(IR::SelectExpression *expression) {
     for (auto c : expression->selectCases) {
-        if (c->keyset->is<IR::DefaultExpression>()) return expression;
+        if (c->keyset->is<IR::DefaultExpression>()) {
+            return expression;
+        }
     }
 
     if (noMatch == nullptr) {
@@ -46,13 +48,17 @@ const IR::Node *DoHandleNoMatch::postorder(IR::SelectExpression *expression) {
 }
 
 const IR::Node *DoHandleNoMatch::postorder(IR::P4Parser *parser) {
-    if (noMatch) parser->states.push_back(noMatch);
+    if (noMatch) {
+        parser->states.push_back(noMatch);
+    }
     noMatch = nullptr;
     return parser;
 }
 
 const IR::Node *DoHandleNoMatch::postorder(IR::P4Program *program) {
-    if (!noMatch) return program;
+    if (!noMatch) {
+        return program;
+    }
     // Check if 'verify' exists.
     auto decls = program->getDeclsByName(IR::ParserState::verify);
     auto vec = decls->toVector();

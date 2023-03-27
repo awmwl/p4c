@@ -53,28 +53,37 @@ const IR::Node *ArithmeticFixup::postorder(IR::Expression *expression) {
 const IR::Node *ArithmeticFixup::postorder(IR::Operation_Binary *expression) {
     auto type = typeMap->getType(getOriginal(), true);
     if (expression->is<IR::BAnd>() || expression->is<IR::BOr>() || expression->is<IR::BXor>() ||
-        expression->is<IR::AddSat>() || expression->is<IR::SubSat>())
+        expression->is<IR::AddSat>() || expression->is<IR::SubSat>()) {
         // no need to clamp these
         return updateType(expression);
-    if (type->is<IR::Type_Bits>()) return fix(expression, type->to<IR::Type_Bits>());
+    }
+    if (type->is<IR::Type_Bits>()) {
+        return fix(expression, type->to<IR::Type_Bits>());
+    }
     return updateType(expression);
 }
 
 const IR::Node *ArithmeticFixup::postorder(IR::Neg *expression) {
     auto type = typeMap->getType(getOriginal(), true);
-    if (type->is<IR::Type_Bits>()) return fix(expression, type->to<IR::Type_Bits>());
+    if (type->is<IR::Type_Bits>()) {
+        return fix(expression, type->to<IR::Type_Bits>());
+    }
     return updateType(expression);
 }
 
 const IR::Node *ArithmeticFixup::postorder(IR::Cmpl *expression) {
     auto type = typeMap->getType(getOriginal(), true);
-    if (type->is<IR::Type_Bits>()) return fix(expression, type->to<IR::Type_Bits>());
+    if (type->is<IR::Type_Bits>()) {
+        return fix(expression, type->to<IR::Type_Bits>());
+    }
     return updateType(expression);
 }
 
 const IR::Node *ArithmeticFixup::postorder(IR::Cast *expression) {
     auto type = typeMap->getType(getOriginal(), true);
-    if (type->is<IR::Type_Bits>()) return fix(expression, type->to<IR::Type_Bits>());
+    if (type->is<IR::Type_Bits>()) {
+        return fix(expression, type->to<IR::Type_Bits>());
+    }
     return updateType(expression);
 }
 
@@ -91,9 +100,10 @@ Util::IJson *ExpressionConverter::get(const IR::Expression *expression) const {
             LOG3(" " << it.first << " " << it.second);
         }
     }
-    if (result == nullptr)
+    if (result == nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED, "%1%: could not convert expression to Json",
                 expression);
+    }
     return result;
 }
 
@@ -109,8 +119,9 @@ void ExpressionConverter::postorder(const IR::MethodCallExpression *expression) 
     if (auto em = instance->to<P4::ExternMethod>()) {
         if (em->originalExternType->name == corelib.packetIn.name &&
             em->method->name == corelib.packetIn.lookahead.name) {
-            if (expression->typeArguments->size() != 1)
+            if (expression->typeArguments->size() != 1) {
                 ::error(ErrorType::ERR_INVALID, "Expected 1 type parameter for %1%", em->method);
+            }
             auto targ = expression->typeArguments->at(0);
             auto typearg = typeMap->getTypeType(targ, true);
             int width = typearg->width_bits();
@@ -128,7 +139,9 @@ void ExpressionConverter::postorder(const IR::MethodCallExpression *expression) 
             auto type = typeMap->getType(bim->appliedTo, true);
             auto result = new Util::JsonObject();
             auto l = get(bim->appliedTo);
-            if (!l) return;
+            if (!l) {
+                return;
+            }
             if (type->is<IR::Type_HeaderUnion>()) {
                 result->emplace("type", "expression");
                 auto e = new Util::JsonObject();
@@ -140,10 +153,11 @@ void ExpressionConverter::postorder(const IR::MethodCallExpression *expression) 
                 // Treat this as appliedTo.$valid$
                 result->emplace("type", "field");
                 auto e = mkArrayField(result, "value");
-                if (l->is<Util::JsonObject>())
+                if (l->is<Util::JsonObject>()) {
                     e->append(l->to<Util::JsonObject>()->get("value"));
-                else
+                } else {
                     e->append(l);
+                }
                 e->append(V1ModelProperties::validField);
                 if (!simpleExpressionsOnly && !leftValue) {
                     // This is set when converting table keys;
@@ -169,7 +183,9 @@ void ExpressionConverter::postorder(const IR::MethodCallExpression *expression) 
 void ExpressionConverter::postorder(const IR::Cast *expression) {
     // nothing to do for casts - the ArithmeticFixup pass should have handled them already
     auto j = get(expression->expr);
-    if (!j) return;
+    if (!j) {
+        return;
+    }
     mapExpression(expression, j);
 }
 
@@ -179,7 +195,9 @@ void ExpressionConverter::postorder(const IR::Constant *expression) {
     auto bitwidth = expression->type->width_bits();
     cstring repr = stringRepr(expression->value, ROUNDUP(bitwidth, 8));
     result->emplace("value", repr);
-    if (withConstantWidths) result->emplace("bitwidth", bitwidth);
+    if (withConstantWidths) {
+        result->emplace("bitwidth", bitwidth);
+    }
     mapExpression(expression, result);
 }
 
@@ -236,13 +254,19 @@ void ExpressionConverter::postorder(const IR::ArrayIndex *expression) {
 const IR::Parameter *ExpressionConverter::enclosingParamReference(
     const IR::Expression *expression) {
     CHECK_NULL(expression);
-    if (!expression->is<IR::PathExpression>()) return nullptr;
+    if (!expression->is<IR::PathExpression>()) {
+        return nullptr;
+    }
 
     auto pe = expression->to<IR::PathExpression>();
     auto decl = refMap->getDeclaration(pe->path, true);
     auto param = decl->to<IR::Parameter>();
-    if (param == nullptr) return param;
-    if (structure->nonActionParameters.count(param) > 0) return param;
+    if (param == nullptr) {
+        return param;
+    }
+    if (structure->nonActionParameters.count(param) > 0) {
+        return param;
+    }
     return nullptr;
 }
 
@@ -286,17 +310,20 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
         // convert normal parameters
         if (auto st = type->to<IR::Type_Stack>()) {
             auto et = typeMap->getTypeType(st->elementType, true);
-            if (et->is<IR::Type_HeaderUnion>())
+            if (et->is<IR::Type_HeaderUnion>()) {
                 result->emplace("type", "header_union_stack");
-            else
+            } else {
                 result->emplace("type", "header_stack");
+            }
             result->emplace("value", fieldName);
         } else if (type->is<IR::Type_HeaderUnion>()) {
             result->emplace("type", "header_union");
             result->emplace("value", fieldName);
         } else if (parentType->is<IR::Type_HeaderUnion>()) {
             auto l = get(expression->expr);
-            if (!l) return;
+            if (!l) {
+                return;
+            }
             cstring nestedField = fieldName;
             if (auto lv = l->to<Util::JsonObject>()) {
                 lv->get("value");
@@ -353,18 +380,22 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
     if (expression->expr->is<IR::Member>()) {
         auto mem = expression->expr->to<IR::Member>();
         auto memtype = typeMap->getType(mem->expr, true);
-        if (memtype->is<IR::Type_Stack>() && mem->member == IR::Type_Stack::next)
+        if (memtype->is<IR::Type_Stack>() && mem->member == IR::Type_Stack::next) {
             ::error(ErrorType::ERR_UNINITIALIZED, "%1% uninitialized: next field read", mem);
+        }
         // array.last.field => type: "stack_field", value: [ array, field ]
         if (memtype->is<IR::Type_Stack>() && mem->member == IR::Type_Stack::last) {
             auto l = get(mem->expr);
-            if (!l) return;
+            if (!l) {
+                return;
+            }
             result->emplace("type", "stack_field");
             auto e = mkArrayField(result, "value");
-            if (l->is<Util::JsonObject>())
+            if (l->is<Util::JsonObject>()) {
                 e->append(l->to<Util::JsonObject>()->get("value"));
-            else
+            } else {
                 e->append(l);
+            }
             e->append(fieldName);
             done = true;
         }
@@ -372,7 +403,9 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
 
     if (!done) {
         auto l = get(expression->expr);
-        if (!l) return;
+        if (!l) {
+            return;
+        }
         if (parentType->is<IR::Type_HeaderUnion>()) {
             BUG_CHECK(l->is<Util::JsonObject>(), "Not a JsonObject");
             auto lv = l->to<Util::JsonObject>()->get("value");
@@ -393,7 +426,9 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
         } else if (parentType->is<IR::Type_Stack>() &&
                    expression->member == IR::Type_Stack::lastIndex) {
             auto l = get(expression->expr);
-            if (!l) return;
+            if (!l) {
+                return;
+            }
             result->emplace("type", "expression");
             auto e = new Util::JsonObject();
             result->emplace("value", e);
@@ -467,7 +502,9 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
 }
 
 Util::IJson *ExpressionConverter::fixLocal(Util::IJson *json) {
-    if (!json) return new Util::JsonValue();  // null
+    if (!json) {
+        return new Util::JsonValue();  // null
+    }
     if (auto jo = json->to<Util::JsonObject>()) {
         auto to = jo->get("type");
         if (to != nullptr && to->to<Util::JsonValue>() != nullptr &&
@@ -495,13 +532,19 @@ void ExpressionConverter::postorder(const IR::Mux *expression) {
     result->emplace("value", e);
     e->emplace("op", "?");
     auto l = get(expression->e1);
-    if (!l) return;
+    if (!l) {
+        return;
+    }
     e->emplace("left", fixLocal(l));
     auto r = get(expression->e2);
-    if (!r) return;
+    if (!r) {
+        return;
+    }
     e->emplace("right", fixLocal(r));
     auto c = get(expression->e0);
-    if (!c) return;
+    if (!c) {
+        return;
+    }
     e->emplace("cond", fixLocal(c));
 }
 
@@ -513,7 +556,9 @@ void ExpressionConverter::postorder(const IR::IntMod *expression) {
     result->emplace("value", e);
     e->emplace("op", "two_comp_mod");
     auto l = get(expression->expr);
-    if (!l) return;
+    if (!l) {
+        return;
+    }
     e->emplace("left", fixLocal(l));
     auto r = new Util::JsonObject();
     r->emplace("type", "hexstr");
@@ -537,16 +582,21 @@ void ExpressionConverter::binary(const IR::Operation_Binary *expression) {
     auto e = new Util::JsonObject();
     result->emplace("value", e);
     cstring op = expression->getStringOp();
-    if (op == "&&")
+    if (op == "&&") {
         op = "and";
-    else if (op == "||")
+    } else if (op == "||") {
         op = "or";
+    }
     e->emplace("op", op);
     auto l = get(expression->left);
-    if (!l) return;
+    if (!l) {
+        return;
+    }
     e->emplace("left", fixLocal(l));
     auto r = get(expression->right);
-    if (!r) return;
+    if (!r) {
+        return;
+    }
     e->emplace("right", fixLocal(r));
 }
 
@@ -593,7 +643,9 @@ void ExpressionConverter::postorder(const IR::ListExpression *expression) {
 
     for (auto e : expression->components) {
         auto t = get(e);
-        if (!t) return;
+        if (!t) {
+            return;
+        }
         result->append(t);
     }
 }
@@ -610,7 +662,9 @@ void ExpressionConverter::postorder(const IR::StructExpression *expression) {
 
     for (auto e : expression->components) {
         auto t = get(e->expression);
-        if (!t) return;
+        if (!t) {
+            return;
+        }
         result->append(t);
     }
 }
@@ -628,11 +682,15 @@ void ExpressionConverter::postorder(const IR::Operation_Unary *expression) {
     auto e = new Util::JsonObject();
     result->emplace("value", e);
     cstring op = expression->getStringOp();
-    if (op == "!") op = "not";
+    if (op == "!") {
+        op = "not";
+    }
     e->emplace("op", op);
     e->emplace("left", Util::JsonValue::null);
     auto r = get(expression->expr);
-    if (!r) return;
+    if (!r) {
+        return;
+    }
     e->emplace("right", fixLocal(r));
 }
 
@@ -699,10 +757,11 @@ void ExpressionConverter::postorder(const IR::PathExpression *expression) {
             f->append(var->name);
         } else if (auto st = type->to<IR::Type_Stack>()) {
             auto et = typeMap->getTypeType(st->elementType, true);
-            if (et->is<IR::Type_HeaderUnion>())
+            if (et->is<IR::Type_HeaderUnion>()) {
                 result->emplace("type", "header_union_stack");
-            else
+            } else {
                 result->emplace("type", "header_stack");
+            }
             result->emplace("value", var->name);
         } else if (type->is<IR::Type_Error>()) {
             result->emplace("type", "field");
@@ -740,7 +799,9 @@ void ExpressionConverter::postorder(const IR::Slice *expression) {
     right->emplace("type", "hexstr");
     right->emplace("value", stringRepr(mask, ROUNDUP(bitwidth, 8)));
     auto le = get(expr);
-    if (!le) return;
+    if (!le) {
+        return;
+    }
     band->emplace("left", le);
     band->emplace("right", right);
     mapExpression(expression, result);
@@ -825,7 +886,9 @@ Util::IJson *ExpressionConverter::convertLeftValue(const IR::Expression *e) {
     CHECK_NULL(expr);
     expr->apply(*this);
     auto result = ::get(map, expr->to<IR::Expression>());
-    if (result == nullptr) BUG("%1%: Could not convert expression", e);
+    if (result == nullptr) {
+        BUG("%1%: Could not convert expression", e);
+    }
     leftValue = false;
     return result;
 }

@@ -38,18 +38,26 @@ bool FindRedundantParsers::preorder(const IR::P4Parser *parser) {
 
 const IR::Node *EliminateSubparserCalls::postorder(IR::MethodCallStatement *mcs) {
     auto mi = MethodInstance::resolve(mcs->methodCall, refMap, typeMap, true);
-    if (!mi->isApply()) return mcs;
+    if (!mi->isApply()) {
+        return mcs;
+    }
 
     auto apply = mi->to<ApplyMethod>()->applyObject;
     auto parser = apply->to<IR::Type_Parser>();
-    if (!parser) return mcs;
+    if (!parser) {
+        return mcs;
+    }
 
     auto declInstance = mi->object->to<IR::Declaration_Instance>();
-    if (!declInstance) return mcs;
+    if (!declInstance) {
+        return mcs;
+    }
 
     auto decl = refMap->getDeclaration(declInstance->type->to<IR::Type_Name>()->path);
     auto p4parser = decl->to<IR::P4Parser>();
-    if (!p4parser || !redundantParsers.count(p4parser)) return mcs;
+    if (!p4parser || !redundantParsers.count(p4parser)) {
+        return mcs;
+    }
 
     LOG4("Removing apply call to redundant parser " << parser->getName() << ": " << *mcs);
     return nullptr;

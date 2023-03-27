@@ -121,7 +121,9 @@ void IR::Vector<T>::visit_children(Visitor &v) {
 }
 template <class T>
 void IR::Vector<T>::visit_children(Visitor &v) const {
-    for (auto &a : vec) v.visit(a);
+    for (auto &a : vec) {
+        v.visit(a);
+    }
 }
 template <class T>
 void IR::Vector<T>::parallel_visit_children(Visitor &v) {
@@ -179,7 +181,9 @@ void IR::IndexedVector<T>::visit_children(Visitor &v) {
 }
 template <class T>
 void IR::IndexedVector<T>::visit_children(Visitor &v) const {
-    for (auto &a : *this) v.visit(a);
+    for (auto &a : *this) {
+        v.visit(a);
+    }
 }
 template <class T>
 void IR::IndexedVector<T>::toJSON(JSONGenerator &json) const {
@@ -309,7 +313,9 @@ void IR::NodeMap<KEY, VALUE, MAP, COMP, ALLOC>::visit_children(Visitor &v) {
         } else {
             auto nv = i->second;
             v.visit(nv);
-            if (nv) new_symbols.emplace(nk, nv);
+            if (nv) {
+                new_symbols.emplace(nk, nv);
+            }
             i = symbols.erase(i);
         }
     }

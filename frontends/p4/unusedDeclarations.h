@@ -143,7 +143,9 @@ class RemoveAllUnusedDeclarations : public PassManager {
         // warnings.  The @warned set keeps track of warnings emitted in
         // previous iterations to avoid emitting duplicate warnings.
         std::set<const IR::Node *> *warned = nullptr;
-        if (warn) warned = new std::set<const IR::Node *>();
+        if (warn) {
+            warned = new std::set<const IR::Node *>();
+        }
 
         refMap->clear();
         passes.emplace_back(new PassRepeated{new ResolveReferences(refMap),

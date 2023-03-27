@@ -99,7 +99,9 @@ class Options : public CompilerOptions {
             "--fullGraph", nullptr,
             [this](const char *) {
                 fullGraph = true;
-                if (!isGraphsSet) graphs = false;
+                if (!isGraphsSet) {
+                    graphs = false;
+                }
                 return true;
             },
             "Use if you want to generate graph depicting control flow "
@@ -108,7 +110,9 @@ class Options : public CompilerOptions {
             "--jsonOut", nullptr,
             [this](const char *) {
                 jsonOut = true;
-                if (!isGraphsSet) graphs = false;
+                if (!isGraphsSet) {
+                    graphs = false;
+                }
                 return true;
             },
             "Use to generate json output of fullGraph.");
@@ -132,9 +136,13 @@ int main(int argc, char *const argv[]) {
     options.compilerVersion = P4C_GRAPHS_VERSION_STRING;
 
     if (options.process(argc, argv) != nullptr) {
-        if (options.loadIRFromJson == false) options.setInputFile();
+        if (options.loadIRFromJson == false) {
+            options.setInputFile();
+        }
     }
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
 
     auto hook = options.getDebugHook();
 
@@ -157,7 +165,9 @@ int main(int argc, char *const argv[]) {
         fb.close();
     } else {
         program = P4::parseP4File(options);
-        if (program == nullptr || ::errorCount() > 0) return 1;
+        if (program == nullptr || ::errorCount() > 0) {
+            return 1;
+        }
 
         try {
             P4::P4COptionPragmaParser optionsPragmaParser;
@@ -170,7 +180,9 @@ int main(int argc, char *const argv[]) {
             std::cerr << bug.what() << std::endl;
             return 1;
         }
-        if (program == nullptr || ::errorCount() > 0) return 1;
+        if (program == nullptr || ::errorCount() > 0) {
+            return 1;
+        }
     }
 
     graphs::MidEnd midEnd(options);
@@ -178,13 +190,16 @@ int main(int argc, char *const argv[]) {
     const IR::ToplevelBlock *top = nullptr;
     try {
         top = midEnd.process(program);
-        if (options.dumpJsonFile)
+        if (options.dumpJsonFile) {
             JSONGenerator(*openFile(options.dumpJsonFile, true)) << program << std::endl;
+        }
     } catch (const std::exception &bug) {
         std::cerr << bug.what() << std::endl;
         return 1;
     }
-    if (::errorCount() > 0) return 1;
+    if (::errorCount() > 0) {
+        return 1;
+    }
 
     LOG2("Generating graphs under " << options.graphsDir);
     LOG2("Generating control graphs");

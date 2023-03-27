@@ -6,7 +6,9 @@
 bool ParseDpdkArchitecture::preorder(const IR::ToplevelBlock *block) {
     /// Blocks are not in IR tree, use a custom visitor to traverse
     for (auto it : block->constantValue) {
-        if (it.second->is<IR::Block>()) visit(it.second->getNode());
+        if (it.second->is<IR::Block>()) {
+            visit(it.second->getNode());
+        }
     }
     return false;
 }
@@ -146,12 +148,13 @@ void InspectDpdkProgram::addHeaderType(const IR::Type_StructLike *st) {
 
 void InspectDpdkProgram::addHeaderInstance(const IR::Type_StructLike *st, cstring name) {
     auto inst = new IR::Declaration_Variable(name, st);
-    if (st->is<IR::Type_Header>())
+    if (st->is<IR::Type_Header>()) {
         structure->headers.emplace(name, inst);
-    else if (st->is<IR::Type_Struct>())
+    } else if (st->is<IR::Type_Struct>()) {
         structure->metadata.emplace(name, inst);
-    else if (st->is<IR::Type_HeaderUnion>())
+    } else if (st->is<IR::Type_HeaderUnion>()) {
         structure->header_unions.emplace(name, inst);
+    }
 }
 
 void InspectDpdkProgram::addTypesAndInstances(const IR::Type_StructLike *type, bool isHeader) {

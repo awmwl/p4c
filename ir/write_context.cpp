@@ -36,18 +36,28 @@ limitations under the License.
 
 bool P4WriteContext::isWrite(bool root_value) {
     const Context *ctxt = getContext();
-    if (!ctxt || !ctxt->node) return root_value;
+    if (!ctxt || !ctxt->node) {
+        return root_value;
+    }
     while (ctxt->child_index == 0 &&
            (ctxt->node->is<IR::ArrayIndex>() || ctxt->node->is<IR::HeaderStackItemRef>() ||
             ctxt->node->is<IR::Slice>() || ctxt->node->is<IR::Member>())) {
         ctxt = ctxt->parent;
-        if (!ctxt || !ctxt->node) return root_value;
+        if (!ctxt || !ctxt->node) {
+            return root_value;
+        }
     }
-    if (auto *prim = ctxt->node->to<IR::Primitive>()) return prim->isOutput(ctxt->child_index);
-    if (ctxt->node->is<IR::AssignmentStatement>()) return ctxt->child_index == 0;
+    if (auto *prim = ctxt->node->to<IR::Primitive>()) {
+        return prim->isOutput(ctxt->child_index);
+    }
+    if (ctxt->node->is<IR::AssignmentStatement>()) {
+        return ctxt->child_index == 0;
+    }
     if (ctxt->node->is<IR::Argument>()) {
         // MethodCallExpression(Vector<Argument(Expression)>)
-        if (!ctxt->parent || !ctxt->parent->parent || !ctxt->parent->parent->node) return false;
+        if (!ctxt->parent || !ctxt->parent->parent || !ctxt->parent->parent->node) {
+            return false;
+        }
         if (auto *mc = ctxt->parent->parent->node->to<IR::MethodCallExpression>()) {
             auto type = mc->method->type->to<IR::Type_Method>();
             if (!type) {
@@ -79,18 +89,28 @@ bool P4WriteContext::isWrite(bool root_value) {
  */
 bool P4WriteContext::isRead(bool root_value) {
     const Context *ctxt = getContext();
-    if (!ctxt || !ctxt->node) return root_value;
+    if (!ctxt || !ctxt->node) {
+        return root_value;
+    }
     while (ctxt->child_index == 0 &&
            (ctxt->node->is<IR::ArrayIndex>() || ctxt->node->is<IR::HeaderStackItemRef>() ||
             ctxt->node->is<IR::Slice>() || ctxt->node->is<IR::Member>())) {
         ctxt = ctxt->parent;
-        if (!ctxt || !ctxt->node) return root_value;
+        if (!ctxt || !ctxt->node) {
+            return root_value;
+        }
     }
-    if (auto *prim = ctxt->node->to<IR::Primitive>()) return !prim->isOutput(ctxt->child_index);
-    if (ctxt->node->is<IR::AssignmentStatement>()) return ctxt->child_index != 0;
+    if (auto *prim = ctxt->node->to<IR::Primitive>()) {
+        return !prim->isOutput(ctxt->child_index);
+    }
+    if (ctxt->node->is<IR::AssignmentStatement>()) {
+        return ctxt->child_index != 0;
+    }
     if (ctxt->node->is<IR::Argument>()) {
         // MethodCallExpression(Vector<Argument(Expression)>)
-        if (!ctxt->parent || !ctxt->parent->parent || !ctxt->parent->parent->node) return false;
+        if (!ctxt->parent || !ctxt->parent->parent || !ctxt->parent->parent->node) {
+            return false;
+        }
         if (auto *mc = ctxt->parent->parent->node->to<IR::MethodCallExpression>()) {
             auto type = mc->method->type->to<IR::Type_Method>();
             if (!type) {
@@ -101,7 +121,11 @@ bool P4WriteContext::isRead(bool root_value) {
             return param->direction != IR::Direction::Out;
         }
     }
-    if (ctxt->node->is<IR::IndexedVector<IR::StatOrDecl>>()) return false;
-    if (ctxt->node->is<IR::IfStatement>()) return ctxt->child_index == 0;
+    if (ctxt->node->is<IR::IndexedVector<IR::StatOrDecl>>()) {
+        return false;
+    }
+    if (ctxt->node->is<IR::IfStatement>()) {
+        return ctxt->child_index == 0;
+    }
     return true;
 }

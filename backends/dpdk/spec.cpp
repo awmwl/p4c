@@ -78,8 +78,9 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         } else {
             auto hashAlg = args->at(0)->expression;
             unsigned hashAlgValue = CRC1;
-            if (hashAlg->is<IR::Constant>())
+            if (hashAlg->is<IR::Constant>()) {
                 hashAlgValue = hashAlg->to<IR::Constant>()->asUnsigned();
+            }
             if (hashAlgValue == TOEPLITZ) {
                 auto hashDecl = new IR::DpdkHashDeclStatement(Name());
                 hashDecl->toSpec(out) << std::endl;
@@ -106,8 +107,9 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         } else {
             auto n_counters = args->at(0)->expression;
             auto counter_type = args->at(1)->expression;
-            if (counter_type->is<IR::Constant>())
+            if (counter_type->is<IR::Constant>()) {
                 value = counter_type->to<IR::Constant>()->asUnsigned();
+            }
             if (value == 2) {
                 /* For PACKETS_AND_BYTES counter type, two regarray declarations are emitted and
                    the counter name is suffixed with _packets and _bytes */
@@ -138,8 +140,9 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
             }
 
             auto counter_type = args->at(0)->expression;
-            if (counter_type->is<IR::Constant>())
+            if (counter_type->is<IR::Constant>()) {
                 value = counter_type->to<IR::Constant>()->asUnsigned();
+            }
             if (value == 2) {
                 /* For PACKETS_AND_BYTES counter type, two regarray declarations are emitted and
                    the counter name is suffixed with _packets and _bytes */
@@ -192,15 +195,15 @@ std::ostream &IR::DpdkHeaderType::toSpec(std::ostream &out) const {
     out << "struct " << name << " {" << std::endl;
     for (auto it = fields.begin(); it != fields.end(); ++it) {
         add_comment(out, (*it)->name.toString(), "\t");
-        if (auto t = (*it)->type->to<IR::Type_Bits>())
+        if (auto t = (*it)->type->to<IR::Type_Bits>()) {
             out << "\tbit<" << t->width_bits() << ">";
-        else if (auto t = (*it)->type->to<IR::Type_Name>())
+        } else if (auto t = (*it)->type->to<IR::Type_Name>()) {
             out << "\t" << t->path->name;
-        else if ((*it)->type->to<IR::Type_Boolean>())
+        } else if ((*it)->type->to<IR::Type_Boolean>()) {
             out << "\tbool";
-        else if (auto t = (*it)->type->to<IR::Type_Varbits>())
+        } else if (auto t = (*it)->type->to<IR::Type_Varbits>()) {
             out << "\tvarbit<" << t->size << ">";
-        else {
+        } else {
             BUG("Unsupported type: %1% ", *it);
         }
         out << " " << (*it)->externalName();
@@ -217,8 +220,9 @@ std::ostream &IR::DpdkStructType::toSpec(std::ostream &out) const {
             if (auto t = (*it)->type->to<IR::Type_Name>()) {
                 out << "header " << (*it)->name << " instanceof " << t->path->name;
             } else if (auto t = (*it)->type->to<IR::Type_Stack>()) {
-                if (!t->elementType->is<IR::Type_Name>())
+                if (!t->elementType->is<IR::Type_Name>()) {
                     BUG("%1% Unsupported type", t->elementType);
+                }
                 cstring type_name = t->elementType->to<IR::Type_Name>()->path->name;
                 if (!t->size->is<IR::Constant>()) {
                     BUG("Header stack index in %1% must be compile-time constant", t);
@@ -236,9 +240,9 @@ std::ostream &IR::DpdkStructType::toSpec(std::ostream &out) const {
         out << "struct " << name << " {" << std::endl;
         for (auto it = fields.begin(); it != fields.end(); ++it) {
             add_comment(out, (*it)->name.toString(), "\t");
-            if (auto t = (*it)->type->to<IR::Type_Bits>())
+            if (auto t = (*it)->type->to<IR::Type_Bits>()) {
                 out << "\tbit<" << t->width_bits() << ">";
-            else if (auto t = (*it)->type->to<IR::Type_Name>()) {
+            } else if (auto t = (*it)->type->to<IR::Type_Name>()) {
                 if (t->path->name == "error") {
                     out << "\tbit<8>";
                 } else {
@@ -270,7 +274,9 @@ std::ostream &IR::DpdkListStatement::toSpec(std::ostream &out) const {
     for (auto s : statements) {
         out << "\t";
         s->toSpec(out);
-        if (!s->to<IR::DpdkLabelStatement>()) out << std::endl;
+        if (!s->to<IR::DpdkLabelStatement>()) {
+            out << std::endl;
+        }
     }
     out << "}" << std::endl;
     return out;
@@ -288,7 +294,9 @@ std::ostream &IR::DpdkMirrorStatement::toSpec(std::ostream &out) const {
 
 std::ostream &IR::DpdkLearnStatement::toSpec(std::ostream &out) const {
     out << "learn " << action << " ";
-    if (argument) out << DPDK::toStr(argument) << " ";
+    if (argument) {
+        out << DPDK::toStr(argument) << " ";
+    }
     out << DPDK::toStr(timeout);
     return out;
 }
@@ -300,7 +308,9 @@ std::ostream &IR::DpdkEmitStatement::toSpec(std::ostream &out) const {
 
 std::ostream &IR::DpdkExtractStatement::toSpec(std::ostream &out) const {
     out << "extract " << DPDK::toStr(header);
-    if (length) out << " " << DPDK::toStr(length);
+    if (length) {
+        out << " " << DPDK::toStr(length);
+    }
     return out;
 }
 
@@ -370,7 +380,9 @@ std::ostream &IR::DpdkReturnStatement::toSpec(std::ostream &out) const {
 
 std::ostream &IR::DpdkRearmStatement::toSpec(std::ostream &out) const {
     out << "rearm";
-    if (timeout) out << " " << DPDK::toStr(timeout);
+    if (timeout) {
+        out << " " << DPDK::toStr(timeout);
+    }
     return out;
 }
 
@@ -412,16 +424,21 @@ std::ostream &IR::DpdkTable::toSpec(std::ostream &out) const {
         } else {
             out << "\t\t" << DPDK::toStr(action->expression);
         }
-        if (action->annotations->getAnnotation("tableonly")) out << " @tableonly";
-        if (action->annotations->getAnnotation("defaultonly")) out << " @defaultonly";
+        if (action->annotations->getAnnotation("tableonly")) {
+            out << " @tableonly";
+        }
+        if (action->annotations->getAnnotation("defaultonly")) {
+            out << " @defaultonly";
+        }
         out << std::endl;
     }
     out << "\t}" << std::endl;
 
-    if (default_action->toString() == "NoAction")
+    if (default_action->toString() == "NoAction") {
         out << "\tdefault_action NoAction";
-    else
+    } else {
         out << "\tdefault_action " << DPDK::toStr(default_action);
+    }
     if (default_action->to<IR::MethodCallExpression>()->arguments->size() == 0) {
         out << " args none ";
     } else {
@@ -455,7 +472,9 @@ std::ostream &IR::DpdkTable::toSpec(std::ostream &out) const {
         }
     }
     auto def = properties->getProperty("default_action");
-    if (def->isConstant) out << "const";
+    if (def->isConstant) {
+        out << "const";
+    }
     out << std::endl;
     if (auto psa_implementation = properties->getProperty("psa_implementation")) {
         out << "\taction_selector " << DPDK::toStr(psa_implementation->value) << std::endl;
@@ -499,8 +518,12 @@ std::ostream &IR::DpdkLearner::toSpec(std::ostream &out) const {
     out << "\tactions {" << std::endl;
     for (auto action : actions->actionList) {
         out << "\t\t" << DPDK::toStr(action->expression);
-        if (action->getAnnotation("tableonly")) out << " @tableonly";
-        if (action->getAnnotation("defaultonly")) out << " @defaultonly";
+        if (action->getAnnotation("tableonly")) {
+            out << " @tableonly";
+        }
+        if (action->getAnnotation("defaultonly")) {
+            out << " @defaultonly";
+        }
         out << std::endl;
     }
     out << "\t}" << std::endl;
@@ -521,8 +544,9 @@ std::ostream &IR::DpdkLearner::toSpec(std::ostream &out) const {
     // The initial timeout values
     // This initializes 8 timeout values which can later be configured through control plane APIs.
     out << "\ttimeout {" << std::endl;
-    for (unsigned int i = 0; i < dpdk_learner_max_configurable_timeout_values; i++)
+    for (unsigned int i = 0; i < dpdk_learner_max_configurable_timeout_values; i++) {
         out << "\t\t" << std::dec << default_learner_table_timeout[i] << std::endl;
+    }
     out << "\n\t\t}";
     out << "\n}" << std::endl;
     return out;
@@ -531,17 +555,23 @@ std::ostream &IR::DpdkLearner::toSpec(std::ostream &out) const {
 std::ostream &IR::DpdkAction::toSpec(std::ostream &out) const {
     out << "action " << name.toString() << " args ";
 
-    if (para.parameters.size() == 0) out << "none ";
+    if (para.parameters.size() == 0) {
+        out << "none ";
+    }
 
     for (auto p : para.parameters) {
         out << "instanceof " << p->type << " ";
-        if (p != para.parameters.back()) out << " ";
+        if (p != para.parameters.back()) {
+            out << " ";
+        }
     }
     out << "{" << std::endl;
     for (auto i : statements) {
         out << "\t";
         i->toSpec(out);
-        if (!i->to<IR::DpdkLabelStatement>()) out << std::endl;
+        if (!i->to<IR::DpdkLabelStatement>()) {
+            out << std::endl;
+        }
     }
     out << "\treturn" << std::endl;
     out << "}";
@@ -624,10 +654,11 @@ std::ostream &IR::DpdkMeterExecuteStatement::toSpec(std::ostream &out) const {
 std::ostream &IR::DpdkCounterCountStatement::toSpec(std::ostream &out) const {
     add_comment(out, counter);
     out << "regadd " << counter << " " << DPDK::toStr(index) << " ";
-    if (incr)
+    if (incr) {
         out << DPDK::toStr(incr);
-    else
+    } else {
         out << "1";
+    }
     return out;
 }
 
@@ -639,10 +670,11 @@ std::ostream &IR::DpdkGetTableEntryIndex::toSpec(std::ostream &out) const {
 std::ostream &IR::DpdkRegisterDeclStatement::toSpec(std::ostream &out) const {
     add_comment(out, reg);
     out << "regarray " << reg << " size " << DPDK::toStr(size) << " initval ";
-    if (init_val)
+    if (init_val) {
         out << DPDK::toStr(init_val);
-    else
+    } else {
         out << "0";
+    }
     return out;
 }
 

@@ -529,13 +529,14 @@ void ExternConverter_meter::convertExternInstance(ConversionContext *ctxt, const
     }
     cstring mkind_name = mkind->to<IR::Declaration_ID>()->name;
     cstring type = "?";
-    if (mkind_name == v1model.meter.meterType.packets.name)
+    if (mkind_name == v1model.meter.meterType.packets.name) {
         type = "packets";
-    else if (mkind_name == v1model.meter.meterType.bytes.name)
+    } else if (mkind_name == v1model.meter.meterType.bytes.name) {
         type = "bytes";
-    else
+    } else {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Unexpected meter type %1%",
                 mkind->getNode());
+    }
     jmtr->emplace("type", type);
     ctxt->json->meter_arrays->append(jmtr);
 }
@@ -593,9 +594,10 @@ void ExternConverter_register::convertExternInstance(ConversionContext *ctxt,
         modelError("%1%: expected a constant", sz->getNode());
         return;
     }
-    if (sz->to<IR::Constant>()->value == 0)
+    if (sz->to<IR::Constant>()->value == 0) {
         error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
               "%1%: direct registers are not supported in bmv2", inst);
+    }
     jreg->emplace("size", sz->to<IR::Constant>()->value);
     if (auto st = eb->instanceType->to<IR::Type_SpecializedCanonical>()) {
         if (st->arguments->size() < 1 || st->arguments->size() > 2) {
@@ -737,7 +739,9 @@ void ExternConverter_action_profile::convertExternInstance(ConversionContext *ct
     cstring name = inst->controlPlaneName();
     // Might call this multiple times if the selector/profile is used more than
     // once in a pipeline, so only add it to the action_profiles once
-    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) return;
+    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) {
+        return;
+    }
     auto action_profile = new Util::JsonObject();
     action_profile->emplace("name", name);
     action_profile->emplace("id", nextId("action_profiles"));
@@ -796,7 +800,9 @@ void ExternConverter_action_selector::convertExternInstance(ConversionContext *c
     cstring name = inst->controlPlaneName();
     // Might call this multiple times if the selector/profile is used more than
     // once in a pipeline, so only add it to the action_profiles once
-    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) return;
+    if (BMV2::JsonObjects::find_object_by_name(ctxt->action_profiles, name)) {
+        return;
+    }
     auto action_profile = new Util::JsonObject();
     action_profile->emplace("name", name);
     action_profile->emplace("id", nextId("action_profiles"));
@@ -906,8 +912,9 @@ cstring SimpleSwitchBackend::createCalculation(cstring algo, const IR::Expressio
     auto calc = new Util::JsonObject();
     calc->emplace("name", calcName);
     calc->emplace("id", nextId("calculations"));
-    if (sourcePositionNode != nullptr)
+    if (sourcePositionNode != nullptr) {
         calc->emplace_non_null("source_info", sourcePositionNode->sourceInfoJsonObj());
+    }
     calc->emplace("algo", algo);
     fields = convertToList(fields, typeMap);
     if (!fields) {
@@ -953,7 +960,9 @@ class EnsureExpressionIsSimple : public Inspector {
 void SimpleSwitchBackend::convertChecksum(const IR::BlockStatement *block,
                                           Util::JsonArray *checksums, Util::JsonArray *calculations,
                                           bool verify) {
-    if (errorCount() > 0) return;
+    if (errorCount() > 0) {
+        return;
+    }
     for (auto stat : block->components) {
         if (auto blk = stat->to<IR::BlockStatement>()) {
             convertChecksum(blk, checksums, calculations, verify);
@@ -1041,7 +1050,9 @@ void SimpleSwitchBackend::createRecirculateFieldsList(ConversionContext *ctxt,
     for (auto f : userMetaType->fields) {
         LOG3("Scanning field " << f);
         auto anno = f->getAnnotations()->getSingle("field_list");
-        if (anno == nullptr) continue;
+        if (anno == nullptr) {
+            continue;
+        }
 
         for (auto e : anno->expr) {
             auto cst = e->to<IR::Constant>();
@@ -1085,16 +1096,21 @@ void SimpleSwitchBackend::convert(const IR::ToplevelBlock *tlb) {
 
     auto parseV1Arch = new ParseV1Architecture(structure);
     auto main = tlb->getMain();
-    if (!main) return;  // no main
+    if (!main) {
+        return;  // no main
+    }
 
-    if (main->type->name != "V1Switch")
+    if (main->type->name != "V1Switch") {
         ::warning(ErrorType::WARN_INVALID,
                   "%1%: the main package should be called V1Switch"
                   "; are you using the wrong architecture?",
                   main->type->name);
+    }
 
     main->apply(*parseV1Arch);
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
 
     /// Declaration which introduces the user metadata.
     /// We expect this to be a struct type.
@@ -1103,7 +1119,9 @@ void SimpleSwitchBackend::convert(const IR::ToplevelBlock *tlb) {
 
     // Find the user metadata declaration
     auto parser = main->findParameterValue(v1model.sw.parser.name);
-    if (parser == nullptr) return;
+    if (parser == nullptr) {
+        return;
+    }
     if (!parser->is<IR::ParserBlock>()) {
         modelError("%1%: main package  match the expected model", main);
         return;
@@ -1217,10 +1235,14 @@ void SimpleSwitchBackend::convert(const IR::ToplevelBlock *tlb) {
             json->add_enum(name, pEntry.first, pEntry.second);
         }
     }
-    if (::errorCount() > 0) return;
+    if (::errorCount() > 0) {
+        return;
+    }
 
     main = toplevel->getMain();
-    if (!main) return;  // no main
+    if (!main) {
+        return;  // no main
+    }
     main->apply(*parseV1Arch);
     program = toplevel->getProgram();
     program->apply(DiscoverStructure(structure));

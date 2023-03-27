@@ -63,7 +63,9 @@ const IR::IndexedVector<IR::DpdkAsmStatement> *RemoveConsecutiveJmpAndLabel::rem
     auto new_l = new IR::IndexedVector<IR::DpdkAsmStatement>;
     for (auto stmt : s) {
         if (auto jmp = stmt->to<IR::DpdkJmpStatement>()) {
-            if (cache) new_l->push_back(cache);
+            if (cache) {
+                new_l->push_back(cache);
+            }
             cache = jmp;
         } else if (auto label = stmt->to<IR::DpdkLabelStatement>()) {
             if (!cache) {
@@ -86,7 +88,9 @@ const IR::IndexedVector<IR::DpdkAsmStatement> *RemoveConsecutiveJmpAndLabel::rem
     }
     // Do not remove jump to LABEL_DROP as LABEL_DROP is not part of statement list and
     // should not be optimized here.
-    if (cache && cache->label == "LABEL_DROP") new_l->push_back(cache);
+    if (cache && cache->label == "LABEL_DROP") {
+        new_l->push_back(cache);
+    }
     return new_l;
 }
 
@@ -163,10 +167,14 @@ const IR::IndexedVector<IR::DpdkAsmStatement> *RemoveLabelAfterLabel::removeLabe
 
 bool RemoveUnusedMetadataFields::isByteSizeField(const IR::Type *field_type) {
     // DPDK implements bool and error types as bit<8>
-    if (field_type->is<IR::Type_Boolean>() || field_type->is<IR::Type_Error>()) return true;
+    if (field_type->is<IR::Type_Boolean>() || field_type->is<IR::Type_Error>()) {
+        return true;
+    }
 
     if (auto t = field_type->to<IR::Type_Name>()) {
-        if (t->path->name != "error") return true;
+        if (t->path->name != "error") {
+            return true;
+        }
     }
     return false;
 }
@@ -199,38 +207,51 @@ const IR::Node *RemoveUnusedMetadataFields::preorder(IR::DpdkAsmProgram *p) {
 
 const IR::Expression *CopyPropagationAndElimination::getIrreplaceableExpr(cstring str,
                                                                           bool allowConst) {
-    if (collectUseDef->dontEliminate.count(str) != 0) return nullptr;
-    if (!str.startsWith("m.")) return nullptr;
+    if (collectUseDef->dontEliminate.count(str) != 0) {
+        return nullptr;
+    }
+    if (!str.startsWith("m.")) {
+        return nullptr;
+    }
     auto expr = collectUseDef->replacementMap[str];
     const IR::Expression *prev = nullptr;
     cstring exprStr;
-    if (expr) exprStr = expr->toString();
+    if (expr) {
+        exprStr = expr->toString();
+    }
     while (expr != nullptr && (!allowConst ? expr->is<IR::Member>() : true) && str != exprStr &&
            (!allowConst ? exprStr.startsWith("m.") : true) &&
            collectUseDef->dontEliminate.count(exprStr) == 0 && newUsesInfo[exprStr] == 0 &&
            (expr->is<IR::Member>() ? collectUseDef->haveSingleUseDef(exprStr) : true)) {
         prev = expr;
         expr = collectUseDef->replacementMap[exprStr];
-        if (expr) exprStr = expr->toString();
+        if (expr) {
+            exprStr = expr->toString();
+        }
     }
-    if (expr != nullptr && allowConst)
+    if (expr != nullptr && allowConst) {
         return expr;
-    else if (expr != nullptr && expr->is<IR::Member>())
+    } else if (expr != nullptr && expr->is<IR::Member>()) {
         return expr;
-    else
+    } else {
         return prev;
+    }
 }
 
 const IR::Expression *CopyPropagationAndElimination::replaceIfCopy(const IR::Expression *expr,
                                                                    bool allowConst) {
-    if (!expr) return expr;
+    if (!expr) {
+        return expr;
+    }
     auto str = expr->toString();
     if (collectUseDef->haveSingleUseDef(str)) {
         if (auto rexpr = getIrreplaceableExpr(str, allowConst)) {
             return rexpr;
         }
     }
-    if (!expr->is<IR::Constant>()) newUsesInfo[expr->toString()]++;
+    if (!expr->is<IR::Constant>()) {
+        newUsesInfo[expr->toString()]++;
+    }
     return expr;
 }
 
@@ -273,7 +294,9 @@ IR::IndexedVector<IR::DpdkAsmStatement> CopyPropagationAndElimination::copyPropA
     for (auto stmt1 = stmts.rbegin(); stmt1 != stmts.rend(); stmt1++) {
         auto stmt = *stmt1;
         if (stmt->is<IR::DpdkMovStatement>() || stmt->is<IR::DpdkCastStatement>()) {
-            if (auto newMv = elimCastOrMov(stmt)) instr.push_back(newMv);
+            if (auto newMv = elimCastOrMov(stmt)) {
+                instr.push_back(newMv);
+            }
         } else if (auto jc = stmt->to<IR::DpdkJmpLessStatement>()) {
             instr.push_back(new IR::DpdkJmpLessStatement(jc->label, replaceIfCopy(jc->src1, false),
                                                          replaceIfCopy(jc->src2)));
@@ -436,7 +459,9 @@ big_int EmitDpdkTableConfig::convertSimpleKeyExpressionToBigInt(const IR::Expres
         auto mem = k->to<IR::Member>();
         auto se = mem->type->to<IR::Type_SerEnum>();
         auto ei = P4::EnumInstance::resolve(mem, typeMap);
-        if (!ei) return -1;
+        if (!ei) {
+            return -1;
+        }
         if (auto sei = ei->to<P4::SerEnumInstance>()) {
             auto type = sei->value->to<IR::Constant>();
             auto w = se->type->width_bits();
@@ -464,10 +489,11 @@ void EmitDpdkTableConfig::addAction(const IR::Expression *actionRef, P4::Referen
     auto decl = refMap->getDeclaration(origMethod, true);
     auto actionDecl = decl->to<IR::P4Action>();
     cstring actionName;
-    if (newNameMap.count(actionDecl->name.name) > 0)
+    if (newNameMap.count(actionDecl->name.name) > 0) {
         actionName = newNameMap[actionDecl->name.name];
-    else
+    } else {
         actionName = actionDecl->name.name;
+    }
     print(actionName, " ");
     if (actionDecl->parameters->parameters.size() == 1) {
         std::vector<cstring> paramNames;
@@ -475,7 +501,9 @@ void EmitDpdkTableConfig::addAction(const IR::Expression *actionRef, P4::Referen
         auto parameter = actionDecl->parameters->parameters.at(0);
         auto type = typeMap->getType(parameter);
         if (auto actArg = type->to<IR::Type_Struct>()) {
-            for (auto f : actArg->fields) paramNames.push_back(f->name);
+            for (auto f : actArg->fields) {
+                paramNames.push_back(f->name);
+            }
         }
         for (auto args : *actionCall->arguments) {
             for (auto arg : args->expression->to<IR::ListExpression>()->components) {
@@ -593,8 +621,9 @@ void EmitDpdkTableConfig::addRange(const IR::Expression *k, int keyWidth, P4::Ty
         // earlier.
         // For e.g. 16 bit key has a max value of 65535, Range of (1..65536)
         // will be converted to (1..0) and will fail below check.
-        if (start > end)
+        if (start > end) {
             ::error(ErrorType::ERR_INVALID, "%s Invalid range for table entry", kr->srcInfo);
+        }
         startStr = start;
         endStr = end;
     } else {
@@ -632,9 +661,10 @@ void EmitDpdkTableConfig::addMatchKey(const IR::DpdkTable *table, const IR::List
         } else if (matchType == "optional") {
             addOptional(k, keyWidth, typeMap);
         } else {
-            if (!k->is<IR::DefaultExpression>())
+            if (!k->is<IR::DefaultExpression>()) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
                         "%1%: match type not supported by P4Runtime serializer", matchType);
+            }
             continue;
         }
     }
@@ -663,7 +693,9 @@ bool EmitDpdkTableConfig::isAllKeysDefaultExpression(const IR::ListExpression *k
 
 void EmitDpdkTableConfig::postorder(const IR::DpdkTable *table) {
     auto entriesList = table->getEntries();
-    if (entriesList == nullptr) return;
+    if (entriesList == nullptr) {
+        return;
+    }
     dpdkTableConfigFile.open(table->name + ".txt");
     auto needsPriority = tableNeedsPriority(table, refMap);
     int entryPriority = entriesList->entries.size();

@@ -43,7 +43,9 @@ const IR::Expression *convert(const IR::Expression *expression, const IR::Type *
                 auto ne = sli->components.getDeclaration<IR::NamedExpression>(f->name.name);
                 BUG_CHECK(ne != nullptr, "%1%: no initializer for %2%", expression, f);
                 auto convNe = convert(ne->expression, f->type);
-                if (convNe != ne->expression) modified = true;
+                if (convNe != ne->expression) {
+                    modified = true;
+                }
                 ne = new IR::NamedExpression(ne->srcInfo, f->name, convNe);
                 si->push_back(ne);
             }
@@ -59,7 +61,9 @@ const IR::Expression *convert(const IR::Expression *expression, const IR::Type *
         }
     } else if (auto tup = type->to<IR::Type_BaseList>()) {
         auto le = expression->to<IR::ListExpression>();
-        if (le == nullptr) return expression;
+        if (le == nullptr) {
+            return expression;
+        }
 
         auto vec = new IR::Vector<IR::Expression>();
         for (size_t i = 0; i < le->size(); i++) {
@@ -84,9 +88,13 @@ const IR::Node *CreateStructInitializers::postorder(IR::AssignmentStatement *sta
 }
 
 const IR::Node *CreateStructInitializers::postorder(IR::ReturnStatement *statement) {
-    if (statement->expression == nullptr) return statement;
+    if (statement->expression == nullptr) {
+        return statement;
+    }
     auto func = findOrigCtxt<IR::Function>();
-    if (func == nullptr) return statement;
+    if (func == nullptr) {
+        return statement;
+    }
 
     auto ftype = typeMap->getType(func);
     BUG_CHECK(ftype->is<IR::Type_Method>(), "%1%: expected a method type for function", ftype);
@@ -99,7 +107,9 @@ const IR::Node *CreateStructInitializers::postorder(IR::ReturnStatement *stateme
 }
 
 const IR::Node *CreateStructInitializers::postorder(IR::Declaration_Variable *decl) {
-    if (decl->initializer == nullptr) return decl;
+    if (decl->initializer == nullptr) {
+        return decl;
+    }
     auto type = typeMap->getTypeType(decl->type, true);
     decl->initializer = convert(decl->initializer, type);
     return decl;
@@ -114,9 +124,10 @@ const IR::Node *CreateStructInitializers::postorder(IR::MethodCallExpression *ex
         auto arg = mi->substitution.lookup(p);
         if (p->direction == IR::Direction::In || p->direction == IR::Direction::None) {
             auto paramType = typeMap->getType(p, true);
-            if (paramType == nullptr)
+            if (paramType == nullptr) {
                 // on error
                 continue;
+            }
             auto init = convert(arg->expression, paramType);
             CHECK_NULL(init);
             if (init != arg->expression) {
@@ -139,10 +150,12 @@ const IR::Node *CreateStructInitializers::postorder(IR::Operation_Relation *expr
     auto orig = getOriginal<IR::Operation_Relation>();
     auto ltype = typeMap->getType(orig->left, true);
     auto rtype = typeMap->getType(orig->right, true);
-    if (ltype->is<IR::Type_StructLike>() && rtype->is<IR::Type_List>())
+    if (ltype->is<IR::Type_StructLike>() && rtype->is<IR::Type_List>()) {
         expression->right = convert(expression->right, ltype);
-    if (rtype->is<IR::Type_StructLike>() && ltype->is<IR::Type_List>())
+    }
+    if (rtype->is<IR::Type_StructLike>() && ltype->is<IR::Type_List>()) {
         expression->left = convert(expression->left, rtype);
+    }
     return expression;
 }
 

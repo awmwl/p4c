@@ -159,8 +159,9 @@ const IR::Node *HandleValidityHeaderUnion::postorder(IR::MethodCallStatement *mc
     if (auto a = mi->to<P4::BuiltInMethod>()) {
         if (a->name == "setValid") {  // hdr.u.h1.setValid() or u.h1.setValid
             if (auto m = a->appliedTo->to<IR::Member>()) {
-                if (auto huType = m->expr->type->to<IR::Type_HeaderUnion>())  // u.h1  or hdr.u.h1
+                if (auto huType = m->expr->type->to<IR::Type_HeaderUnion>()) {  // u.h1  or hdr.u.h1
                     return setInvalidforRest(mcs, m, huType, m->member.name, false);
+                }
             }
         }
     }
@@ -168,24 +169,34 @@ const IR::Node *HandleValidityHeaderUnion::postorder(IR::MethodCallStatement *mc
 }
 
 const IR::Node *HandleValidityHeaderUnion::postorder(IR::P4Action *action) {
-    if (toInsert.empty()) return action;
+    if (toInsert.empty()) {
+        return action;
+    }
     auto body = new IR::BlockStatement(action->body->srcInfo);
-    for (auto a : toInsert) body->push_back(a);
-    for (auto s : action->body->components) body->push_back(s);
+    for (auto a : toInsert) {
+        body->push_back(a);
+    }
+    for (auto s : action->body->components) {
+        body->push_back(s);
+    }
     action->body = body;
     toInsert.clear();
     return action;
 }
 
 const IR::Node *HandleValidityHeaderUnion::postorder(IR::P4Parser *parser) {
-    if (toInsert.empty()) return parser;
+    if (toInsert.empty()) {
+        return parser;
+    }
     parser->parserLocals.append(toInsert);
     toInsert.clear();
     return parser;
 }
 
 const IR::Node *HandleValidityHeaderUnion::postorder(IR::P4Control *control) {
-    if (toInsert.empty()) return control;
+    if (toInsert.empty()) {
+        return control;
+    }
     control->controlLocals.append(toInsert);
     toInsert.clear();
     return control;
@@ -195,7 +206,9 @@ bool DoFlattenHeaderUnionStack::hasHeaderUnionStackField(IR::Type_Struct *s) {
     for (auto sf : s->fields) {
         auto ftype = typeMap->getType(sf, true);
         if (auto hus = ftype->to<IR::Type_Stack>()) {
-            if (hus->elementType->is<IR::Type_HeaderUnion>()) return true;
+            if (hus->elementType->is<IR::Type_HeaderUnion>()) {
+                return true;
+            }
         }
     }
     return false;
@@ -261,14 +274,16 @@ const IR::Node *DoFlattenHeaderUnionStack::postorder(IR::ArrayIndex *e) {
     if (auto stack = ftype->to<IR::Type_Stack>()) {
         unsigned stackSize = stack->size->to<IR::Constant>()->asUnsigned();
         if (stack->elementType->is<IR::Type_HeaderUnion>()) {
-            if (!e->right->is<IR::Constant>())
+            if (!e->right->is<IR::Constant>()) {
                 ::error(ErrorType::ERR_INVALID,
                         "Target expects constant array indices for accessing header union stack "
                         "elements, %1% is not a constant",
                         e->right);
+            }
             unsigned cst = e->right->to<IR::Constant>()->asUnsigned();
-            if (cst >= stackSize)
+            if (cst >= stackSize) {
                 ::error(ErrorType::ERR_OVERLIMIT, "Array index out of bound for %1%", e);
+            }
             if (auto mem = e->left->to<IR::Member>()) {
                 auto uName = stackMap[mem->member.name];
                 BUG_CHECK(uName.size() > cst, "Header stack element mapping not found for %1", e);
@@ -380,7 +395,9 @@ const IR::Node *DoFlattenHeaderUnion::postorder(IR::P4Action *action) {
         }
     }
     auto body = new IR::BlockStatement(action->body->srcInfo);
-    for (auto a : actiondecls) body->push_back(a);
+    for (auto a : actiondecls) {
+        body->push_back(a);
+    }
     action->body = body;
     return action;
 }

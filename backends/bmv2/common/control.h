@@ -62,34 +62,43 @@ class ControlConverter : public Inspector {
                 auto expr = ke->expression;
                 auto ket = ctxt->typeMap->getType(expr, true);
                 if (!ket->is<IR::Type_Bits>() && !ket->is<IR::Type_Boolean>() &&
-                    !ket->is<IR::Type_Error>())
+                    !ket->is<IR::Type_Error>()) {
                     ::error(ErrorType::ERR_UNSUPPORTED,
                             "%1%: unsupporded key type %2%. "
                             "Supported key types are be bit<> or boolean, or error.",
                             expr, ket);
+                }
 
                 auto match_type = getKeyMatchType(ke);
-                if (match_type == BMV2::MatchImplementation::selectorMatchTypeName) continue;
+                if (match_type == BMV2::MatchImplementation::selectorMatchTypeName) {
+                    continue;
+                }
                 // Decreasing order of precedence (bmv2 specification):
                 // 0) more than one LPM field is an error
                 // 1) if there is at least one RANGE field, then the table is RANGE
                 // 2) if there is at least one TERNARY or OPTIONAL field, then the table is TERNARY
                 // 3) if there is a LPM field, then the table is LPM
                 // 4) otherwise the table is EXACT
-                if (match_type == corelib.lpmMatch.name) count_lpm++;
-                if (count_lpm > 1)
+                if (match_type == corelib.lpmMatch.name) {
+                    count_lpm++;
+                }
+                if (count_lpm > 1) {
                     ::error(ErrorType::ERR_UNSUPPORTED,
                             "multiple LPM keys in table %1% not supported", table);
+                }
                 if (match_type != table_match_type) {
-                    if (match_type == BMV2::MatchImplementation::rangeMatchTypeName)
+                    if (match_type == BMV2::MatchImplementation::rangeMatchTypeName) {
                         table_match_type = BMV2::MatchImplementation::rangeMatchTypeName;
+                    }
                     if ((match_type == corelib.ternaryMatch.name ||
                          match_type == BMV2::MatchImplementation::optionalMatchTypeName) &&
-                        table_match_type != BMV2::MatchImplementation::rangeMatchTypeName)
+                        table_match_type != BMV2::MatchImplementation::rangeMatchTypeName) {
                         table_match_type = corelib.ternaryMatch.name;
+                    }
                     if (match_type == corelib.lpmMatch.name &&
-                        table_match_type == corelib.exactMatch.name)
+                        table_match_type == corelib.exactMatch.name) {
                         table_match_type = corelib.lpmMatch.name;
+                    }
                 }
 
                 big_int mask;
@@ -130,11 +139,12 @@ class ControlConverter : public Inspector {
 
                 auto jk = ctxt->conv->convert(expr);
                 keyelement->emplace("target", jk->to<Util::JsonObject>()->get("value"));
-                if (mask != 0)
+                if (mask != 0) {
                     keyelement->emplace("mask",
                                         stringRepr(mask, ROUNDUP(expr->type->width_bits(), 8)));
-                else
+                } else {
                     keyelement->emplace("mask", Util::JsonValue::null);
+                }
                 tkey->append(keyelement);
             }
         }
@@ -164,7 +174,9 @@ class ControlConverter : public Inspector {
         if (auto entries = table->getEntries()) {
             size = entries->entries.size();
         }
-        if (size == 0) size = BMV2::TableAttributes::defaultTableSize;
+        if (size == 0) {
+            size = BMV2::TableAttributes::defaultTableSize;
+        }
 
         result->emplace("max_size", size);
         auto ctrs = table->properties->getProperty("counters");
@@ -176,7 +188,9 @@ class ControlConverter : public Inspector {
                 auto expr = ctrs->value->to<IR::ExpressionValue>()->expression;
                 if (expr->is<IR::ConstructorCallExpression>()) {
                     auto type = ctxt->typeMap->getType(expr, true);
-                    if (type == nullptr) return result;
+                    if (type == nullptr) {
+                        return result;
+                    }
                     if (!type->is<IR::Type_Extern>()) {
                         ::error(ErrorType::ERR_UNEXPECTED,
                                 "%1%: Unexpected type %2% for property. "
@@ -258,9 +272,12 @@ class ControlConverter : public Inspector {
                     auto pe = expr->to<IR::PathExpression>();
                     auto decl = ctxt->refMap->getDeclaration(pe->path, true);
                     auto type = ctxt->typeMap->getType(expr, true);
-                    if (type == nullptr) return result;
-                    if (type->is<IR::Type_SpecializedCanonical>())
+                    if (type == nullptr) {
+                        return result;
+                    }
+                    if (type->is<IR::Type_SpecializedCanonical>()) {
                         type = type->to<IR::Type_SpecializedCanonical>()->baseType;
+                    }
                     if (!type->is<IR::Type_Extern>()) {
                         ::error(ErrorType::ERR_UNEXPECTED, "%1%: Unexpected type %2% for property",
                                 dm, type);
@@ -299,9 +316,10 @@ class ControlConverter : public Inspector {
         for (auto a : al->actionList) {
             if (a->expression->is<IR::MethodCallExpression>()) {
                 auto mce = a->expression->to<IR::MethodCallExpression>();
-                if (mce->arguments->size() > 0)
+                if (mce->arguments->size() > 0) {
                     ::error(ErrorType::ERR_UNSUPPORTED,
                             "%1%: actions in action list with arguments not supported", a);
+                }
             }
             auto decl = ctxt->refMap->getDeclaration(a->getPath(), true);
             BUG_CHECK(decl->is<IR::P4Action>(), "%1%: should be an action name", a);
@@ -342,7 +360,9 @@ class ControlConverter : public Inspector {
             result->emplace("base_default_next", nextLabel);
             // So if a "default:" switch case exists we set the nextLabel
             // to be the destination of the default: label.
-            if (defaultLabelDestination != nullptr) nextLabel = nodeName(defaultLabelDestination);
+            if (defaultLabelDestination != nullptr) {
+                nextLabel = nodeName(defaultLabelDestination);
+            }
         } else {
             result->emplace("base_default_next", Util::JsonValue::null);
         }
@@ -356,7 +376,9 @@ class ControlConverter : public Inspector {
                 continue;
             } else {
                 label = s->label;
-                if (label == "default") continue;
+                if (label == "default") {
+                    continue;
+                }
                 label = ::get(useActionName, label);
             }
             next_tables->emplace(label, nodeName(s->endpoint));
@@ -369,8 +391,9 @@ class ControlConverter : public Inspector {
             for (auto a : al->actionList) {
                 cstring name = a->getName().name;
                 cstring label = ::get(useActionName, name);
-                if (labelsDone.find(label) == labelsDone.end())
+                if (labelsDone.find(label) == labelsDone.end()) {
                     next_tables->emplace(label, nextLabel);
+                }
             }
         }
 
@@ -435,7 +458,9 @@ class ControlConverter : public Inspector {
     }
     void convertTableEntries(const IR::P4Table *table, Util::JsonObject *jsonTable) {
         auto entriesList = table->getEntries();
-        if (entriesList == nullptr) return;
+        if (entriesList == nullptr) {
+            return;
+        }
 
         auto entries = mkArrayField(jsonTable, "entries");
         int entryPriority = 1;  // default priority is defined by index position
@@ -461,15 +486,16 @@ class ControlConverter : public Inspector {
                     key->emplace("match_type", matchType);
                 }
                 if (matchType == corelib.exactMatch.name) {
-                    if (k->is<IR::Constant>())
+                    if (k->is<IR::Constant>()) {
                         key->emplace("key", stringRepr(k->to<IR::Constant>()->value, k8));
-                    else if (k->is<IR::BoolLiteral>())
+                    } else if (k->is<IR::BoolLiteral>()) {
                         // booleans are converted to ints
                         key->emplace("key",
                                      stringRepr(k->to<IR::BoolLiteral>()->value ? 1 : 0, k8));
-                    else
+                    } else {
                         ::error(ErrorType::ERR_UNSUPPORTED, "%1%: unsupported exact key expression",
                                 k);
+                    }
                 } else if (matchType == corelib.ternaryMatch.name) {
                     if (k->is<IR::Mask>()) {
                         auto km = k->to<IR::Mask>();
@@ -498,10 +524,12 @@ class ControlConverter : public Inspector {
                         auto mask =
                             static_cast<unsigned long>(km->right->to<IR::Constant>()->value);
                         auto len = trailing_zeros(mask, keyWidth);
-                        if (len + count_ones(mask) != keyWidth)  // any remaining 0s in the prefix?
+                        if (len + count_ones(mask) !=
+                            keyWidth) {  // any remaining 0s in the prefix?
                             ::error(ErrorType::ERR_INVALID, "%1%: invalid mask for LPM key", k);
-                        else
+                        } else {
                             key->emplace("prefix_length", keyWidth - len);
+                        }
                     } else if (k->is<IR::Constant>()) {
                         key->emplace("key", stringRepr(k->to<IR::Constant>()->value, k8));
                         key->emplace("prefix_length", keyWidth);
@@ -555,8 +583,9 @@ class ControlConverter : public Inspector {
 
             auto action = new Util::JsonObject();
             auto actionRef = e->getAction();
-            if (!actionRef->is<IR::MethodCallExpression>())
+            if (!actionRef->is<IR::MethodCallExpression>()) {
                 ::error(ErrorType::ERR_INVALID, "Invalid action '%1%' in entries list.", actionRef);
+            }
             auto actionCall = actionRef->to<IR::MethodCallExpression>();
             auto method = actionCall->method->to<IR::PathExpression>()->path;
             auto decl = ctxt->refMap->getDeclaration(method, true);
@@ -572,13 +601,15 @@ class ControlConverter : public Inspector {
 
             auto priorityAnnotation = e->getAnnotation("priority");
             if (priorityAnnotation != nullptr) {
-                if (priorityAnnotation->expr.size() > 1)
+                if (priorityAnnotation->expr.size() > 1) {
                     ::error(ErrorType::ERR_INVALID, "Invalid priority value %1%",
                             priorityAnnotation->expr);
+                }
                 auto priValue = priorityAnnotation->expr.front();
-                if (!priValue->is<IR::Constant>())
+                if (!priValue->is<IR::Constant>()) {
                     ::error(ErrorType::ERR_INVALID, "Invalid priority value %1%; must be constant.",
                             priorityAnnotation->expr);
+                }
                 entry->emplace("priority", priValue->to<IR::Constant>()->value);
             } else {
                 entry->emplace("priority", entryPriority);
@@ -677,7 +708,9 @@ class ControlConverter : public Inspector {
                     auto mt = ctxt->refMap->getDeclaration(ke->matchType->path, true)
                                   ->to<IR::Declaration_ID>();
                     BUG_CHECK(mt != nullptr, "%1%: could not find declaration", ke->matchType);
-                    if (mt->name.name != BMV2::MatchImplementation::selectorMatchTypeName) continue;
+                    if (mt->name.name != BMV2::MatchImplementation::selectorMatchTypeName) {
+                        continue;
+                    }
 
                     auto expr = ke->expression;
                     auto jk = ctxt->conv->convert(expr);
@@ -762,7 +795,9 @@ class ControlConverter : public Inspector {
         auto cfg = new CFG();
         cfg->build(cont, ctxt->refMap, ctxt->typeMap);
         bool success = cfg->checkImplementable();
-        if (!success) return false;
+        if (!success) {
+            return false;
+        }
 
         if (cfg->entryPoint->successors.size() == 0) {
             result->emplace("init_table", Util::JsonValue::null);
@@ -787,33 +822,40 @@ class ControlConverter : public Inspector {
         for (auto node : cfg->allNodes) {
             auto tn = node->to<CFG::TableNode>();
             if (tn != nullptr) {
-                if (done.find(tn->table) != done.end())
+                if (done.find(tn->table) != done.end()) {
                     // The same table may appear in multiple nodes in the CFG.
                     // We emit it only once.  Other checks should ensure that
                     // the CFG is implementable.
                     continue;
+                }
                 done.emplace(tn->table);
                 auto j = convertTable(tn, action_profiles, selector_check);
-                if (::errorCount() > 0) return false;
+                if (::errorCount() > 0) {
+                    return false;
+                }
                 tables->append(j);
             } else if (node->is<CFG::IfNode>()) {
                 auto j = convertIf(node->to<CFG::IfNode>(), cont->name);
-                if (::errorCount() > 0) return false;
+                if (::errorCount() > 0) {
+                    return false;
+                }
                 conditionals->append(j);
             }
         }
 
         for (auto c : cont->controlLocals) {
             if (c->is<IR::Declaration_Constant>() || c->is<IR::Declaration_Variable>() ||
-                c->is<IR::P4Action>() || c->is<IR::P4Table>())
+                c->is<IR::P4Action>() || c->is<IR::P4Table>()) {
                 continue;
+            }
             if (c->is<IR::Declaration_Instance>()) {
                 auto bl = ctxt->structure->resourceMap.at(c);
                 CHECK_NULL(bl);
-                if (bl->is<IR::ControlBlock>() || bl->is<IR::ParserBlock>())
+                if (bl->is<IR::ControlBlock>() || bl->is<IR::ParserBlock>()) {
                     // Since this block has not been inlined, it is probably unused
                     // So we don't do anything.
                     continue;
+                }
                 if (bl->is<IR::ExternBlock>()) {
                     auto eb = bl->to<IR::ExternBlock>();
                     ExternConverter::cvtExternInstance(ctxt, c, eb, emitExterns);

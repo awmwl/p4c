@@ -91,8 +91,11 @@ class InlineActions : public Transform {
         const IR::ActionFunction *function;
         const IR::Primitive *callsite;
         const IR::Node *postorder(IR::ActionArg *arg) override {
-            for (unsigned i = 0; i < function->args.size(); ++i)
-                if (function->args[i] == getOriginal()) return callsite->operands[i];
+            for (unsigned i = 0; i < function->args.size(); ++i) {
+                if (function->args[i] == getOriginal()) {
+                    return callsite->operands[i];
+                }
+            }
             BUG("Action arg not argument of action");
             return arg;
         }

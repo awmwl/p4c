@@ -69,7 +69,9 @@ class Visitor::ChangeTracker {
         // Sanity check for IR loops
         bool already_present = !inserted;
         visit_info_t *visit_info = &(visited_it->second);
-        if (already_present && visit_info->visit_in_progress) BUG("IR loop detected ");
+        if (already_present && visit_info->visit_in_progress) {
+            BUG("IR loop detected ");
+        }
     }
 
     /** Mark the process of visiting @orig as finished, with @final being the
@@ -87,7 +89,9 @@ class Visitor::ChangeTracker {
      */
     bool finish(const IR::Node *orig, const IR::Node *final) {
         auto it = visited.find(orig);
-        if (it == visited.end()) BUG("visitor state tracker corrupted");
+        if (it == visited.end()) {
+            BUG("visitor state tracker corrupted");
+        }
 
         visit_info_t *orig_visit_info = &(it->second);
         orig_visit_info->visit_in_progress = false;
@@ -114,7 +118,9 @@ class Visitor::ChangeTracker {
     /** Return a pointer to the visitOnce flag for node @n so that it can be changed
      */
     bool *refVisitOnce(const IR::Node *n) {
-        if (!visited.count(n)) BUG("visitor state tracker corrupted");
+        if (!visited.count(n)) {
+            BUG("visitor state tracker corrupted");
+        }
         return &visited.at(n).visitOnce;
     }
 
@@ -122,10 +128,11 @@ class Visitor::ChangeTracker {
      * again. */
     void revisit_visited() {
         for (auto it = visited.begin(); it != visited.end();) {
-            if (!it->second.visit_in_progress)
+            if (!it->second.visit_in_progress) {
                 it = visited.erase(it);
-            else
+            } else {
                 ++it;
+            }
         }
     }
 
@@ -158,7 +165,9 @@ class Visitor::ChangeTracker {
      * if `start(@n)` has not been invoked.
      */
     const IR::Node *result(const IR::Node *n) const {
-        if (!visited.count(n)) return n;
+        if (!visited.count(n)) {
+            return n;
+        }
         return visited.at(n).result;
     }
 };
@@ -173,7 +182,9 @@ bool Visitor::warning_enabled(const Visitor *visitor, int warning_kind) {
                 for (auto a : annotated->getAnnotations()->annotations) {
                     if (a->name.name == IR::Annotation::noWarnAnnotation) {
                         auto arg = a->getSingleString();
-                        if (arg == errorString) return false;
+                        if (arg == errorString) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -186,7 +197,9 @@ bool Visitor::warning_enabled(const Visitor *visitor, int warning_kind) {
 
 Visitor::profile_t Visitor::init_apply(const IR::Node *root) {
     ctxt = nullptr;
-    if (joinFlows) init_join_flows(root);
+    if (joinFlows) {
+        init_join_flows(root);
+    }
     return profile_t(*this);
 }
 Visitor::profile_t Visitor::init_apply(const IR::Node *root, const Context *parent_ctxt) {
@@ -278,8 +291,9 @@ struct PushContext {
     bool saved_logging_disable;
     PushContext(const Visitor::Context *&stck, const IR::Node *node) : stack(stck) {
         saved_logging_disable = Log::Detail::enableLoggingInContext;
-        if (node->getAnnotation(IR::Annotation::debugLoggingAnnotation))
+        if (node->getAnnotation(IR::Annotation::debugLoggingAnnotation)) {
             Log::Detail::enableLoggingInContext = true;
+        }
         current.parent = stack;
         current.node = current.original = node;
         current.child_index = 0;
@@ -298,7 +312,9 @@ namespace {
 class ForwardChildren : public Visitor {
     const ChangeTracker &visited;
     const IR::Node *apply_visitor(const IR::Node *n, const char * = 0) {
-        if (visited.done(n)) return visited.result(n);
+        if (visited.done(n)) {
+            return visited.result(n);
+        }
         return n;
     }
 
@@ -308,7 +324,9 @@ class ForwardChildren : public Visitor {
 }  // namespace
 
 const IR::Node *Modifier::apply_visitor(const IR::Node *n, const char *name) {
-    if (ctxt) ctxt->child_name = name;
+    if (ctxt) {
+        ctxt->child_name = name;
+    }
     if (n) {
         PushContext local(ctxt, n);
         if (visited->busy(n)) {
@@ -332,18 +350,23 @@ const IR::Node *Modifier::apply_visitor(const IR::Node *n, const char *name) {
                 visitCurrentOnce = visited->refVisitOnce(n);
                 copy->apply_visitor_postorder(*this);
             }
-            if (visited->finish(n, copy)) (n = copy)->validate();
+            if (visited->finish(n, copy)) {
+                (n = copy)->validate();
+            }
         }
     }
-    if (ctxt)
+    if (ctxt) {
         ctxt->child_index++;
-    else
+    } else {
         visited.reset();
+    }
     return n;
 }
 
 const IR::Node *Inspector::apply_visitor(const IR::Node *n, const char *name) {
-    if (ctxt) ctxt->child_name = name;
+    if (ctxt) {
+        ctxt->child_name = name;
+    }
     if (n && !join_flows(n)) {
         PushContext local(ctxt, n);
         auto vp = visited->emplace(n, info_t{false, visitDagOnce});
@@ -359,21 +382,25 @@ const IR::Node *Inspector::apply_visitor(const IR::Node *n, const char *name) {
                 visitCurrentOnce = &vp.first->second.visitOnce;
                 n->apply_visitor_postorder(*this);
             }
-            if (vp.first != visited->find(n)) BUG("visitor state tracker corrupted");
+            if (vp.first != visited->find(n)) {
+                BUG("visitor state tracker corrupted");
+            }
             vp.first->second.done = true;
         }
         post_join_flows(n, n);
     }
-    if (ctxt)
+    if (ctxt) {
         ctxt->child_index++;
-    else {
+    } else {
         visited.reset();
     }
     return n;
 }
 
 const IR::Node *Transform::apply_visitor(const IR::Node *n, const char *name) {
-    if (ctxt) ctxt->child_name = name;
+    if (ctxt) {
+        ctxt->child_name = name;
+    }
     if (n) {
         PushContext local(ctxt, n);
         if (visited->busy(n)) {
@@ -420,25 +447,32 @@ const IR::Node *Transform::apply_visitor(const IR::Node *n, const char *name) {
             }
             prune_flag = save_prune_flag;
             if (final_result == copy && final_result != preorder_result &&
-                *final_result == *preorder_result)
+                *final_result == *preorder_result) {
                 final_result = preorder_result;
-            if (visited->finish(n, final_result) && (n = final_result)) final_result->validate();
-            if (extra_clone) visited->finish(preorder_result, final_result);
+            }
+            if (visited->finish(n, final_result) && (n = final_result)) {
+                final_result->validate();
+            }
+            if (extra_clone) {
+                visited->finish(preorder_result, final_result);
+            }
         }
     }
-    if (ctxt)
+    if (ctxt) {
         ctxt->child_index++;
-    else
+    } else {
         visited.reset();
+    }
     return n;
 }
 
 void Inspector::revisit_visited() {
     for (auto it = visited->begin(); it != visited->end();) {
-        if (it->second.done)
+        if (it->second.done) {
             it = visited->erase(it);
-        else
+        } else {
             ++it;
+        }
     }
 }
 void Modifier::revisit_visited() { visited->revisit_visited(); }
@@ -480,12 +514,14 @@ IRNODE_ALL_SUBCLASSES(DEFINE_VISIT_FUNCTIONS)
 #undef DEFINE_VISIT_FUNCTIONS
 
 void ControlFlowVisitor::init_join_flows(const IR::Node *root) {
-    if (!dynamic_cast<Inspector *>(static_cast<Visitor *>(this)))
+    if (!dynamic_cast<Inspector *>(static_cast<Visitor *>(this))) {
         BUG("joinFlows only works for Inspector passes currently, not Modifier or Transform");
-    if (flow_join_points)
+    }
+    if (flow_join_points) {
         flow_join_points->clear();
-    else
+    } else {
         flow_join_points = new std::remove_reference<decltype(*flow_join_points)>::type;
+    }
     applySetupJoinPoints(root);
 #if DEBUG_FLOW_JOIN
     erase_if(*flow_join_points,
@@ -496,7 +532,9 @@ void ControlFlowVisitor::init_join_flows(const IR::Node *root) {
 }
 
 bool ControlFlowVisitor::join_flows(const IR::Node *n) {
-    if (!flow_join_points || !flow_join_points->count(n)) return false;  // not a flow join point
+    if (!flow_join_points || !flow_join_points->count(n)) {
+        return false;  // not a flow join point
+    }
     auto &status = flow_join_points->at(n);
 #if DEBUG_FLOW_JOIN
     status.parents[ctxt ? ctxt->original : nullptr].visited++;
@@ -551,12 +589,16 @@ bool ControlFlowVisitor::join_flows(const IR::Node *n) {
         }
     }
     BUG_CHECK(status.count < 0 && status.done, "SplitFlow::do_visit failed to finish node");
-    if (status.done) flow_copy(*status.vclone);
+    if (status.done) {
+        flow_copy(*status.vclone);
+    }
     return true;
 }
 
 void ControlFlowVisitor::post_join_flows(const IR::Node *n, const IR::Node *) {
-    if (!flow_join_points || !flow_join_points->count(n)) return;  // not a flow join point
+    if (!flow_join_points || !flow_join_points->count(n)) {
+        return;  // not a flow join point
+    }
     auto &status = flow_join_points->at(n);
     BUG_CHECK(!status.done || status.count < -1, "flow join point visited more than once!: %s", n);
     status.done = true;
@@ -676,7 +718,9 @@ Backtrack::trigger::~trigger() {
 }
 
 std::ostream &operator<<(std::ostream &out, const ControlFlowVisitor::flow_join_info_t &info) {
-    if (info.vclone) out << Visitor::demangle(typeid(*info.vclone).name()) << " ";
+    if (info.vclone) {
+        out << Visitor::demangle(typeid(*info.vclone).name()) << " ";
+    }
     out << "count=" << info.count << "  done=" << info.done;
 #if DEBUG_FLOW_JOIN
     using namespace DBPrint;
@@ -698,7 +742,9 @@ std::ostream &operator<<(std::ostream &out, const ControlFlowVisitor::flow_join_
     out << Brief;
     bool first = true;
     for (auto &jp : fjp) {
-        if (!first) out << "\n";
+        if (!first) {
+            out << "\n";
+        }
         out << "[" << jp.first->id << "] " << *jp.first << ": " << jp.second;
         first = false;
     }

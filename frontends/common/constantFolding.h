@@ -143,7 +143,9 @@ class DoConstantFolding : public Transform {
     const IR::Node *preorder(IR::AssignmentStatement *statement) override;
     const IR::Node *preorder(IR::ArrayIndex *e) override;
     const IR::BlockStatement *preorder(IR::BlockStatement *bs) override {
-        if (bs->annotations->getSingle("disable_optimization")) prune();
+        if (bs->annotations->getSingle("disable_optimization")) {
+            prune();
+        }
         return bs;
     }
 };
@@ -156,11 +158,15 @@ class ConstantFolding : public PassManager {
     ConstantFolding(ReferenceMap *refMap, TypeMap *typeMap, bool warnings = true,
                     TypeChecking *typeChecking = nullptr) {
         if (typeMap != nullptr) {
-            if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+            if (!typeChecking) {
+                typeChecking = new TypeChecking(refMap, typeMap);
+            }
             passes.push_back(typeChecking);
         }
         passes.push_back(new DoConstantFolding(refMap, typeMap, warnings));
-        if (typeMap != nullptr) passes.push_back(new ClearTypeMap(typeMap));
+        if (typeMap != nullptr) {
+            passes.push_back(new ClearTypeMap(typeMap));
+        }
         setName("ConstantFolding");
     }
 };

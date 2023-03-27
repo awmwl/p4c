@@ -43,7 +43,9 @@ big_int mask(unsigned bits) {
 }
 
 big_int maskFromSlice(unsigned m, unsigned l) {
-    if (m < l) throw std::logic_error("wrong argument order in maskFromSlice");
+    if (m < l) {
+        throw std::logic_error("wrong argument order in maskFromSlice");
+    }
     big_int result = mask(m + 1) - mask(l);
     return result;
 }

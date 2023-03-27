@@ -59,20 +59,28 @@ template <class T>
 const T *extractExpr(const IR::P4Program *program) {
     // Get the mau declarations in the P4Program.
     const auto *decls = program->getDeclsByName("mau")->toVector();
-    if (decls->size() != 1) return nullptr;
+    if (decls->size() != 1) {
+        return nullptr;
+    }
 
     // Convert the mau declaration to a control and ensure that
     // there is a single statement in the body.
     const auto *control = (*decls)[0]->to<IR::P4Control>();
-    if (control->body->components.size() != 1) return nullptr;
+    if (control->body->components.size() != 1) {
+        return nullptr;
+    }
 
     // Ensure that the control body statement is a method call statement.
     auto *mcStmt = control->body->components[0]->to<IR::MethodCallStatement>();
-    if (!mcStmt) return nullptr;
+    if (!mcStmt) {
+        return nullptr;
+    }
 
     // Ensure that there is only one argument to the method call and return it.
     auto *mcArgs = mcStmt->methodCall->arguments;
-    if (mcArgs->size() != 1) return nullptr;
+    if (mcArgs->size() != 1) {
+        return nullptr;
+    }
     return (*mcArgs)[0]->expression->to<T>();
 }
 

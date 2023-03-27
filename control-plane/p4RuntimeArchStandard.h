@@ -81,12 +81,13 @@ struct CounterlikeTraits<Standard::CounterExtern<Standard::Arch::V1MODEL>> {
     static const cstring sizeParamName() { return "size"; }
     static p4configv1::CounterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::CounterSpec;
-        if (name == "packets")
+        if (name == "packets") {
             return CounterSpec::PACKETS;
-        else if (name == "bytes")
+        } else if (name == "bytes") {
             return CounterSpec::BYTES;
-        else if (name == "packets_and_bytes")
+        } else if (name == "packets_and_bytes") {
             return CounterSpec::BOTH;
+        }
         return CounterSpec::UNSPECIFIED;
     }
     static boost::optional<size_t> indexTypeParamIdx() { return boost::none; }
@@ -103,12 +104,13 @@ struct CounterlikeTraits<Standard::CounterExtern<Standard::Arch::V1MODEL2020>> {
     static const cstring sizeParamName() { return "size"; }
     static p4configv1::CounterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::CounterSpec;
-        if (name == "packets")
+        if (name == "packets") {
             return CounterSpec::PACKETS;
-        else if (name == "bytes")
+        } else if (name == "bytes") {
             return CounterSpec::BYTES;
-        else if (name == "packets_and_bytes")
+        } else if (name == "packets_and_bytes") {
             return CounterSpec::BOTH;
+        }
         return CounterSpec::UNSPECIFIED;
     }
     static boost::optional<size_t> indexTypeParamIdx() { return 0; }
@@ -124,12 +126,13 @@ struct CounterlikeTraits<Standard::CounterExtern<Standard::Arch::PSA>> {
     static const cstring sizeParamName() { return "n_counters"; }
     static p4configv1::CounterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::CounterSpec;
-        if (name == "PACKETS")
+        if (name == "PACKETS") {
             return CounterSpec::PACKETS;
-        else if (name == "BYTES")
+        } else if (name == "BYTES") {
             return CounterSpec::BYTES;
-        else if (name == "PACKETS_AND_BYTES")
+        } else if (name == "PACKETS_AND_BYTES") {
             return CounterSpec::BOTH;
+        }
         return CounterSpec::UNSPECIFIED;
     }
     // the index of the type parameter for the counter index, in the type
@@ -147,12 +150,13 @@ struct CounterlikeTraits<Standard::CounterExtern<Standard::Arch::PNA>> {
     static const cstring sizeParamName() { return "n_counters"; }
     static p4configv1::CounterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::CounterSpec;
-        if (name == "PACKETS")
+        if (name == "PACKETS") {
             return CounterSpec::PACKETS;
-        else if (name == "BYTES")
+        } else if (name == "BYTES") {
             return CounterSpec::BYTES;
-        else if (name == "PACKETS_AND_BYTES")
+        } else if (name == "PACKETS_AND_BYTES") {
             return CounterSpec::BOTH;
+        }
         return CounterSpec::UNSPECIFIED;
     }
     // the index of the type parameter for the counter index, in the type
@@ -172,10 +176,11 @@ struct CounterlikeTraits<Standard::MeterExtern<Standard::Arch::V1MODEL>> {
     static const cstring sizeParamName() { return "size"; }
     static p4configv1::MeterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::MeterSpec;
-        if (name == "packets")
+        if (name == "packets") {
             return MeterSpec::PACKETS;
-        else if (name == "bytes")
+        } else if (name == "bytes") {
             return MeterSpec::BYTES;
+        }
         return MeterSpec::UNSPECIFIED;
     }
     static boost::optional<size_t> indexTypeParamIdx() { return boost::none; }
@@ -192,10 +197,11 @@ struct CounterlikeTraits<Standard::MeterExtern<Standard::Arch::V1MODEL2020>> {
     static const cstring sizeParamName() { return "size"; }
     static p4configv1::MeterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::MeterSpec;
-        if (name == "packets")
+        if (name == "packets") {
             return MeterSpec::PACKETS;
-        else if (name == "bytes")
+        } else if (name == "bytes") {
             return MeterSpec::BYTES;
+        }
         return MeterSpec::UNSPECIFIED;
     }
     static boost::optional<size_t> indexTypeParamIdx() { return 0; }
@@ -211,10 +217,11 @@ struct CounterlikeTraits<Standard::MeterExtern<Standard::Arch::PSA>> {
     static const cstring sizeParamName() { return "n_meters"; }
     static p4configv1::MeterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::MeterSpec;
-        if (name == "PACKETS")
+        if (name == "PACKETS") {
             return MeterSpec::PACKETS;
-        else if (name == "BYTES")
+        } else if (name == "BYTES") {
             return MeterSpec::BYTES;
+        }
         return MeterSpec::UNSPECIFIED;
     }
     // the index of the type parameter for the meter index, in the type
@@ -232,10 +239,11 @@ struct CounterlikeTraits<Standard::MeterExtern<Standard::Arch::PNA>> {
     static const cstring sizeParamName() { return "n_meters"; }
     static p4configv1::MeterSpec::Unit mapUnitName(const cstring name) {
         using p4configv1::MeterSpec;
-        if (name == "PACKETS")
+        if (name == "PACKETS") {
             return MeterSpec::PACKETS;
-        else if (name == "BYTES")
+        } else if (name == "BYTES") {
             return MeterSpec::BYTES;
+        }
         return MeterSpec::UNSPECIFIED;
     }
     // the index of the type parameter for the meter index, in the type
@@ -508,8 +516,12 @@ struct ActionProfile {
                                         // profile declaration.
 
     bool operator<(const ActionProfile &other) const {
-        if (name != other.name) return name < other.name;
-        if (type != other.type) return type < other.type;
+        if (name != other.name) {
+            return name < other.name;
+        }
+        if (type != other.type) {
+            return type < other.type;
+        }
         return size < other.size;
     }
 };
@@ -591,7 +603,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         // Skip externs instantiated inside table declarations (as properties);
         // that should only apply to action profiles / selectors since direct
         // resources cannot be constructed in place for PSA.
-        if (decl == nullptr) return;
+        if (decl == nullptr) {
+            return;
+        }
 
         if (externBlock->type->name == CounterTraits::typeName()) {
             symbols->add(SymbolType::P4RT_COUNTER(), decl);
@@ -626,11 +640,14 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         // analyze action profiles and build a mapping from action profile name
         // to the set of tables referencing them
         Helpers::forAllEvaluatedBlocks(evaluatedProgram, [&](const IR::Block *block) {
-            if (!block->is<IR::TableBlock>()) return;
+            if (!block->is<IR::TableBlock>()) {
+                return;
+            }
             auto table = block->to<IR::TableBlock>()->container;
             auto implementation = getTableImplementationName(table, refMap);
-            if (implementation)
+            if (implementation) {
                 actionProfilesRefs[*implementation].insert(table->controlPlaneName());
+            }
         });
     }
 
@@ -651,8 +668,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
             auto id = symbols.getId(SymbolType::P4RT_ACTION_PROFILE(), implementation->name);
             table->set_implementation_id(id);
             auto propertyName = ActionProfileTraits<arch>::propertyName();
-            if (isExternPropertyConstructedInPlace(tableDeclaration, propertyName))
+            if (isExternPropertyConstructedInPlace(tableDeclaration, propertyName)) {
                 addActionProfile(symbols, p4info, *implementation);
+            }
         }
 
         if (directCounter) {
@@ -673,24 +691,34 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
     void addExternInstance(const P4RuntimeSymbolTableIface &symbols, p4configv1::P4Info *p4info,
                            const IR::ExternBlock *externBlock) override {
         auto decl = externBlock->node->to<IR::Declaration_Instance>();
-        if (decl == nullptr) return;
+        if (decl == nullptr) {
+            return;
+        }
 
         auto p4RtTypeInfo = p4info->mutable_type_info();
         if (externBlock->type->name == CounterTraits::typeName()) {
             auto counter = Helpers::Counterlike<ArchCounterExtern>::from(externBlock, refMap,
                                                                          typeMap, p4RtTypeInfo);
-            if (counter) addCounter(symbols, p4info, *counter);
+            if (counter) {
+                addCounter(symbols, p4info, *counter);
+            }
         } else if (externBlock->type->name == MeterTraits::typeName()) {
             auto meter = Helpers::Counterlike<ArchMeterExtern>::from(externBlock, refMap, typeMap,
                                                                      p4RtTypeInfo);
-            if (meter) addMeter(symbols, p4info, *meter);
+            if (meter) {
+                addMeter(symbols, p4info, *meter);
+            }
         } else if (externBlock->type->name == RegisterTraits<arch>::typeName()) {
             auto register_ = Register::from<arch>(externBlock, refMap, typeMap, p4RtTypeInfo);
-            if (register_) addRegister(symbols, p4info, *register_);
+            if (register_) {
+                addRegister(symbols, p4info, *register_);
+            }
         } else if (externBlock->type->name == ActionProfileTraits<arch>::typeName() ||
                    externBlock->type->name == ActionSelectorTraits<arch>::typeName()) {
             auto actionProfile = getActionProfile(externBlock);
-            if (actionProfile) addActionProfile(symbols, p4info, *actionProfile);
+            if (actionProfile) {
+                addActionProfile(symbols, p4info, *actionProfile);
+            }
         }
     }
 
@@ -731,7 +759,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
                                                            ReferenceMap *refMap, TypeMap *typeMap) {
         auto propertyName = ActionProfileTraits<arch>::propertyName();
         auto instance = getExternInstanceFromProperty(table, propertyName, refMap, typeMap);
-        if (!instance) return boost::none;
+        if (!instance) {
+            return boost::none;
+        }
         auto size = instance->substitution.lookupByName(ActionProfileTraits<arch>::sizeParamName())
                         ->expression;
         if (!size->template is<IR::Constant>()) {
@@ -784,8 +814,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
 
         auto tablesIt = actionProfilesRefs.find(actionProfile.name);
         if (tablesIt != actionProfilesRefs.end()) {
-            for (const auto &table : tablesIt->second)
+            for (const auto &table : tablesIt->second) {
                 profile->add_table_ids(symbols.getId(P4RuntimeSymbolType::P4RT_TABLE(), table));
+            }
         }
     }
 
@@ -867,7 +898,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         // (encoded in its name) into account, but it may be that we should also
         // consider the receiver.
         auto id = symbols.getId(SymbolType::P4RT_DIGEST(), digest.name);
-        if (serializedInstances.find(id) != serializedInstances.end()) return;
+        if (serializedInstances.find(id) != serializedInstances.end()) {
+            return;
+        }
         serializedInstances.insert(id);
 
         auto *digestInstance = p4Info->add_digests();
@@ -888,10 +921,16 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         // type of impl is dependent on the template parameter and we run into
         // this issue: https://stackoverflow.com/a/15572442/4538702
         const IR::Property *impl = getTableImplementationProperty(table);
-        if (impl == nullptr) return nullptr;
-        if (!impl->value->is<IR::ExpressionValue>()) return nullptr;
+        if (impl == nullptr) {
+            return nullptr;
+        }
+        if (!impl->value->is<IR::ExpressionValue>()) {
+            return nullptr;
+        }
         auto expr = impl->value->to<IR::ExpressionValue>()->expression;
-        if (expr->is<IR::ConstructorCallExpression>()) return impl->to<IR::IAnnotated>();
+        if (expr->is<IR::ConstructorCallExpression>()) {
+            return impl->to<IR::IAnnotated>();
+        }
         if (expr->is<IR::PathExpression>()) {
             auto decl = refMap->getDeclaration(expr->to<IR::PathExpression>()->path, true);
             return decl->to<IR::IAnnotated>();
@@ -902,7 +941,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
     static boost::optional<cstring> getTableImplementationName(const IR::P4Table *table,
                                                                ReferenceMap *refMap) {
         const IR::Property *impl = getTableImplementationProperty(table);
-        if (impl == nullptr) return boost::none;
+        if (impl == nullptr) {
+            return boost::none;
+        }
         if (!impl->value->is<IR::ExpressionValue>()) {
             ::error(ErrorType::ERR_EXPECTED,
                     "Expected implementation property value for table %1% to be an expression: %2%",
@@ -910,7 +951,9 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
             return boost::none;
         }
         auto expr = impl->value->to<IR::ExpressionValue>()->expression;
-        if (expr->is<IR::ConstructorCallExpression>()) return impl->controlPlaneName();
+        if (expr->is<IR::ConstructorCallExpression>()) {
+            return impl->controlPlaneName();
+        }
         if (expr->is<IR::PathExpression>()) {
             auto decl = refMap->getDeclaration(expr->to<IR::PathExpression>()->path, true);
             return decl->controlPlaneName();
@@ -943,7 +986,9 @@ class P4RuntimeArchHandlerPSAPNA : public P4RuntimeArchHandlerCommon<arch> {
         P4RuntimeArchHandlerCommon<arch>::collectExternInstance(symbols, externBlock);
 
         auto decl = externBlock->node->to<IR::IDeclaration>();
-        if (decl == nullptr) return;
+        if (decl == nullptr) {
+            return;
+        }
         if (externBlock->type->name == "Digest") {
             symbols->add(SymbolType::P4RT_DIGEST(), decl);
         }
@@ -967,11 +1012,15 @@ class P4RuntimeArchHandlerPSAPNA : public P4RuntimeArchHandlerCommon<arch> {
         P4RuntimeArchHandlerCommon<arch>::addExternInstance(symbols, p4info, externBlock);
 
         auto decl = externBlock->node->to<IR::Declaration_Instance>();
-        if (decl == nullptr) return;
+        if (decl == nullptr) {
+            return;
+        }
         auto p4RtTypeInfo = p4info->mutable_type_info();
         if (externBlock->type->name == "Digest") {
             auto digest = getDigest(decl, p4RtTypeInfo);
-            if (digest) this->addDigest(symbols, p4info, *digest);
+            if (digest) {
+                this->addDigest(symbols, p4info, *digest);
+            }
         }
     }
 
@@ -996,7 +1045,9 @@ class P4RuntimeArchHandlerPSAPNA : public P4RuntimeArchHandlerCommon<arch> {
     static bool getSupportsTimeout(const IR::P4Table *table) {
         auto timeout = table->properties->getProperty("psa_idle_timeout");
 
-        if (timeout == nullptr) return false;
+        if (timeout == nullptr) {
+            return false;
+        }
 
         if (auto exprValue = timeout->value->to<IR::ExpressionValue>()) {
             if (auto expr = exprValue->expression) {

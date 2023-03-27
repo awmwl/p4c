@@ -46,29 +46,43 @@ big_int maskFromSlice(unsigned m, unsigned l);
 big_int mask(unsigned bits);
 
 inline unsigned scan0_positive(const boost::multiprecision::cpp_int &val, unsigned pos) {
-    while (boost::multiprecision::bit_test(val, pos)) ++pos;
+    while (boost::multiprecision::bit_test(val, pos)) {
+        ++pos;
+    }
     return pos;
 }
 inline unsigned scan1_positive(const boost::multiprecision::cpp_int &val, unsigned pos) {
-    if (val == 0 || pos > boost::multiprecision::msb(val)) return ~0U;
+    if (val == 0 || pos > boost::multiprecision::msb(val)) {
+        return ~0U;
+    }
     unsigned lsb = boost::multiprecision::lsb(val);
-    if (lsb >= pos) return lsb;
-    while (!boost::multiprecision::bit_test(val, pos)) ++pos;
+    if (lsb >= pos) {
+        return lsb;
+    }
+    while (!boost::multiprecision::bit_test(val, pos)) {
+        ++pos;
+    }
     return pos;
 }
 inline unsigned scan0(const boost::multiprecision::cpp_int &val, unsigned pos) {
-    if (val < 0) return scan1_positive(-val - 1, pos);
+    if (val < 0) {
+        return scan1_positive(-val - 1, pos);
+    }
     return scan0_positive(val, pos);
 }
 inline unsigned scan1(const boost::multiprecision::cpp_int &val, unsigned pos) {
-    if (val < 0) return scan0_positive(-val - 1, pos);
+    if (val < 0) {
+        return scan0_positive(-val - 1, pos);
+    }
     return scan1_positive(val, pos);
 }
 
 }  // namespace Util
 
 static inline unsigned bitcount(big_int v) {
-    if (v < 0) return ~0U;
+    if (v < 0) {
+        return ~0U;
+    }
     unsigned rv = 0;
     while (v != 0) {
         v &= v - 1;
@@ -78,7 +92,9 @@ static inline unsigned bitcount(big_int v) {
 }
 
 static inline int ffs(big_int v) {
-    if (v <= 0) return -1;
+    if (v <= 0) {
+        return -1;
+    }
     return boost::multiprecision::lsb(v);
 }
 

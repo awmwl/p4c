@@ -43,9 +43,13 @@ struct CompileContextStack final {
     template <typename CompileContextType>
     static CompileContextType &top() {
         auto &stack = getStack();
-        if (stack.empty()) reportNoContext();
+        if (stack.empty()) {
+            reportNoContext();
+        }
         auto *current = dynamic_cast<CompileContextType *>(stack.back());
-        if (!current) reportContextMismatch(typeid(CompileContextType).name());
+        if (!current) {
+            reportContextMismatch(typeid(CompileContextType).name());
+        }
         return *current;
     }
 

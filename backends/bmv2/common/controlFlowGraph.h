@@ -172,7 +172,9 @@ class CFG final : public IHasDbPrint {
     void dbprint(std::ostream &out, Node *node, std::set<Node *> &done) const;  // helper
     void dbprint(std::ostream &out) const;
     void computeSuccessors() {
-        for (auto n : allNodes) n->computeSuccessors();
+        for (auto n : allNodes) {
+            n->computeSuccessors();
+        }
     }
     /// BMv2 is very restricted in the kinds of graphs it supports.
     /// Thie method checks whether a CFG is implementable.

@@ -19,9 +19,13 @@ const IR::Node *DoInstantiateCalls::postorder(IR::P4Control *control) {
 const IR::Node *DoInstantiateCalls::postorder(IR::MethodCallExpression *expression) {
     // Identify type.apply(...) methods
     auto mem = expression->method->to<IR::Member>();
-    if (mem == nullptr) return expression;
+    if (mem == nullptr) {
+        return expression;
+    }
     auto tn = mem->expr->to<IR::TypeNameExpression>();
-    if (tn == nullptr) return expression;
+    if (tn == nullptr) {
+        return expression;
+    }
 
     const IR::Type_Name *tname;
     if (auto ts = tn->typeName->to<IR::Type_Specialized>()) {
@@ -31,7 +35,9 @@ const IR::Node *DoInstantiateCalls::postorder(IR::MethodCallExpression *expressi
     }
     CHECK_NULL(tname);
     auto ref = refMap->getDeclaration(tname->path, true);
-    if (!ref->is<IR::P4Control>() && !ref->is<IR::P4Parser>()) return expression;
+    if (!ref->is<IR::P4Control>() && !ref->is<IR::P4Parser>()) {
+        return expression;
+    }
 
     auto name = refMap->newName(tname->path->name + "_inst");
     LOG3("Inserting instance " << name);

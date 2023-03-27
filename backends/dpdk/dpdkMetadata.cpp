@@ -29,9 +29,10 @@ void DirectionToRegRead::uniqueNames(IR::DpdkAsmProgram *p) {
         usedNames.insert(decl->name);
     }
 
-    if (usedNames.count(registerInstanceName))
+    if (usedNames.count(registerInstanceName)) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "decl name %s is reserved for dpdk pna",
                 registerInstanceName);
+    }
 }
 
 const IR::Node *DirectionToRegRead::preorder(IR::DpdkAsmProgram *p) {
@@ -68,11 +69,12 @@ IR::DpdkExternDeclaration *DirectionToRegRead::addRegDeclInstance(cstring instan
 // it's initilization will be done like istd.direction = direction.read(istd.input_port)
 // at start of the pipeline
 const IR::Node *DirectionToRegRead::preorder(IR::Member *m) {
-    if (isDirection(m))
+    if (isDirection(m)) {
         return new IR::Member(new IR::PathExpression(IR::ID("m")),
                               IR::ID(dirToDirMapping[m->member.name]));
-    else
+    } else {
         return m;
+    }
 }
 
 IR::IndexedVector<IR::DpdkAsmStatement> DirectionToRegRead::addRegReadStmtForDirection(
@@ -95,7 +97,9 @@ IR::IndexedVector<IR::DpdkAsmStatement> DirectionToRegRead::addRegReadStmtForDir
 // check member expression using metadata pass field
 // "recircid" instruction takes the pass metadata type as argument to fetch the pass_id.
 bool PrependPassRecircId::isPass(const IR::Member *m) {
-    if (m == nullptr) return false;
+    if (m == nullptr) {
+        return false;
+    }
     return m->member.name == "pna_main_input_metadata_pass" ||
            m->member.name == "pna_pre_input_metadata_pass" ||
            m->member.name == "pna_main_parser_input_metadata_pass";
@@ -117,10 +121,11 @@ IR::IndexedVector<IR::DpdkAsmStatement> PrependPassRecircId::prependPassWithReci
     IR::IndexedVector<IR::DpdkAsmStatement> stmts) {
     for (auto s : stmts) {
         if (auto jc = s->to<IR::DpdkJmpCondStatement>()) {
-            if (isPass(jc->src1->to<IR::Member>()))
+            if (isPass(jc->src1->to<IR::Member>())) {
                 newStmts.push_back(new IR::DpdkRecircidStatement(jc->src1->to<IR::Member>()));
-            else if (isPass(jc->src2->to<IR::Member>()))
+            } else if (isPass(jc->src2->to<IR::Member>())) {
                 newStmts.push_back(new IR::DpdkRecircidStatement(jc->src2->to<IR::Member>()));
+            }
         } else if (auto u = s->to<IR::DpdkUnaryStatement>()) {
             if (isPass(u->src->to<IR::Member>())) {
                 newStmts.push_back(new IR::DpdkRecircidStatement(u->src->to<IR::Member>()));

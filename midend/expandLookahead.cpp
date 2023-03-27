@@ -28,7 +28,9 @@ void DoExpandLookahead::expand(
     const IR::Expression *destination,            // result is assigned to this expression
     IR::IndexedVector<IR::StatOrDecl> *output) {  // add here new assignments
     if (type->is<IR::Type_Struct>() || type->is<IR::Type_Header>()) {
-        if (type->is<IR::Type_Header>() && !expandHeader) return;
+        if (type->is<IR::Type_Header>() && !expandHeader) {
+            return;
+        }
         if (type->is<IR::Type_Header>()) {
             auto setValid = new IR::Member(destination, IR::Type_Header::setValid);
             auto mc = new IR::MethodCallExpression(setValid);
@@ -37,7 +39,9 @@ void DoExpandLookahead::expand(
         auto st = type->to<IR::Type_StructLike>();
         for (auto f : st->fields) {
             auto t = typeMap->getTypeType(f->type, true);
-            if (t == nullptr) continue;
+            if (t == nullptr) {
+                continue;
+            }
             auto member = new IR::Member(destination, f->name);
             expand(bitvector, t, offset, member, output);
         }
@@ -47,7 +51,9 @@ void DoExpandLookahead::expand(
         const IR::Expression *expression =
             new IR::Slice(bitvector->clone(), *offset - 1, *offset - size);
         auto tb = type->to<IR::Type_Bits>();
-        if (!tb || tb->isSigned) expression = new IR::Cast(type, expression);
+        if (!tb || tb->isSigned) {
+            expression = new IR::Cast(type, expression);
+        }
         *offset -= size;
         auto assignment = new IR::AssignmentStatement(bitvector->srcInfo, destination, expression);
         output->push_back(assignment);
@@ -65,25 +71,36 @@ void DoExpandLookahead::expand(
 
 DoExpandLookahead::ExpansionInfo *DoExpandLookahead::convertLookahead(
     const IR::MethodCallExpression *expression) {
-    if (expression == nullptr) return nullptr;
+    if (expression == nullptr) {
+        return nullptr;
+    }
     auto mi = MethodInstance::resolve(expression, refMap, typeMap);
-    if (!mi->is<P4::ExternMethod>()) return nullptr;
+    if (!mi->is<P4::ExternMethod>()) {
+        return nullptr;
+    }
     auto em = mi->to<P4::ExternMethod>();
     if (em->originalExternType->name != P4CoreLibrary::instance.packetIn.name ||
-        em->method->name != P4CoreLibrary::instance.packetIn.lookahead.name)
+        em->method->name != P4CoreLibrary::instance.packetIn.lookahead.name) {
         return nullptr;
+    }
 
     // this is a call to packet_in.lookahead.
     BUG_CHECK(expression->typeArguments->size() == 1, "Expected 1 type parameter for %1%",
               em->method);
     auto targ = expression->typeArguments->at(0);
     auto typearg = typeMap->getTypeType(targ, true);
-    if (!typearg->is<IR::Type_StructLike>() && !typearg->is<IR::Type_Tuple>()) return nullptr;
+    if (!typearg->is<IR::Type_StructLike>() && !typearg->is<IR::Type_Tuple>()) {
+        return nullptr;
+    }
 
-    if (typearg->is<IR::Type_Header>() && !expandHeader) return nullptr;
+    if (typearg->is<IR::Type_Header>() && !expandHeader) {
+        return nullptr;
+    }
 
     int width = typeMap->widthBits(typearg, expression, false);
-    if (width < 0) return nullptr;
+    if (width < 0) {
+        return nullptr;
+    }
 
     auto bittype = IR::Type_Bits::get(width);
     auto name = refMap->newName("tmp");
@@ -106,15 +123,21 @@ DoExpandLookahead::ExpansionInfo *DoExpandLookahead::convertLookahead(
 
 const IR::Node *DoExpandLookahead::postorder(IR::MethodCallStatement *statement) {
     auto ei = convertLookahead(statement->methodCall);
-    if (ei == nullptr) return statement;
+    if (ei == nullptr) {
+        return statement;
+    }
     return ei->statement;
 }
 
 const IR::Node *DoExpandLookahead::postorder(IR::AssignmentStatement *statement) {
-    if (!statement->right->is<IR::MethodCallExpression>()) return statement;
+    if (!statement->right->is<IR::MethodCallExpression>()) {
+        return statement;
+    }
 
     auto ei = convertLookahead(statement->right->to<IR::MethodCallExpression>());
-    if (ei == nullptr) return statement;
+    if (ei == nullptr) {
+        return statement;
+    }
     auto result = new IR::BlockStatement;
     result->push_back(ei->statement);
 

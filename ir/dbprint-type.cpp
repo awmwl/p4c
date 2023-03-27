@@ -44,9 +44,13 @@ void IR::ParameterList::dbprint(std::ostream &out) const {
 void IR::Type_MethodBase::dbprint(std::ostream &out) const {
     int flags = dbgetflags(out);
     out << Brief;
-    if (returnType != nullptr) out << returnType << " ";
+    if (returnType != nullptr) {
+        out << returnType << " ";
+    }
     out << "_";
-    if (typeParameters != nullptr) out << typeParameters;
+    if (typeParameters != nullptr) {
+        out << typeParameters;
+    }
     out << "(" << parameters << ")";
     dbsetflags(out, flags);
 }
@@ -54,9 +58,13 @@ void IR::Type_MethodBase::dbprint(std::ostream &out) const {
 void IR::Method::dbprint(std::ostream &out) const {
     int flags = dbgetflags(out);
     out << annotations;
-    if (isAbstract) out << "abstract ";
+    if (isAbstract) {
+        out << "abstract ";
+    }
     out << Brief << type->returnType << " " << name;
-    if (type->typeParameters != nullptr) out << type->typeParameters;
+    if (type->typeParameters != nullptr) {
+        out << type->typeParameters;
+    }
     out << "(" << type->parameters << ")";
     dbsetflags(out, flags);
 }
@@ -67,7 +75,9 @@ void IR::Type_Parser::dbprint(std::ostream &out) const {
         return;
     }
     out << Brief << "parser " << name;
-    if (typeParameters != nullptr) out << typeParameters;
+    if (typeParameters != nullptr) {
+        out << typeParameters;
+    }
     out << "(" << applyParams << ")" << annotations << ';' << clrflag(Brief);
 }
 
@@ -77,7 +87,9 @@ void IR::Type_Control::dbprint(std::ostream &out) const {
         return;
     }
     out << Brief << "control " << name;
-    if (typeParameters != nullptr) out << typeParameters;
+    if (typeParameters != nullptr) {
+        out << typeParameters;
+    }
     out << "(" << applyParams << ")" << annotations << ';' << clrflag(Brief);
 }
 
@@ -99,7 +111,9 @@ void IR::Type_Package::dbprint(std::ostream &out) const {
         return;
     }
     out << Brief << "package " << name;
-    if (typeParameters != nullptr) out << typeParameters;
+    if (typeParameters != nullptr) {
+        out << typeParameters;
+    }
     out << "(" << constructorParams << ")" << annotations << ';' << clrflag(Brief);
 }
 
@@ -139,9 +153,13 @@ void IR::Type_Extern::dbprint(std::ostream &out) const {
         return;
     }
     out << Brief << "extern " << name;
-    if (typeParameters != nullptr) out << typeParameters;
+    if (typeParameters != nullptr) {
+        out << typeParameters;
+    }
     out << " {" << indent << clrflag(Brief);
-    for (auto &method : methods) out << Log::endl << method << ';';
+    for (auto &method : methods) {
+        out << Log::endl << method << ';';
+    }
     out << " }" << unindent;
 }
 
@@ -169,7 +187,9 @@ void IR::Type_StructLike::dbprint(std::ostream &out) const {
         return;
     }
     out << toString() << " " << annotations << "{" << indent;
-    for (auto &field : fields) out << Log::endl << field << ';';
+    for (auto &field : fields) {
+        out << Log::endl << field << ';';
+    }
     out << " }" << unindent;
 }
 

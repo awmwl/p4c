@@ -40,9 +40,15 @@ const IR::Expression *IR::Slice::make(const IR::Expression *e, unsigned lo, unsi
         return rv;
     }
     if (auto src_width = (unsigned)e->type->width_bits()) {
-        if (lo >= src_width) return new IR::Constant(IR::Type::Bits::get(hi - lo + 1), 0);
-        if (hi >= src_width) hi = src_width - 1;
-        if (lo == 0 && hi == src_width - 1) return e;
+        if (lo >= src_width) {
+            return new IR::Constant(IR::Type::Bits::get(hi - lo + 1), 0);
+        }
+        if (hi >= src_width) {
+            hi = src_width - 1;
+        }
+        if (lo == 0 && hi == src_width - 1) {
+            return e;
+        }
     }
     if (auto sl = e->to<IR::Slice>()) {
         lo += sl->getL();
@@ -65,8 +71,9 @@ int IR::Member::lsb() const {
     // This assumes little-endian number for bits.
     while ((*field_iter)->name != member) {
         rv += (*field_iter)->type->width_bits();
-        if (++field_iter == header_type->fields.rend())
+        if (++field_iter == header_type->fields.rend()) {
             BUG("No field %s in %s", member, expr->type);
+        }
     }
     return rv;
 }
@@ -77,8 +84,12 @@ int IR::Member::msb() const {
 }
 
 void IR::Constant::handleOverflow(bool noWarning) {
-    if (type == nullptr) BUG("%1%: Null type in typed constant", this);
-    if (type->is<IR::Type_InfInt>()) return;
+    if (type == nullptr) {
+        BUG("%1%: Null type in typed constant", this);
+    }
+    if (type->is<IR::Type_InfInt>()) {
+        return;
+    }
     auto tb = type->to<IR::Type_Bits>();
     if (tb == nullptr) {
         BUG("%1%: Unexpected type for constant %2%", this, type);
@@ -93,26 +104,33 @@ void IR::Constant::handleOverflow(bool noWarning) {
         big_int max = (one << (width - 1)) - 1;
         big_int min = -(one << (width - 1));
         if (value < min || value > max) {
-            if (!noWarning)
+            if (!noWarning) {
                 ::warning(ErrorType::WARN_OVERFLOW, "%1%: signed value does not fit in %2% bits",
                           this, width);
+            }
             LOG2("value=" << value << ", min=" << min << ", max=" << max << ", masked="
                           << (value & mask) << ", adj=" << ((value & mask) - (one << width)));
             value = value & mask;
-            if (value > max) value -= (one << width);
+            if (value > max) {
+                value -= (one << width);
+            }
         }
     } else {
         if (value < 0) {
-            if (!noWarning)
+            if (!noWarning) {
                 ::warning(ErrorType::WARN_MISMATCH, "%1%: negative value with unsigned type", this);
+            }
         } else if ((value & mask) != value) {
-            if (!noWarning)
+            if (!noWarning) {
                 ::warning(ErrorType::WARN_MISMATCH, "%1%: value does not fit in %2% bits", this,
                           width);
+            }
         }
 
         value = value & mask;
-        if (value < 0) BUG("Negative value after masking %1%", value);
+        if (value < 0) {
+            BUG("Negative value after masking %1%", value);
+        }
     }
 }
 

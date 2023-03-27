@@ -31,22 +31,30 @@ class exprUses : public Inspector {
     bool preorder(const IR::Path *p) override {
         if (look_for.startsWith(p->name)) {
             search_tail = look_for.c_str() + p->name.name.size();
-            if (*search_tail == 0 || *search_tail == '.' || *search_tail == '[') result = true;
+            if (*search_tail == 0 || *search_tail == '.' || *search_tail == '[') {
+                result = true;
+            }
         }
         return !result;
     }
     bool preorder(const IR::Primitive *p) override {
-        if (p->name == look_for) result = true;
+        if (p->name == look_for) {
+            result = true;
+        }
         return !result;
     }
     bool preorder(const IR::Expression *) override { return !result; }
 
     void postorder(const IR::Member *m) override {
         if (result && search_tail && *search_tail) {
-            if (*search_tail == '.') search_tail++;
+            if (*search_tail == '.') {
+                search_tail++;
+            }
             if (cstring(search_tail).startsWith(m->member)) {
                 search_tail += m->member.name.size();
-                if (*search_tail == 0 || *search_tail == '.' || *search_tail == '[') return;
+                if (*search_tail == 0 || *search_tail == '.' || *search_tail == '[') {
+                    return;
+                }
             }
             search_tail = nullptr;
             if (!m->expr->type->is<IR::Type_HeaderUnion>()) {
@@ -56,12 +64,18 @@ class exprUses : public Inspector {
     }
     void postorder(const IR::ArrayIndex *m) override {
         if (result && search_tail && *search_tail) {
-            if (*search_tail == '.' || *search_tail == '[') search_tail++;
+            if (*search_tail == '.' || *search_tail == '[') {
+                search_tail++;
+            }
             if (isdigit(*search_tail)) {
                 int idx = strtol(search_tail, const_cast<char **>(&search_tail), 10);
-                if (*search_tail == ']') search_tail++;
+                if (*search_tail == ']') {
+                    search_tail++;
+                }
                 if (auto k = m->right->to<IR::Constant>()) {
-                    if (k->asInt() == idx) return;
+                    if (k->asInt() == idx) {
+                        return;
+                    }
                 } else {
                     return;
                 }

@@ -45,7 +45,9 @@ int main(int argc, char *argv[]) {
 
     while (true) {
         int opt = getopt(argc, argv, "o:i:t:hP");
-        if (opt == -1) break;
+        if (opt == -1) {
+            break;
+        }
 
         switch (opt) {
             case 'h':
@@ -53,15 +55,21 @@ int main(int argc, char *argv[]) {
                 return 1;
             case 'o':
                 header = openFile(optarg, false);
-                if (header == nullptr) return 1;
+                if (header == nullptr) {
+                    return 1;
+                }
                 break;
             case 'i':
                 impl = openFile(optarg, false);
-                if (impl == nullptr) return 1;
+                if (impl == nullptr) {
+                    return 1;
+                }
                 break;
             case 't':
                 t = openFile(optarg, false);
-                if (t == nullptr) return 1;
+                if (t == nullptr) {
+                    return 1;
+                }
                 break;
             case 'P':
                 LineDirective::inhibit = true;
@@ -74,7 +82,9 @@ int main(int argc, char *argv[]) {
     }
 
     IrDefinitions *defs = parse(argv + optind, argc - optind);
-    if (defs == nullptr) return 1;
+    if (defs == nullptr) {
+        return 1;
+    }
 
     defs->resolve();
     defs->generate(*t, *header, *impl);

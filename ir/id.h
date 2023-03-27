@@ -33,17 +33,23 @@ struct ID : Util::IHasSourceInfo {
     cstring originalName = nullptr;
     ID() = default;
     ID(Util::SourceInfo si, cstring n, cstring o) : srcInfo(si), name(n), originalName(o) {
-        if (n.isNullOrEmpty()) BUG("Identifier with no name");
+        if (n.isNullOrEmpty()) {
+            BUG("Identifier with no name");
+        }
     }
     ID(Util::SourceInfo si, cstring n) : srcInfo(si), name(n), originalName(n) {
-        if (n.isNullOrEmpty()) BUG("Identifier with no name");
+        if (n.isNullOrEmpty()) {
+            BUG("Identifier with no name");
+        }
     }
     ID(const char *n) : ID(Util::SourceInfo(), n) {}  // NOLINT(runtime/explicit)
     ID(cstring n) : ID(Util::SourceInfo(), n) {}      // NOLINT(runtime/explicit)
     ID(cstring n, cstring old) : ID(Util::SourceInfo(), n, old) {}
     void dbprint(std::ostream &out) const {
         out << name;
-        if (originalName != nullptr && originalName != name) out << "/" << originalName;
+        if (originalName != nullptr && originalName != name) {
+            out << "/" << originalName;
+        }
     }
     bool operator==(const ID &a) const { return name == a.name; }
     bool operator!=(const ID &a) const { return name != a.name; }

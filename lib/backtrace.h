@@ -48,8 +48,9 @@ class backtrace_exception : public E {
     const char *what() const noexcept {
         try {
             message = E::what();
-            if (backtrace_size > 0)
+            if (backtrace_size > 0) {
                 backtrace_fill_stacktrace(message, backtrace_buffer, backtrace_size);
+            }
             return message.c_str();
         } catch (...) {
         }

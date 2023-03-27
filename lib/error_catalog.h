@@ -93,14 +93,18 @@ class ErrorCatalog {
     /// @param name      - name for the error. Used to enable/disable all errors of that type
     /// @param forceReplace - override an existing error type in the catalog
     bool add(int errorCode, const char *name, bool forceReplace = false) {
-        if (forceReplace) errorCatalog.erase(errorCode);
+        if (forceReplace) {
+            errorCatalog.erase(errorCode);
+        }
         auto it = errorCatalog.emplace(errorCode, name);
         return it.second;
     }
 
     /// retrieve the name for errorCode
     const cstring getName(int errorCode) {
-        if (errorCatalog.count(errorCode)) return errorCatalog.at(errorCode);
+        if (errorCatalog.count(errorCode)) {
+            return errorCatalog.at(errorCode);
+        }
         return "--unknown--";
     }
 

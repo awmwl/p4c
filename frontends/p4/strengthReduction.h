@@ -96,7 +96,9 @@ class DoStrengthReduction final : public Transform {
     const IR::Node *postorder(IR::Concat *expr) override;
 
     const IR::BlockStatement *preorder(IR::BlockStatement *bs) override {
-        if (bs->annotations->getSingle("disable_optimization")) prune();
+        if (bs->annotations->getSingle("disable_optimization")) {
+            prune();
+        }
         return bs;
     }
 };
@@ -106,7 +108,9 @@ class StrengthReduction : public PassManager {
     StrengthReduction(ReferenceMap *refMap, TypeMap *typeMap,
                       TypeChecking *typeChecking = nullptr) {
         if (typeMap != nullptr) {
-            if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap, true);
+            if (!typeChecking) {
+                typeChecking = new TypeChecking(refMap, typeMap, true);
+            }
             passes.push_back(typeChecking);
         }
         passes.push_back(new DoStrengthReduction());

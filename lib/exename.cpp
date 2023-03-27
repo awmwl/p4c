@@ -31,9 +31,13 @@ static void convertToAbsPath(const char *const relPath, char (&output)[N]) {
     output[0] = '\0';  // Default to the empty string, indicating failure.
 
     char cwd[PATH_MAX];
-    if (!getcwd(cwd, sizeof(cwd))) return;
+    if (!getcwd(cwd, sizeof(cwd))) {
+        return;
+    }
     const size_t cwdLen = strlen(cwd);
-    if (cwdLen == 0) return;
+    if (cwdLen == 0) {
+        return;
+    }
     const char *separator = cwd[cwdLen - 1] == '/' ? "" : "/";
 
     // Construct an absolute path. We're assuming that @relPath is relative to
@@ -45,7 +49,9 @@ static void convertToAbsPath(const char *const relPath, char (&output)[N]) {
 const char *exename(const char *argv0) {
     // Leave 1 extra char for the \0
     static char buffer[PATH_MAX + 1];
-    if (buffer[0]) return buffer;  // done already
+    if (buffer[0]) {
+        return buffer;  // done already
+    }
     int len;
     /* find the path of the executable.  We use a number of techniques that may fail
      * or work on different systems, and take the first working one we find.  Fall

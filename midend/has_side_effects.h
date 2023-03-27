@@ -45,7 +45,9 @@ class hasSideEffects : public Inspector {
                 }
             }
             if (auto *em = mi->to<P4::ExternMethod>()) {
-                if (em->method->getAnnotation(IR::Annotation::noSideEffectsAnnotation)) return true;
+                if (em->method->getAnnotation(IR::Annotation::noSideEffectsAnnotation)) {
+                    return true;
+                }
             }
         }
         result = true;

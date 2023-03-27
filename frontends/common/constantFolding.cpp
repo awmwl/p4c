@@ -52,32 +52,47 @@ class CloneConstants : public Transform {
 
 const IR::Expression *DoConstantFolding::getConstant(const IR::Expression *expr) const {
     CHECK_NULL(expr);
-    if (expr->is<IR::Constant>()) return expr;
-    if (expr->is<IR::BoolLiteral>()) return expr;
+    if (expr->is<IR::Constant>()) {
+        return expr;
+    }
+    if (expr->is<IR::BoolLiteral>()) {
+        return expr;
+    }
     if (auto list = expr->to<IR::ListExpression>()) {
-        for (auto e : list->components)
-            if (getConstant(e) == nullptr) return nullptr;
+        for (auto e : list->components) {
+            if (getConstant(e) == nullptr) {
+                return nullptr;
+            }
+        }
         return expr;
     } else if (auto si = expr->to<IR::StructExpression>()) {
-        for (auto e : si->components)
-            if (getConstant(e->expression) == nullptr) return nullptr;
+        for (auto e : si->components) {
+            if (getConstant(e->expression) == nullptr) {
+                return nullptr;
+            }
+        }
         return expr;
     } else if (auto cast = expr->to<IR::Cast>()) {
         // Casts of a constant to a value with type Type_Newtype
         // are constants, but we cannot fold them.
-        if (getConstant(cast->expr)) return CloneConstants::clone(expr, this);
+        if (getConstant(cast->expr)) {
+            return CloneConstants::clone(expr, this);
+        }
         return nullptr;
     }
     if (typesKnown) {
         auto ei = EnumInstance::resolve(expr, typeMap);
-        if (ei != nullptr) return expr;
+        if (ei != nullptr) {
+            return expr;
+        }
         // error and match_kind constants can be recognized from their type.
         if (auto pe = expr->to<IR::PathExpression>()) {
             if (auto decl = refMap->getDeclaration(pe->path, true)) {
                 if (decl->is<IR::Declaration_ID>()) {
                     if (auto declType = typeMap->getType(decl->getNode())) {
-                        if (declType->is<IR::Type_Error>() || declType->is<IR::Type_MatchKind>())
+                        if (declType->is<IR::Type_Error>() || declType->is<IR::Type_MatchKind>()) {
                             return expr;
+                        }
                     }
                 }
             }
@@ -87,17 +102,24 @@ const IR::Expression *DoConstantFolding::getConstant(const IR::Expression *expr)
 }
 
 const IR::Node *DoConstantFolding::postorder(IR::PathExpression *e) {
-    if (refMap == nullptr || assignmentTarget) return e;
+    if (refMap == nullptr || assignmentTarget) {
+        return e;
+    }
     auto decl = refMap->getDeclaration(e->path);
-    if (decl == nullptr) return e;
+    if (decl == nullptr) {
+        return e;
+    }
     if (auto dc = decl->to<IR::Declaration_Constant>()) {
         auto cst = get(constants, dc);
-        if (cst == nullptr) return e;
+        if (cst == nullptr) {
+            return e;
+        }
         if (cst->is<IR::ListExpression>()) {
-            if (!typesKnown)
+            if (!typesKnown) {
                 // We don't want to commit to this value before we do
                 // type checking; maybe it's wrong.
                 return e;
+            }
         }
         return CloneConstants::clone(cst, this);
     }
@@ -127,7 +149,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Type_Varbits *type) {
         if (auto cst = type->expression->to<IR::Constant>()) {
             type->size = cst->asInt();
             type->expression = nullptr;
-            if (type->size < 0) ::error(ErrorType::ERR_INVALID, "%1%: invalid type size", type);
+            if (type->size < 0) {
+                ::error(ErrorType::ERR_INVALID, "%1%: invalid type size", type);
+            }
         } else {
             ::error(ErrorType::ERR_EXPECTED, "%1%: expected a constant", type->expression);
         }
@@ -138,9 +162,10 @@ const IR::Node *DoConstantFolding::postorder(IR::Type_Varbits *type) {
 const IR::Node *DoConstantFolding::postorder(IR::Declaration_Constant *d) {
     auto init = getConstant(d->initializer);
     if (init == nullptr) {
-        if (typesKnown)
+        if (typesKnown) {
             ::error(ErrorType::ERR_INVALID, "%1%: Cannot evaluate initializer for constant",
                     d->initializer);
+        }
         return d;
     }
     if (!typesKnown) {
@@ -151,11 +176,12 @@ const IR::Node *DoConstantFolding::postorder(IR::Declaration_Constant *d) {
         if (auto cst = init->to<IR::Constant>()) {
             if (auto dtype = d->type->to<IR::Type_Bits>()) {
                 auto cstBits = cst->type->to<IR::Type_Bits>();
-                if (cstBits && !(*dtype == *cstBits))
+                if (cstBits && !(*dtype == *cstBits)) {
                     ::error(ErrorType::ERR_TYPE_ERROR, "%1%: initializer has wrong type %2%", d,
                             cst->type);
-                else if (cst->type->is<IR::Type_InfInt>())
+                } else if (cst->type->is<IR::Type_InfInt>()) {
                     init = new IR::Constant(init->srcInfo, d->type, cst->value, cst->base);
+                }
             } else if (!d->type->is<IR::Type_InfInt>()) {
                 // Don't fold this yet, we can't evaluate the cast.
                 return d;
@@ -167,8 +193,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Declaration_Constant *d) {
                 }
             }
         }
-        if (init != d->initializer)
+        if (init != d->initializer) {
             d = new IR::Declaration_Constant(d->srcInfo, d->name, d->annotations, d->type, init);
+        }
     }
     if (!typesKnown && (init->is<IR::StructExpression>() ||
                         // If we substitute structs before type checking we may lose casts
@@ -176,10 +203,11 @@ const IR::Node *DoConstantFolding::postorder(IR::Declaration_Constant *d) {
                         // const S s = { x = 1024 };
                         // const bit<16> z = (bit<16>)s.x;
                         // If we substitute this too early we may get a value of 1024 for z.
-                        init->is<IR::Cast>()))
+                        init->is<IR::Cast>())) {
         // Also, note that early in the compilation some struct expressions may
         // still be represented as cast expressions that cast to a struct type.
         return d;
+    }
     LOG3("Constant " << d << " set to " << init);
     constants.emplace(getOriginal<IR::Declaration_Constant>(), init);
     return d;
@@ -202,14 +230,17 @@ const IR::Node *DoConstantFolding::preorder(IR::ArrayIndex *e) {
     assignmentTarget = save;
     prune();
 
-    if (!typesKnown) return e;
+    if (!typesKnown) {
+        return e;
+    }
     auto orig = getOriginal<IR::ArrayIndex>();
     auto type = typeMap->getType(orig->left, true);
     if (type->is<IR::Type_BaseList>()) {
         auto init = getConstant(e->right);
         if (init == nullptr) {
-            if (typesKnown)
+            if (typesKnown) {
                 ::error(ErrorType::ERR_INVALID, "%1%: Index must evaluate to a constant", e->right);
+            }
             return e;
         }
         if (auto cst = init->to<IR::Constant>()) {
@@ -223,7 +254,9 @@ const IR::Node *DoConstantFolding::preorder(IR::ArrayIndex *e) {
                 return e;
             }
             auto value = getConstant(e->left);
-            if (!value) return e;
+            if (!value) {
+                return e;
+            }
             if (auto list = value->to<IR::ListExpression>()) {
                 if (static_cast<size_t>(index) >= list->size()) {
                     ::error(ErrorType::ERR_INVALID, "Tuple index %1% out of bounds", e->right);
@@ -238,7 +271,9 @@ const IR::Node *DoConstantFolding::preorder(IR::ArrayIndex *e) {
 
 const IR::Node *DoConstantFolding::postorder(IR::Cmpl *e) {
     auto op = getConstant(e->expr);
-    if (op == nullptr) return e;
+    if (op == nullptr) {
+        return e;
+    }
 
     auto cst = op->to<IR::Constant>();
     if (cst == nullptr) {
@@ -265,7 +300,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Cmpl *e) {
 
 const IR::Node *DoConstantFolding::postorder(IR::Neg *e) {
     auto op = getConstant(e->expr);
-    if (op == nullptr) return e;
+    if (op == nullptr) {
+        return e;
+    }
 
     auto cst = op->to<IR::Constant>();
     if (cst == nullptr) {
@@ -273,7 +310,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Neg *e) {
         return e;
     }
     const IR::Type *t = op->type;
-    if (t->is<IR::Type_InfInt>()) return new IR::Constant(cst->srcInfo, t, -cst->value, cst->base);
+    if (t->is<IR::Type_InfInt>()) {
+        return new IR::Constant(cst->srcInfo, t, -cst->value, cst->base);
+    }
 
     auto tb = t->to<IR::Type_Bits>();
     if (tb == nullptr) {
@@ -287,7 +326,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Neg *e) {
 
 const IR::Node *DoConstantFolding::postorder(IR::UPlus *e) {
     auto op = getConstant(e->expr);
-    if (op == nullptr) return e;
+    if (op == nullptr) {
+        return e;
+    }
 
     auto cst = op->to<IR::Constant>();
     if (cst == nullptr) {
@@ -391,7 +432,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Shl *e) { return shift(e); }
 const IR::Node *DoConstantFolding::compare(const IR::Operation_Binary *e) {
     auto eleft = getConstant(e->left);
     auto eright = getConstant(e->right);
-    if (eleft == nullptr || eright == nullptr) return e;
+    if (eleft == nullptr || eright == nullptr) {
+        return e;
+    }
 
     bool eqTest = e->is<IR::Equ>();
     if (eleft->is<IR::BoolLiteral>()) {
@@ -424,23 +467,29 @@ const IR::Node *DoConstantFolding::compare(const IR::Operation_Binary *e) {
                 auto li = llist->components.at(i);
                 auto ri = rlist->components.at(i);
                 const IR::Operation_Binary *tmp;
-                if (eqTest)
+                if (eqTest) {
                     tmp = new IR::Equ(li, ri);
-                else
+                } else {
                     tmp = new IR::Neq(li, ri);
+                }
                 auto cmp = compare(tmp);
                 auto boolLit = cmp->to<IR::BoolLiteral>();
-                if (boolLit == nullptr) return e;
-                if (boolLit->value != eqTest) return boolLit;
+                if (boolLit == nullptr) {
+                    return e;
+                }
+                if (boolLit->value != eqTest) {
+                    return boolLit;
+                }
             }
             return new IR::BoolLiteral(e->srcInfo, IR::Type_Boolean::get(), eqTest);
         }
     }
 
-    if (eqTest)
+    if (eqTest) {
         return binary(e, [](big_int a, big_int b) -> big_int { return a == b; });
-    else
+    } else {
         return binary(e, [](big_int a, big_int b) -> big_int { return a != b; });
+    }
 }
 
 const IR::Node *DoConstantFolding::binary(const IR::Operation_Binary *e,
@@ -448,7 +497,9 @@ const IR::Node *DoConstantFolding::binary(const IR::Operation_Binary *e,
                                           bool saturating) {
     auto eleft = getConstant(e->left);
     auto eright = getConstant(e->right);
-    if (eleft == nullptr || eright == nullptr) return e;
+    if (eleft == nullptr || eright == nullptr) {
+        return e;
+    }
 
     auto left = eleft->to<IR::Constant>();
     if (left == nullptr) {
@@ -511,26 +562,35 @@ const IR::Node *DoConstantFolding::binary(const IR::Operation_Binary *e,
             big_int limit = 1;
             if (rtb->isSigned) {
                 limit <<= rtb->width_bits() - 1;
-                if (value < -limit) value = -limit;
+                if (value < -limit) {
+                    value = -limit;
+                }
             } else {
                 limit <<= rtb->width_bits();
-                if (value < 0) value = 0;
+                if (value < 0) {
+                    value = 0;
+                }
             }
-            if (value >= limit) value = limit - 1;
+            if (value >= limit) {
+                value = limit - 1;
+            }
         } else {
             ::error(ErrorType::ERR_INVALID, "%1%: saturating operation on untyped values", e);
         }
     }
 
-    if (e->is<IR::Operation_Relation>())
+    if (e->is<IR::Operation_Relation>()) {
         return new IR::BoolLiteral(e->srcInfo, IR::Type_Boolean::get(), value != 0);
-    else
+    } else {
         return new IR::Constant(e->srcInfo, resultType, value, left->base, true);
+    }
 }
 
 const IR::Node *DoConstantFolding::postorder(IR::LAnd *e) {
     auto left = getConstant(e->left);
-    if (left == nullptr) return e;
+    if (left == nullptr) {
+        return e;
+    }
 
     auto lcst = left->to<IR::BoolLiteral>();
     if (lcst == nullptr) {
@@ -545,7 +605,9 @@ const IR::Node *DoConstantFolding::postorder(IR::LAnd *e) {
 
 const IR::Node *DoConstantFolding::postorder(IR::LOr *e) {
     auto left = getConstant(e->left);
-    if (left == nullptr) return e;
+    if (left == nullptr) {
+        return e;
+    }
 
     auto lcst = left->to<IR::BoolLiteral>();
     if (lcst == nullptr) {
@@ -571,20 +633,24 @@ const IR::Node *DoConstantFolding::postorder(IR::Slice *e) {
     const IR::Expression *msb = getConstant(e->e1);
     const IR::Expression *lsb = getConstant(e->e2);
     if (msb == nullptr) {
-        if (typesKnown)
+        if (typesKnown) {
             ::error(ErrorType::ERR_EXPECTED, "%1%: slice indexes must be compile-time constants",
                     e->e1);
+        }
         return e;
     }
     if (lsb == nullptr) {
-        if (typesKnown)
+        if (typesKnown) {
             ::error(ErrorType::ERR_EXPECTED, "%1%: slice indexes must be compile-time constants",
                     e->e2);
+        }
         return e;
     }
 
     auto e0 = getConstant(e->e0);
-    if (e0 == nullptr) return e;
+    if (e0 == nullptr) {
+        return e;
+    }
 
     auto cmsb = msb->to<IR::Constant>();
     if (cmsb == nullptr) {
@@ -608,7 +674,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Slice *e) {
         ::error(ErrorType::ERR_EXPECTED, "%1%: bit slicing should be specified as [msb:lsb]", e);
         return e;
     }
-    if (overflowWidth(e, m) || overflowWidth(e, l)) return e;
+    if (overflowWidth(e, m) || overflowWidth(e, l)) {
+        return e;
+    }
     big_int value = cbase->value >> l;
     big_int mask = 1;
     mask = (mask << (m - l + 1)) - 1;
@@ -618,7 +686,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Slice *e) {
 }
 
 const IR::Node *DoConstantFolding::postorder(IR::Member *e) {
-    if (!typesKnown) return e;
+    if (!typesKnown) {
+        return e;
+    }
     auto orig = getOriginal<IR::Member>();
     auto type = typeMap->getType(orig->expr, true);
     auto origtype = typeMap->getType(orig);
@@ -630,10 +700,14 @@ const IR::Node *DoConstantFolding::postorder(IR::Member *e) {
     }
 
     auto expr = getConstant(e->expr);
-    if (expr == nullptr) return e;
+    if (expr == nullptr) {
+        return e;
+    }
 
     auto structType = type->to<IR::Type_StructLike>();
-    if (structType == nullptr) BUG("Expected a struct type, got %1%", type);
+    if (structType == nullptr) {
+        BUG("Expected a struct type, got %1%", type);
+    }
 
     if (auto list = expr->to<IR::ListExpression>()) {
         bool found = false;
@@ -646,12 +720,16 @@ const IR::Node *DoConstantFolding::postorder(IR::Member *e) {
             index++;
         }
 
-        if (!found) BUG("Could not find field %1% in type %2%", e->member, type);
+        if (!found) {
+            BUG("Could not find field %1% in type %2%", e->member, type);
+        }
         return CloneConstants::clone(list->components.at(index), this);
     }
 
     if (auto si = expr->to<IR::StructExpression>()) {
-        if (type->is<IR::Type_Header>() && e->member.name == IR::Type_Header::isValid) return e;
+        if (type->is<IR::Type_Header>() && e->member.name == IR::Type_Header::isValid) {
+            return e;
+        }
         auto ne = si->components.getDeclaration<IR::NamedExpression>(e->member.name);
         BUG_CHECK(ne != nullptr, "Could not find field %1% in initializer %2%", e->member, si);
         return CloneConstants::clone(ne->expression, this);
@@ -667,7 +745,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Member *e) {
 const IR::Node *DoConstantFolding::postorder(IR::Concat *e) {
     auto eleft = getConstant(e->left);
     auto eright = getConstant(e->right);
-    if (eleft == nullptr || eright == nullptr) return e;
+    if (eleft == nullptr || eright == nullptr) {
+        return e;
+    }
 
     auto left = eleft->to<IR::Constant>();
     if (left == nullptr) {
@@ -688,7 +768,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Concat *e) {
     }
 
     auto resultType = IR::Type_Bits::get(lt->width_bits() + rt->width_bits(), lt->isSigned);
-    if (overflowWidth(e, resultType->width_bits())) return e;
+    if (overflowWidth(e, resultType->width_bits())) {
+        return e;
+    }
     big_int value =
         Util::shift_left(left->value, static_cast<unsigned>(rt->width_bits())) + right->value;
     return new IR::Constant(e->srcInfo, resultType, value, left->base);
@@ -696,7 +778,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Concat *e) {
 
 const IR::Node *DoConstantFolding::postorder(IR::LNot *e) {
     auto op = getConstant(e->expr);
-    if (op == nullptr) return e;
+    if (op == nullptr) {
+        return e;
+    }
 
     auto cst = op->to<IR::BoolLiteral>();
     if (cst == nullptr) {
@@ -707,32 +791,40 @@ const IR::Node *DoConstantFolding::postorder(IR::LNot *e) {
 }
 
 const IR::Node *DoConstantFolding::postorder(IR::Mux *e) {
-    if (!typesKnown)
+    if (!typesKnown) {
         // We want the typechecker to look at the expression first
         return e;
+    }
     auto cond = getConstant(e->e0);
-    if (cond == nullptr) return e;
+    if (cond == nullptr) {
+        return e;
+    }
     auto b = cond->to<IR::BoolLiteral>();
     if (b == nullptr) {
         ::error(ErrorType::ERR_EXPECTED, "%1%: expected a Boolean", cond);
         return e;
     }
-    if (b->value)
+    if (b->value) {
         return e->e1;
-    else
+    } else {
         return e->e2;
+    }
 }
 
 const IR::Node *DoConstantFolding::shift(const IR::Operation_Binary *e) {
     auto right = getConstant(e->right);
-    if (right == nullptr) return e;
+    if (right == nullptr) {
+        return e;
+    }
 
     const IR::Constant *shift_amt = nullptr;
     if (right->is<IR::Constant>()) {
         shift_amt = right->to<IR::Constant>();
     } else if (typesKnown) {
         auto ei = EnumInstance::resolve(right, typeMap);
-        if (ei == nullptr) return e;
+        if (ei == nullptr) {
+            return e;
+        }
         if (auto se = ei->to<SerEnumInstance>()) {
             shift_amt = se->value->checkedTo<IR::Constant>();
         } else {
@@ -749,10 +841,14 @@ const IR::Node *DoConstantFolding::shift(const IR::Operation_Binary *e) {
         return e;
     }
 
-    if (shift_amt->value == 0) return e->left;
+    if (shift_amt->value == 0) {
+        return e->left;
+    }
 
     auto left = getConstant(e->left);
-    if (left == nullptr) return e;
+    if (left == nullptr) {
+        return e;
+    }
 
     auto cl = left->to<IR::Constant>();
     if (cl == nullptr) {
@@ -762,31 +858,38 @@ const IR::Node *DoConstantFolding::shift(const IR::Operation_Binary *e) {
 
     big_int value = cl->value;
     unsigned shift = static_cast<unsigned>(shift_amt->asInt());
-    if (overflowWidth(e, shift)) return e;
+    if (overflowWidth(e, shift)) {
+        return e;
+    }
 
     auto tb = left->type->to<IR::Type_Bits>();
     if (tb != nullptr) {
-        if (((unsigned)tb->width_bits() <= shift) && warnings)
+        if (((unsigned)tb->width_bits() <= shift) && warnings) {
             ::warning(ErrorType::WARN_OVERFLOW, "%1%: Shifting %2%-bit value with %3%", e,
                       tb->width_bits(), shift);
+        }
     }
 
-    if (e->is<IR::Shl>())
+    if (e->is<IR::Shl>()) {
         value = Util::shift_left(value, shift);
-    else
+    } else {
         value = Util::shift_right(value, shift);
+    }
     return new IR::Constant(e->srcInfo, left->type, value, cl->base);
 }
 
 const IR::Node *DoConstantFolding::postorder(IR::Cast *e) {
     auto expr = getConstant(e->expr);
-    if (expr == nullptr) return e;
+    if (expr == nullptr) {
+        return e;
+    }
 
     const IR::Type *etype;
-    if (typesKnown)
+    if (typesKnown) {
         etype = typeMap->getType(getOriginal(), true);
-    else
+    } else {
         etype = e->destType;
+    }
 
     if (etype->is<IR::Type_Bits>()) {
         auto type = etype->to<IR::Type_Bits>();
@@ -797,7 +900,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Cast *e) {
             return new IR::Constant(e->srcInfo, type, v, 10);
         } else if (expr->is<IR::Member>()) {
             auto ei = EnumInstance::resolve(expr, typeMap);
-            if (ei == nullptr) return e;
+            if (ei == nullptr) {
+                return e;
+            }
             if (auto se = ei->to<SerEnumInstance>()) {
                 return se->value;
             }
@@ -805,7 +910,9 @@ const IR::Node *DoConstantFolding::postorder(IR::Cast *e) {
             return e;
         }
     } else if (etype->is<IR::Type_Boolean>()) {
-        if (expr->is<IR::BoolLiteral>()) return expr;
+        if (expr->is<IR::BoolLiteral>()) {
+            return expr;
+        }
         if (expr->is<IR::Constant>()) {
             auto cst = expr->to<IR::Constant>();
             auto ctype = cst->type;
@@ -840,14 +947,18 @@ const IR::Node *DoConstantFolding::postorder(IR::Cast *e) {
 
 DoConstantFolding::Result DoConstantFolding::setContains(const IR::Expression *keySet,
                                                          const IR::Expression *select) const {
-    if (keySet->is<IR::DefaultExpression>()) return Result::Yes;
+    if (keySet->is<IR::DefaultExpression>()) {
+        return Result::Yes;
+    }
     if (auto list = select->to<IR::ListExpression>()) {
         if (auto klist = keySet->to<IR::ListExpression>()) {
             BUG_CHECK(list->components.size() == klist->components.size(),
                       "%1% and %2% size mismatch", list, klist);
             for (unsigned i = 0; i < list->components.size(); i++) {
                 auto r = setContains(klist->components.at(i), list->components.at(i));
-                if (r == Result::DontKnow || r == Result::No) return r;
+                if (r == Result::DontKnow || r == Result::No) {
+                    return r;
+                }
             }
             return Result::Yes;
         } else {
@@ -864,8 +975,9 @@ DoConstantFolding::Result DoConstantFolding::setContains(const IR::Expression *k
             return Result::No;
         }
         BUG_CHECK(key->is<IR::BoolLiteral>(), "%1%: expected a boolean", key);
-        if (select->to<IR::BoolLiteral>()->value == key->to<IR::BoolLiteral>()->value)
+        if (select->to<IR::BoolLiteral>()->value == key->to<IR::BoolLiteral>()->value) {
             return Result::Yes;
+        }
         return Result::No;
     }
 
@@ -880,14 +992,18 @@ DoConstantFolding::Result DoConstantFolding::setContains(const IR::Expression *k
         auto sel = getConstant(select);
         // For Enum and SerEnum instances we can just use expression equivalence.
         // This assumes that type checking does not allow us to compare constants to SerEnums.
-        if (key->equiv(*sel)) return Result::Yes;
+        if (key->equiv(*sel)) {
+            return Result::Yes;
+        }
         return Result::No;
     }
 
     BUG_CHECK(select->is<IR::Constant>(), "%1%: expected a constant", select);
     auto cst = select->to<IR::Constant>();
     if (auto kc = keySet->to<IR::Constant>()) {
-        if (kc->value == cst->value) return Result::Yes;
+        if (kc->value == cst->value) {
+            return Result::Yes;
+        }
         return Result::No;
     } else if (auto range = keySet->to<IR::Range>()) {
         auto left = getConstant(range->left);
@@ -903,8 +1019,9 @@ DoConstantFolding::Result DoConstantFolding::setContains(const IR::Expression *k
             return Result::DontKnow;
         }
         if (left->to<IR::Constant>()->value <= cst->value &&
-            right->to<IR::Constant>()->value >= cst->value)
+            right->to<IR::Constant>()->value >= cst->value) {
             return Result::Yes;
+        }
         return Result::No;
     } else if (auto mask = keySet->to<IR::Mask>()) {
         // check if left & right == cst & right
@@ -921,8 +1038,9 @@ DoConstantFolding::Result DoConstantFolding::setContains(const IR::Expression *k
             return Result::DontKnow;
         }
         if ((left->to<IR::Constant>()->value & right->to<IR::Constant>()->value) ==
-            (right->to<IR::Constant>()->value & cst->value))
+            (right->to<IR::Constant>()->value & cst->value)) {
             return Result::Yes;
+        }
         return Result::No;
     }
     // Otherwise the keyset may be a ValueSet
@@ -930,9 +1048,13 @@ DoConstantFolding::Result DoConstantFolding::setContains(const IR::Expression *k
 }
 
 const IR::Node *DoConstantFolding::postorder(IR::SelectExpression *expression) {
-    if (!typesKnown) return expression;
+    if (!typesKnown) {
+        return expression;
+    }
     auto sel = getConstant(expression->select);
-    if (sel == nullptr) return expression;
+    if (sel == nullptr) {
+        return expression;
+    }
 
     IR::Vector<IR::SelectCase> cases;
     bool someUnknown = false;
@@ -942,7 +1064,9 @@ const IR::Node *DoConstantFolding::postorder(IR::SelectExpression *expression) {
 
     for (auto c : expression->selectCases) {
         if (finished) {
-            if (warnings) warn(ErrorType::WARN_PARSER_TRANSITION, "%1%: unreachable case", c);
+            if (warnings) {
+                warn(ErrorType::WARN_PARSER_TRANSITION, "%1%: unreachable case", c);
+            }
             continue;
         }
         auto inside = setContains(c->keyset, sel);
@@ -955,7 +1079,9 @@ const IR::Node *DoConstantFolding::postorder(IR::SelectExpression *expression) {
         } else {
             finished = true;
             if (someUnknown) {
-                if (!c->keyset->is<IR::DefaultExpression>()) changes = true;
+                if (!c->keyset->is<IR::DefaultExpression>()) {
+                    changes = true;
+                }
                 auto newc = new IR::SelectCase(c->srcInfo, new IR::DefaultExpression(), c->state);
                 cases.push_back(newc);
             } else {
@@ -966,8 +1092,9 @@ const IR::Node *DoConstantFolding::postorder(IR::SelectExpression *expression) {
     }
 
     if (changes) {
-        if (cases.size() == 0 && result == expression && warnings)
+        if (cases.size() == 0 && result == expression && warnings) {
             warn(ErrorType::WARN_PARSER_TRANSITION, "%1%: no case matches", expression);
+        }
         expression->selectCases = std::move(cases);
     }
     return result;

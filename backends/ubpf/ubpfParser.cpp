@@ -95,7 +95,9 @@ void UBPFStateTranslationVisitor::emitCheckPacketLength(const IR::Expression *ex
 }
 
 bool UBPFStateTranslationVisitor::preorder(const IR::ParserState *parserState) {
-    if (parserState->isBuiltin()) return false;
+    if (parserState->isBuiltin()) {
+        return false;
+    }
 
     builder->emitIndent();
     builder->append(parserState->name.name);
@@ -113,8 +115,9 @@ bool UBPFStateTranslationVisitor::preorder(const IR::ParserState *parserState) {
         visit(parserState->selectExpression);
     } else {
         // must be a PathExpression which is a state name
-        if (!parserState->selectExpression->is<IR::PathExpression>())
+        if (!parserState->selectExpression->is<IR::PathExpression>()) {
             BUG("Expected a PathExpression, got a %1%", parserState->selectExpression);
+        }
         builder->emitIndent();
         builder->append("goto ");
         visit(parserState->selectExpression);
@@ -165,7 +168,9 @@ bool UBPFStateTranslationVisitor::preorder(const IR::SelectExpression *expressio
     builder->appendFormat("%s = ", selectValue);
     visit(expression->select);
     builder->endOfStatement(true);
-    for (auto e : expression->selectCases) visit(e);
+    for (auto e : expression->selectCases) {
+        visit(e);
+    }
 
     builder->emitIndent();
     builder->appendFormat("else goto %s;", IR::ParserState::reject.c_str());
@@ -227,7 +232,9 @@ void UBPFStateTranslationVisitor::compileExtractField(const IR::Expression *expr
         type->emit(builder);
         builder->appendFormat(")((%s(%s, BYTES(%s))", helper, program->packetStartVar.c_str(),
                               program->offsetVar.c_str());
-        if (shift != 0) builder->appendFormat(" >> %d", shift);
+        if (shift != 0) {
+            builder->appendFormat(" >> %d", shift);
+        }
         builder->append(")");
 
         if (widthToExtract != loadSize) {
@@ -237,20 +244,24 @@ void UBPFStateTranslationVisitor::compileExtractField(const IR::Expression *expr
         }
 
         builder->append(")");
-        if (advanceCursor) builder->endOfStatement(true);
+        if (advanceCursor) {
+            builder->endOfStatement(true);
+        }
     } else {
         // wide values; read all bytes one by one.
         unsigned shift;
-        if (alignment == 0)
+        if (alignment == 0) {
             shift = 0;
-        else
+        } else {
             shift = 8 - alignment;
+        }
 
         const char *helper;
-        if (shift == 0)
+        if (shift == 0) {
             helper = "load_byte";
-        else
+        } else {
             helper = "load_half";
+        }
         auto bt = UBPFTypeFactory::instance->create(IR::Type_Bits::get(8));
         unsigned bytes = ROUNDUP(widthToExtract, 8);
         for (unsigned i = 0; i < bytes; i++) {
@@ -320,11 +331,14 @@ void UBPFStateTranslationVisitor::compileLookahead(const IR::Expression *destina
     auto type = state->parser->typeMap->getType(destination);
     auto etype = UBPFTypeFactory::instance->create(type);
 
-    if (type->to<IR::Type_Bits>() == nullptr)
+    if (type->to<IR::Type_Bits>() == nullptr) {
         BUG("lookahead<%1%>(): only bit type is supported yet", type);
+    }
 
     unsigned width = dynamic_cast<EBPF::IHasWidth *>(etype)->widthInBits();
-    if (width > 64) BUG("lookahead<%1%>(): more than 64 bits not supported yet", type);
+    if (width > 64) {
+        BUG("lookahead<%1%>(): more than 64 bits not supported yet", type);
+    }
 
     // check packet's length
     emitCheckPacketLength(width);
@@ -370,7 +384,9 @@ bool UBPFStateTranslationVisitor::preorder(const IR::MethodCallExpression *expre
     builder->append("(");
     bool first = true;
     for (auto a : *expression->arguments) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         visit(a);
     }
@@ -419,7 +435,9 @@ bool UBPFStateTranslationVisitor::preorder(const IR::AssignmentStatement *stat) 
         auto mi = P4::MethodInstance::resolve(mce, state->parser->program->refMap,
                                               state->parser->program->typeMap);
         auto extMethod = mi->to<P4::ExternMethod>();
-        if (extMethod == nullptr) BUG("Unhandled method %1%", mce);
+        if (extMethod == nullptr) {
+            BUG("Unhandled method %1%", mce);
+        }
 
         auto decl = extMethod->object;
         if (decl == state->parser->packet) {
@@ -447,7 +465,9 @@ void UBPFParserState::emit(EBPF::CodeBuilder *builder) {
 }
 
 void UBPFParser::emit(EBPF::CodeBuilder *builder) {
-    for (auto s : states) s->emit(builder);
+    for (auto s : states) {
+        s->emit(builder);
+    }
 
     builder->newline();
 
@@ -480,11 +500,15 @@ bool UBPFParser::build() {
     }
 
     auto ht = typeMap->getType(headers);
-    if (ht == nullptr) return false;
+    if (ht == nullptr) {
+        return false;
+    }
     headerType = UBPFTypeFactory::instance->create(ht);
 
     auto md = typeMap->getType(metadata);
-    if (md == nullptr) return false;
+    if (md == nullptr) {
+        return false;
+    }
     metadataType = UBPFTypeFactory::instance->create(md);
     return true;
 }

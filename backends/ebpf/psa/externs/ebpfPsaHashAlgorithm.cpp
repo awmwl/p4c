@@ -29,7 +29,9 @@ EBPFHashAlgorithmPSA::ArgumentsList EBPFHashAlgorithmPSA::unpackArguments(
     std::vector<const IR::Expression *> arguments;
 
     if (auto argList = expr->arguments->at(dataPos)->expression->to<IR::StructExpression>()) {
-        for (auto field : argList->components) arguments.push_back(field->expression);
+        for (auto field : argList->components) {
+            arguments.push_back(field->expression);
+        }
     } else {
         arguments.push_back(expr->arguments->at(dataPos)->expression);
     }
@@ -197,12 +199,13 @@ void CRCChecksumAlgorithm::emitVariables(CodeBuilder *builder,
         auto registerType = EBPFTypeFactory::instance->create(otype);
         registerType->emit(builder);
     } else {
-        if (crcWidth == 16)
+        if (crcWidth == 16) {
             builder->append("u16");
-        else if (crcWidth == 32)
+        } else if (crcWidth == 32) {
             builder->append("u32");
-        else
+        } else {
             BUG("Unsupported CRC width %1%", crcWidth);
+        }
     }
 
     builder->appendFormat(" %s = %s", registerVar.c_str(), initialValue.c_str());

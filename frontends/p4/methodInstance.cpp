@@ -28,7 +28,9 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
                                         bool useExpressionType, const Visitor::Context *ctxt,
                                         bool incomplete) {
     auto mt = typeMap ? typeMap->getType(mce->method) : nullptr;
-    if (mt == nullptr && useExpressionType) mt = mce->method->type;
+    if (mt == nullptr && useExpressionType) {
+        mt = mce->method->type;
+    }
     BUG_CHECK(mt, "%1%: unknown type", mce->method);
     BUG_CHECK(mt->is<IR::Type_MethodBase>(), "%1%: expected a MethodBase type", mt);
     auto originalType = mt->to<IR::Type_MethodBase>();
@@ -47,24 +49,30 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
         auto mem = mce->method->to<IR::Member>();
         auto basetype = typeMap ? typeMap->getType(mem->expr) : mem->expr->type;
         if (basetype == nullptr) {
-            if (useExpressionType)
+            if (useExpressionType) {
                 basetype = mem->expr->type;
-            else
+            } else {
                 BUG("Could not find type for %1%", mem->expr);
+            }
         }
-        if (auto sc = basetype->to<IR::Type_SpecializedCanonical>()) basetype = sc->baseType;
+        if (auto sc = basetype->to<IR::Type_SpecializedCanonical>()) {
+            basetype = sc->baseType;
+        }
         if (basetype->is<IR::Type_HeaderUnion>()) {
-            if (mem->member == IR::Type_Header::isValid)
+            if (mem->member == IR::Type_Header::isValid) {
                 return new BuiltInMethod(mce, mem->member, mem->expr, mt->to<IR::Type_Method>());
+            }
         } else if (basetype->is<IR::Type_Header>()) {
             if (mem->member == IR::Type_Header::setValid ||
                 mem->member == IR::Type_Header::setInvalid ||
-                mem->member == IR::Type_Header::isValid)
+                mem->member == IR::Type_Header::isValid) {
                 return new BuiltInMethod(mce, mem->member, mem->expr, mt->to<IR::Type_Method>());
+            }
         } else if (basetype->is<IR::Type_Stack>()) {
             if (mem->member == IR::Type_Stack::push_front ||
-                mem->member == IR::Type_Stack::pop_front)
+                mem->member == IR::Type_Stack::pop_front) {
                 return new BuiltInMethod(mce, mem->member, mem->expr, mt->to<IR::Type_Method>());
+            }
         } else {
             const IR::IDeclaration *decl = nullptr;
             const IR::Type *type = nullptr;
@@ -86,8 +94,9 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
                 BUG("unexpected expression %1% resolving method instance", mem->expr);
             }
             BUG_CHECK(type != nullptr, "Could not resolve type for %1%", decl);
-            if (type->is<IR::Type_SpecializedCanonical>())
+            if (type->is<IR::Type_SpecializedCanonical>()) {
                 type = type->to<IR::Type_SpecializedCanonical>()->substituted->to<IR::Type>();
+            }
             if (type->is<IR::IApply>() && mem->member == IR::IApply::applyMethodName) {
                 return new ApplyMethod(mce, decl, type->to<IR::IApply>());
             } else if (type->is<IR::Type_Extern>()) {
@@ -95,7 +104,9 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
                 auto methodType = mt->to<IR::Type_Method>();
                 CHECK_NULL(methodType);
                 auto method = et->lookupMethod(mem->member, mce->arguments);
-                if (method == nullptr) return nullptr;
+                if (method == nullptr) {
+                    return nullptr;
+                }
                 return new ExternMethod(mce, decl, method, et, methodType,
                                         type->to<IR::Type_Extern>(),
                                         actualType->to<IR::Type_Method>(), incomplete);
@@ -147,8 +158,9 @@ ConstructorCall *ConstructorCall::resolve(const IR::ConstructorCallExpression *c
         typeArguments = new IR::Vector<IR::Type>();
     }
 
-    if (auto tsc = ct->to<IR::Type_SpecializedCanonical>())
+    if (auto tsc = ct->to<IR::Type_SpecializedCanonical>()) {
         ct = typeMap ? typeMap->getTypeType(tsc->baseType, true) : tsc;
+    }
 
     if (ct->is<IR::Type_Extern>()) {
         auto decl = refMap->getDeclaration(type->path, true);
@@ -210,10 +222,14 @@ std::vector<const IR::IDeclaration *> ExternMethod::mayCall() const {
     } else {
         for (auto meth : originalExternType->methods) {
             auto sync = meth->getAnnotation(IR::Annotation::synchronousAnnotation);
-            if (!sync) continue;
+            if (!sync) {
+                continue;
+            }
             for (auto m : sync->expr) {
                 auto mname = m->to<IR::PathExpression>();
-                if (!mname || method->name != mname->path->name) continue;
+                if (!mname || method->name != mname->path->name) {
+                    continue;
+                }
                 if (auto *am =
                         di->initializer->components.getDeclaration<IR::IDeclaration>(meth->name)) {
                     rv.push_back(am);

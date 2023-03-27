@@ -82,7 +82,9 @@ class SimpleInlineList {
     void analyze() {
         // We only keep the call graph between objects of the same kind.
         P4::CallGraph<const Callable *> cg("Call-graph");
-        for (auto c : toInline) cg.calls(c->caller, c->callee);
+        for (auto c : toInline) {
+            cg.calls(c->caller, c->callee);
+        }
 
         // must inline from leaves up
         std::vector<const Callable *> order;
@@ -90,7 +92,9 @@ class SimpleInlineList {
         for (auto c : order) {
             // This is quadratic, but hopefully the call graph is not too large
             for (auto ci : toInline) {
-                if (ci->caller == c) inlineOrder.push_back(ci);
+                if (ci->caller == c) {
+                    inlineOrder.push_back(ci);
+                }
             }
         }
 
@@ -101,7 +105,9 @@ class SimpleInlineList {
 
     /// Get next batch of objects to inline
     InlineWorkList *next() {
-        if (inlineOrder.size() == 0) return nullptr;
+        if (inlineOrder.size() == 0) {
+            return nullptr;
+        }
 
         std::set<const Callable *> callers;
         auto result = new InlineWorkList();
@@ -112,7 +118,9 @@ class SimpleInlineList {
         // we have already selected.
         while (!inlineOrder.empty()) {
             auto last = inlineOrder.back();
-            if (callers.find(last->callee) != callers.end()) break;
+            if (callers.find(last->callee) != callers.end()) {
+                break;
+            }
             inlineOrder.pop_back();
             result->add(last);
             callers.emplace(last->caller);
@@ -126,8 +134,12 @@ class SimpleInlineList {
     void replace(const Callable *container, const Callable *replacement) {
         LOG2("Substituting " << container << " with " << replacement);
         for (auto e : inlineOrder) {
-            if (e->callee == container) e->callee = replacement;
-            if (e->caller == container) e->caller = replacement;
+            if (e->callee == container) {
+                e->callee = replacement;
+            }
+            if (e->caller == container) {
+                e->caller = replacement;
+            }
         }
     }
 };
@@ -174,7 +186,9 @@ class InlineDriver : public Visitor {
             LOG2("Processing " << todo);
             inliner->prepare(toInline, todo);
             program = program->apply(*inliner);
-            if (::errorCount() > 0) break;
+            if (::errorCount() > 0) {
+                break;
+            }
 
 #if DEBUG_INLINER
             // debugging code; we don't have an easy way to dump the program here,

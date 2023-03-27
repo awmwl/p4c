@@ -28,7 +28,9 @@ namespace UBPF {
 
 void run_ubpf_backend(const EbpfOptions &options, const IR::ToplevelBlock *toplevel,
                       P4::ReferenceMap *refMap, P4::TypeMap *typeMap) {
-    if (toplevel == nullptr) return;
+    if (toplevel == nullptr) {
+        return;
+    }
 
     auto main = toplevel->getMain();
     if (main == nullptr) {
@@ -49,22 +51,31 @@ void run_ubpf_backend(const EbpfOptions &options, const IR::ToplevelBlock *tople
     UBPFTypeFactory::createFactory(typeMap);
     auto prog = new UBPFProgram(options, toplevel->getProgram(), refMap, typeMap, toplevel);
 
-    if (!prog->build()) return;
+    if (!prog->build()) {
+        return;
+    }
 
-    if (options.outputFile.isNullOrEmpty()) return;
+    if (options.outputFile.isNullOrEmpty()) {
+        return;
+    }
 
     cstring cfile = options.outputFile;
     auto cstream = openFile(cfile, false);
-    if (cstream == nullptr) return;
+    if (cstream == nullptr) {
+        return;
+    }
 
     cstring hfile;
     const char *dot = cfile.findlast('.');
-    if (dot == nullptr)
+    if (dot == nullptr) {
         hfile = cfile + ".h";
-    else
+    } else {
         hfile = cfile.before(dot) + ".h";
+    }
     auto hstream = openFile(hfile, false);
-    if (hstream == nullptr) return;
+    if (hstream == nullptr) {
+        return;
+    }
 
     UbpfCodeBuilder c(target);
     UbpfCodeBuilder h(target);

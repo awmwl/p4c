@@ -27,11 +27,15 @@ const IR::Node *RemoveUnusedActionParameters::postorder(IR::P4Action *action) {
 
     // If all of the parameters to this action are used, there's nothing to do.
     auto isUsed = [&](const IR::Parameter *p) { return refMap->isUsed(p); };
-    if (std::all_of(params->begin(), params->end(), isUsed)) return action;
+    if (std::all_of(params->begin(), params->end(), isUsed)) {
+        return action;
+    }
 
     // Some parameters are unused; filter them out.
     auto newParams = new IR::ParameterList;
-    for (auto param : *params->getEnumerator()->where(isUsed)) newParams->push_back(param);
+    for (auto param : *params->getEnumerator()->where(isUsed)) {
+        newParams->push_back(param);
+    }
 
     action->parameters = newParams;
     return action;

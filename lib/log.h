@@ -157,10 +157,11 @@ inline auto operator<<(std::ostream &out, const T &obj) -> decltype((void)obj.db
 
 template <class T>
 inline auto operator<<(std::ostream &out, const T *obj) -> decltype((void)obj->dbprint(out), out) {
-    if (obj)
+    if (obj) {
         obj->dbprint(out);
-    else
+    } else {
         out << "<null>";
+    }
     return out;
 }
 

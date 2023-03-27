@@ -180,14 +180,18 @@ bool BFRuntimeSchemaGenerator::addActionProfIds(const p4configv1::Table &table,
         tableJson->emplace("table_type", tableType);
     }
 
-    if (actProfId > 0) addToDependsOn(tableJson, actProfId);
+    if (actProfId > 0) {
+        addToDependsOn(tableJson, actProfId);
+    }
     return true;
 }
 
 void BFRuntimeSchemaGenerator::addActionProfs(Util::JsonArray *tablesJson) const {
     for (const auto &actionProf : p4info.action_profiles()) {
         auto actionProfInstance = ActionProf::from(p4info, actionProf);
-        if (actionProfInstance == boost::none) continue;
+        if (actionProfInstance == boost::none) {
+            continue;
+        }
         addActionProfCommon(tablesJson, *actionProfInstance);
     }
 }
@@ -195,7 +199,9 @@ void BFRuntimeSchemaGenerator::addActionProfs(Util::JsonArray *tablesJson) const
 boost::optional<bool> BFRuntimeSchemaGenerator::actProfHasSelector(P4Id actProfId) const {
     if (isOfType(actProfId, p4configv1::P4Ids::ACTION_PROFILE)) {
         auto *actionProf = Standard::findActionProf(p4info, actProfId);
-        if (actionProf == nullptr) return boost::none;
+        if (actionProf == nullptr) {
+            return boost::none;
+        }
         return actionProf->with_selector();
     } else if (isOfType(actProfId, ::dpdk::P4Ids::ACTION_SELECTOR)) {
         return true;
@@ -211,7 +217,9 @@ const Util::JsonObject *BFRuntimeSchemaGenerator::genSchema() const {
         auto fileName = progName.findlast('/');
         // Handle the case when input file is in the current working directory.
         // fileName would be null in that case, hence progName should remain unchanged.
-        if (fileName) progName = fileName;
+        if (fileName) {
+            progName = fileName;
+        }
         auto fileext = progName.find(".");
         progName = progName.replace(fileext, "");
         progName = progName.trim("/\t\n\r");

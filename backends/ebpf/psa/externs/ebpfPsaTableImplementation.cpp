@@ -30,7 +30,9 @@ EBPFTableImplementationPSA::EBPFTableImplementationPSA(const EBPFProgram *progra
 }
 
 void EBPFTableImplementationPSA::emitTypes(CodeBuilder *builder) {
-    if (table == nullptr) return;
+    if (table == nullptr) {
+        return;
+    }
     // key is u32, so do not emit type for it
     emitValueType(builder);
     emitCacheTypes(builder);
@@ -62,7 +64,9 @@ void EBPFTableImplementationPSA::registerTable(const EBPFTablePSA *instance) {
 
 void EBPFTableImplementationPSA::verifyTableActionList(const EBPFTablePSA *instance) {
     bool printError = false;
-    if (actionList == nullptr) return;
+    if (actionList == nullptr) {
+        return;
+    }
 
     auto getActionName = [this](const IR::ActionList *al, size_t id) -> cstring {
         auto pe = this->getActionNameExpression(al->actionList.at(id)->expression);
@@ -74,7 +78,9 @@ void EBPFTableImplementationPSA::verifyTableActionList(const EBPFTablePSA *insta
         for (size_t i = 0; i < actionList->size(); ++i) {
             auto left = getActionName(instance->actionList, i);
             auto right = getActionName(actionList, i);
-            if (left != right) printError = true;
+            if (left != right) {
+                printError = true;
+            }
         }
     } else {
         printError = true;
@@ -151,8 +157,9 @@ EBPFActionProfilePSA::EBPFActionProfilePSA(const EBPFProgram *program, CodeGenIn
 }
 
 void EBPFActionProfilePSA::emitInstance(CodeBuilder *builder) {
-    if (table == nullptr)  // no table(s)
+    if (table == nullptr) {  // no table(s)
         return;
+    }
 
     // Control plane must have ability to know if given reference exists or is used.
     // Problem with TableArray: id of NoAction is 0 and default value of map entry is also 0.
@@ -256,7 +263,9 @@ EBPFActionSelectorPSA::EBPFActionSelectorPSA(const EBPFProgram *program, CodeGen
 }
 
 void EBPFActionSelectorPSA::emitInitializer(CodeBuilder *builder) {
-    if (emptyGroupAction == nullptr) return;  // no entry to initialize
+    if (emptyGroupAction == nullptr) {
+        return;  // no entry to initialize
+    }
 
     auto ev = emptyGroupAction->value->to<IR::ExpressionValue>()->expression;
     cstring value = program->refMap->newName("value");
@@ -298,8 +307,9 @@ void EBPFActionSelectorPSA::emitInitializer(CodeBuilder *builder) {
 }
 
 void EBPFActionSelectorPSA::emitInstance(CodeBuilder *builder) {
-    if (table == nullptr)  // no table(s)
+    if (table == nullptr) {  // no table(s)
         return;
+    }
 
     // group map (group ref -> {action refs})
     // TODO: group size (inner size) is assumed to be 128. Make more logic for this.
@@ -327,7 +337,9 @@ void EBPFActionSelectorPSA::emitReferenceEntry(CodeBuilder *builder) {
 
 void EBPFActionSelectorPSA::applyImplementation(CodeBuilder *builder, cstring tableValueName,
                                                 cstring actionRunVariable) {
-    if (hashEngine == nullptr) return;
+    if (hashEngine == nullptr) {
+        return;
+    }
 
     cstring msg = Util::printf_format("ActionSelector: applying %s", instanceName.c_str());
     builder->target->emitTraceMessage(builder, msg.c_str());
@@ -537,7 +549,9 @@ EBPFActionSelectorPSA::SelectorsListType EBPFActionSelectorPSA::getSelectorsFrom
         auto mkdecl = program->refMap->getDeclaration(k->matchType->path, true);
         auto matchType = mkdecl->getNode()->to<IR::Declaration_ID>();
 
-        if (matchType->name.name == "selector") ret.emplace_back(k);
+        if (matchType->name.name == "selector") {
+            ret.emplace_back(k);
+        }
     }
 
     return ret;
@@ -572,7 +586,9 @@ void EBPFActionSelectorPSA::verifyTableSelectorKeySet(const EBPFTablePSA *instan
         for (size_t i = 0; i < selectors.size(); ++i) {
             auto left = foreignSelectors.at(i)->expression->toString();
             auto right = selectors.at(i)->expression->toString();
-            if (left != right) printError = true;
+            if (left != right) {
+                printError = true;
+            }
         }
     } else {
         printError = true;
@@ -589,7 +605,9 @@ void EBPFActionSelectorPSA::verifyTableSelectorKeySet(const EBPFTablePSA *instan
 void EBPFActionSelectorPSA::verifyTableEmptyGroupAction(const EBPFTablePSA *instance) {
     auto iega = instance->table->container->properties->getProperty("psa_empty_group_action");
 
-    if (emptyGroupAction == nullptr && iega == nullptr) return;  // nothing to do here
+    if (emptyGroupAction == nullptr && iega == nullptr) {
+        return;  // nothing to do here
+    }
     if (emptyGroupAction == nullptr && iega != nullptr) {
         ::error(ErrorType::ERR_UNEXPECTED,
                 "%1%: property not specified in previous table %2% "
@@ -623,7 +641,9 @@ void EBPFActionSelectorPSA::verifyTableEmptyGroupAction(const EBPFTablePSA *inst
     auto lmce = lev->to<IR::MethodCallExpression>();
 
     if (lpe != nullptr && rpe != nullptr) {
-        if (lpe->toString() != rpe->toString()) same = false;
+        if (lpe->toString() != rpe->toString()) {
+            same = false;
+        }
     } else if (lmce != nullptr && rmce != nullptr) {
         if (lmce->method->to<IR::PathExpression>()->path->name.originalName !=
             rmce->method->to<IR::PathExpression>()->path->name.originalName) {
@@ -655,7 +675,9 @@ void EBPFActionSelectorPSA::verifyTableEmptyGroupAction(const EBPFTablePSA *inst
 }
 
 void EBPFActionSelectorPSA::emitCacheTypes(CodeBuilder *builder) {
-    if (!tableCacheEnabled) return;
+    if (!tableCacheEnabled) {
+        return;
+    }
 
     CodeGenInspector commentGen(program->refMap, program->typeMap);
     commentGen.setBuilder(builder);
@@ -692,7 +714,9 @@ void EBPFActionSelectorPSA::emitCacheTypes(CodeBuilder *builder) {
 }
 
 void EBPFActionSelectorPSA::emitCacheVariables(CodeBuilder *builder) {
-    if (!tableCacheEnabled) return;
+    if (!tableCacheEnabled) {
+        return;
+    }
 
     cacheKeyVar = program->refMap->newName("key_cache");
     cacheDoUpdateVar = program->refMap->newName("do_update_cache");
@@ -707,7 +731,9 @@ void EBPFActionSelectorPSA::emitCacheVariables(CodeBuilder *builder) {
 }
 
 void EBPFActionSelectorPSA::emitCacheLookup(CodeBuilder *builder, cstring key, cstring value) {
-    if (!tableCacheEnabled) return;
+    if (!tableCacheEnabled) {
+        return;
+    }
 
     builder->emitIndent();
     builder->appendFormat("%s.group_ref = %s->%s", cacheKeyVar.c_str(), key.c_str(),
@@ -772,7 +798,9 @@ void EBPFActionSelectorPSA::emitCacheLookup(CodeBuilder *builder, cstring key, c
 }
 
 void EBPFActionSelectorPSA::emitCacheUpdate(CodeBuilder *builder, cstring key, cstring value) {
-    if (!tableCacheEnabled) return;
+    if (!tableCacheEnabled) {
+        return;
+    }
 
     builder->emitIndent();
     builder->appendFormat("if (%s != NULL && %s != 0) ", value.c_str(), cacheDoUpdateVar.c_str());

@@ -34,12 +34,15 @@ const IR::Expression *DoRemoveSelectBooleans::addToplevelCasts(const IR::Express
                 vec.push_back(e);
             }
         }
-        if (changes) return new IR::ListExpression(expression->srcInfo, vec);
+        if (changes) {
+            return new IR::ListExpression(expression->srcInfo, vec);
+        }
         return expression;
     } else {
         auto type = typeMap->getType(expression, true);
-        if (type->is<IR::Type_Boolean>())
+        if (type->is<IR::Type_Boolean>()) {
             expression = new IR::Cast(IR::Type_Bits::get(1), expression);
+        }
         return expression;
     }
 }

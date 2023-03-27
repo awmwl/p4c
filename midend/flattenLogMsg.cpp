@@ -109,7 +109,9 @@ TypeLogMsgParams FindTypesInLogMsgInvocationToReplace::unfoldStruct(const IR::Ex
                         new IR::NamedExpression(expr->srcInfo, newName(), newMember));
                     nm += std::string("{}");
                 }
-                if (result.second.length() > 1) result.second += ",";
+                if (result.second.length() > 1) {
+                    result.second += ",";
+                }
                 result.second += nm;
             }
             result.second += std::string(")");

@@ -36,10 +36,14 @@ class CallsExit : public Inspector {
             auto am = mi->to<ApplyMethod>();
             CHECK_NULL(am->object);
             auto obj = am->object->getNode();
-            if (callers->find(obj) != callers->end()) callsExit = true;
+            if (callers->find(obj) != callers->end()) {
+                callsExit = true;
+            }
         } else if (mi->is<ActionCall>()) {
             auto ac = mi->to<ActionCall>();
-            if (callers->find(ac->action) != callers->end()) callsExit = true;
+            if (callers->find(ac->action) != callers->end()) {
+                callsExit = true;
+            }
         }
     }
     void end_apply(const IR::Node *node) override {
@@ -147,7 +151,9 @@ const IR::Node *DoRemoveExits::preorder(IR::BlockStatement *statement) {
             ret = r;
         }
     }
-    if (!stack.empty()) set(ret);
+    if (!stack.empty()) {
+        set(ret);
+    }
     prune();
     return block;
 }
@@ -164,7 +170,9 @@ const IR::Node *DoRemoveExits::preorder(IR::IfStatement *statement) {
     auto rcond = ce.callsExit ? TernaryBool::Maybe : TernaryBool::No;
 
     visit(statement->ifTrue);
-    if (statement->ifTrue == nullptr) statement->ifTrue = new IR::EmptyStatement();
+    if (statement->ifTrue == nullptr) {
+        statement->ifTrue = new IR::EmptyStatement();
+    }
     if (ce.callsExit) {
         auto path = new IR::PathExpression(returnVar);
         auto condition = new IR::LNot(path);
@@ -186,12 +194,13 @@ const IR::Node *DoRemoveExits::preorder(IR::IfStatement *statement) {
         rf = hasReturned();
         pop();
     }
-    if (rcond == TernaryBool::Yes || (rt == TernaryBool::Yes && rf == TernaryBool::Yes))
+    if (rcond == TernaryBool::Yes || (rt == TernaryBool::Yes && rf == TernaryBool::Yes)) {
         set(TernaryBool::Yes);
-    else if (rcond == TernaryBool::No && rt == TernaryBool::No && rf == TernaryBool::No)
+    } else if (rcond == TernaryBool::No && rt == TernaryBool::No && rf == TernaryBool::No) {
         set(TernaryBool::No);
-    else
+    } else {
         set(TernaryBool::Maybe);
+    }
     prune();
     return statement;
 }
@@ -211,9 +220,10 @@ const IR::Node *DoRemoveExits::preorder(IR::SwitchStatement *statement) {
     for (auto &c : statement->cases) {
         push();
         visit(c);
-        if (hasReturned() != TernaryBool::No)
+        if (hasReturned() != TernaryBool::No) {
             // this is conservative: we don't check if we cover all labels.
             r = TernaryBool::Maybe;
+        }
         if (cases != nullptr) {
             IR::Statement *stat = nullptr;
             if (c->statement != nullptr) {
@@ -229,7 +239,9 @@ const IR::Node *DoRemoveExits::preorder(IR::SwitchStatement *statement) {
     }
     set(r);
     prune();
-    if (cases != nullptr) statement->cases = std::move(*cases);
+    if (cases != nullptr) {
+        statement->cases = std::move(*cases);
+    }
     return statement;
 }
 
@@ -237,7 +249,9 @@ const IR::Node *DoRemoveExits::preorder(IR::AssignmentStatement *statement) {
     CallsExit ce(refMap, typeMap, &callsExit);
     ce.setCalledBy(this);
     (void)statement->apply(ce);
-    if (ce.callsExit) set(TernaryBool::Maybe);
+    if (ce.callsExit) {
+        set(TernaryBool::Maybe);
+    }
     return statement;
 }
 
@@ -245,7 +259,9 @@ const IR::Node *DoRemoveExits::preorder(IR::MethodCallStatement *statement) {
     CallsExit ce(refMap, typeMap, &callsExit);
     ce.setCalledBy(this);
     (void)statement->apply(ce);
-    if (ce.callsExit) set(TernaryBool::Maybe);
+    if (ce.callsExit) {
+        set(TernaryBool::Maybe);
+    }
     return statement;
 }
 

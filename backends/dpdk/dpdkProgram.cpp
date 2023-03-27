@@ -112,49 +112,59 @@ const IR::DpdkAsmProgram *ConvertToDpdkProgram::create(IR::P4Program *prog) {
     auto egress_parser_converter =
         new ConvertToDpdkParser(refmap, typemap, structure, metadataStruct);
     for (auto kv : structure->parsers) {
-        if (kv.first == "IngressParser")
+        if (kv.first == "IngressParser") {
             kv.second->apply(*ingress_parser_converter);
-        else if (kv.first == "EgressParser") {
-            if (options.enableEgress) kv.second->apply(*egress_parser_converter);
-        } else if (kv.first == "MainParserT")
+        } else if (kv.first == "EgressParser") {
+            if (options.enableEgress) {
+                kv.second->apply(*egress_parser_converter);
+            }
+        } else if (kv.first == "MainParserT") {
             kv.second->apply(*ingress_parser_converter);
-        else
+        } else {
             BUG("Unknown parser %s", kv.second->name);
+        }
     }
     auto ingress_converter = new ConvertToDpdkControl(refmap, typemap, structure, metadataStruct);
     auto egress_converter = new ConvertToDpdkControl(refmap, typemap, structure, metadataStruct);
     for (auto kv : structure->pipelines) {
-        if (kv.first == "Ingress")
+        if (kv.first == "Ingress") {
             kv.second->apply(*ingress_converter);
-        else if (kv.first == "Egress") {
-            if (options.enableEgress) kv.second->apply(*egress_converter);
-        } else if (kv.first == "PreControlT")
+        } else if (kv.first == "Egress") {
+            if (options.enableEgress) {
+                kv.second->apply(*egress_converter);
+            }
+        } else if (kv.first == "PreControlT") {
             kv.second->apply(*ingress_converter);
-        else if (kv.first == "MainControlT")
+        } else if (kv.first == "MainControlT") {
             kv.second->apply(*ingress_converter);
-        else
+        } else {
             BUG("Unknown control block %s", kv.second->name);
+        }
     }
     auto ingress_deparser_converter =
         new ConvertToDpdkControl(refmap, typemap, structure, metadataStruct, true);
     auto egress_deparser_converter =
         new ConvertToDpdkControl(refmap, typemap, structure, metadataStruct);
     for (auto kv : structure->deparsers) {
-        if (kv.first == "IngressDeparser")
+        if (kv.first == "IngressDeparser") {
             kv.second->apply(*ingress_deparser_converter);
-        else if (kv.first == "EgressDeparser") {
-            if (options.enableEgress) kv.second->apply(*egress_deparser_converter);
-        } else if (kv.first == "MainDeparserT")
+        } else if (kv.first == "EgressDeparser") {
+            if (options.enableEgress) {
+                kv.second->apply(*egress_deparser_converter);
+            }
+        } else if (kv.first == "MainDeparserT") {
             kv.second->apply(*ingress_deparser_converter);
-        else
+        } else {
             BUG("Unknown deparser block %s", kv.second->name);
+        }
     }
 
     IR::IndexedVector<IR::DpdkAsmStatement> instr;
-    if (structure->isPNA())
+    if (structure->isPNA()) {
         instr.append(create_pna_preamble());
-    else if (structure->isPSA())
+    } else if (structure->isPSA()) {
         instr.append(create_psa_preamble());
+    }
 
     instr.append(ingress_parser_converter->getInstructions());
     instr.append(ingress_converter->getInstructions());
@@ -165,10 +175,11 @@ const IR::DpdkAsmProgram *ConvertToDpdkProgram::create(IR::P4Program *prog) {
         instr.append(egress_deparser_converter->getInstructions());
     }
 
-    if (structure->isPNA())
+    if (structure->isPNA()) {
         instr.append(create_pna_postamble());
-    else if (structure->isPSA())
+    } else if (structure->isPSA()) {
         instr.append(create_psa_postamble());
+    }
 
     statements.push_back(new IR::DpdkListStatement(instr));
 
@@ -345,7 +356,9 @@ bool ConvertToDpdkParser::preorder(const IR::P4Parser *p) {
     ordered_map<cstring, const IR::ParserState *> state_map;
     std::vector<const IR::ParserState *> stack;
     for (auto state : p->states) {
-        if (state->name == "start") stack.push_back(state);
+        if (state->name == "start") {
+            stack.push_back(state);
+        }
         degree_map.insert({state->name, 0});
         state_map.insert({state->name, state});
     }
@@ -376,14 +389,17 @@ bool ConvertToDpdkParser::preorder(const IR::P4Parser *p) {
         // the main body
         auto i = new IR::DpdkLabelStatement(append_parser_name(p, state->name));
         // 'accept' and 'rejet' states are hardcoded to the end of parser.
-        if (state->name != IR::ParserState::accept && state->name != IR::ParserState::reject)
+        if (state->name != IR::ParserState::accept && state->name != IR::ParserState::reject) {
             add_instr(i);
+        }
         auto c = state->components;
         for (auto stat : c) {
             DPDK::ConvertStatementToDpdk h(refmap, typemap, structure, metadataStruct);
             h.set_parser(p);
             stat->apply(h);
-            for (auto i : h.get_instr()) add_instr(i);
+            for (auto i : h.get_instr()) {
+                add_instr(i);
+            }
         }
 
         // Handle transition select statement
@@ -479,9 +495,13 @@ bool ConvertToDpdkParser::preorder(const IR::P4Parser *p) {
             degree_map.erase(node);
         }
 
-        if (degree_map.size() > 0 && stack.size() == 0) BUG("Unsupported parser loop");
+        if (degree_map.size() > 0 && stack.size() == 0) {
+            BUG("Unsupported parser loop");
+        }
 
-        if (state->name == "start") continue;
+        if (state->name == "start") {
+            continue;
+        }
     }
 
     add_instr(new IR::DpdkLabelStatement(append_parser_name(p, IR::ParserState::reject)));
@@ -497,10 +517,14 @@ bool ConvertToDpdkControl::preorder(const IR::P4Action *a) {
     helper->setCalledBy(this);
     a->body->apply(*helper);
     auto stmt_list = new IR::IndexedVector<IR::DpdkAsmStatement>();
-    for (auto i : helper->get_instr()) stmt_list->push_back(i);
+    for (auto i : helper->get_instr()) {
+        stmt_list->push_back(i);
+    }
 
     auto actName = a->name.name;
-    if (a->name.originalName == "NoAction") actName = "NoAction";
+    if (a->name.originalName == "NoAction") {
+        actName = "NoAction";
+    }
     auto action = new IR::DpdkAction(*stmt_list, actName, *a->parameters);
     actions.push_back(action);
     return false;
@@ -548,7 +572,9 @@ bool ConvertToDpdkControl::checkTableValid(const IR::P4Table *a) {
 boost::optional<const IR::Member *> ConvertToDpdkControl::getMemExprFromProperty(
     const IR::P4Table *table, cstring propertyName) {
     auto property = table->properties->getProperty(propertyName);
-    if (property == nullptr) return boost::none;
+    if (property == nullptr) {
+        return boost::none;
+    }
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
                 "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
@@ -569,7 +595,9 @@ boost::optional<const IR::Member *> ConvertToDpdkControl::getMemExprFromProperty
 boost::optional<int> ConvertToDpdkControl::getNumberFromProperty(const IR::P4Table *table,
                                                                  cstring propertyName) {
     auto property = table->properties->getProperty(propertyName);
-    if (property == nullptr) return boost::none;
+    if (property == nullptr) {
+        return boost::none;
+    }
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
                 "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
@@ -588,7 +616,9 @@ boost::optional<int> ConvertToDpdkControl::getNumberFromProperty(const IR::P4Tab
 }
 
 bool ConvertToDpdkControl::preorder(const IR::P4Table *t) {
-    if (!checkTableValid(t)) return false;
+    if (!checkTableValid(t)) {
+        return false;
+    }
 
     if (t->properties->getProperty("selector") != nullptr) {
         auto group_id = getMemExprFromProperty(t, "group_id");
@@ -598,8 +628,9 @@ bool ConvertToDpdkControl::preorder(const IR::P4Table *t) {
         auto n_members_per_group_max = getNumberFromProperty(t, "n_members_per_group_max");
 
         if (group_id == boost::none || member_id == boost::none || n_groups_max == boost::none ||
-            n_members_per_group_max == boost::none)
+            n_members_per_group_max == boost::none) {
             return false;
+        }
 
         auto selector = new IR::DpdkSelector(t->name, (*group_id)->clone(), (*member_id)->clone(),
                                              selector_key->value->to<IR::Key>(), *n_groups_max,

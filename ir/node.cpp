@@ -54,10 +54,11 @@ void IR::Node::toJSON(JSONGenerator &json) const {
 
 IR::Node::Node(JSONLoader &json) : id(-1) {
     json.load("Node_ID", id);
-    if (id < 0)
+    if (id < 0) {
         id = currentId++;
-    else if (id >= currentId)
+    } else if (id >= currentId) {
         currentId = id + 1;
+    }
     clone_id = id;
 }
 
@@ -70,10 +71,11 @@ cstring IR::dbp(const IR::INode *node) {
         if (auto idecl = node->to<IR::IDeclaration>()) {
             node->getNode()->Node::dbprint(str);
             str << " " << idecl->getName();
-            if (auto decl = idecl->to<IR::Declaration>())
+            if (auto decl = idecl->to<IR::Declaration>()) {
                 str << "/" << decl->declid;
-            else if (auto decl = idecl->to<IR::Type_Declaration>())
+            } else if (auto decl = idecl->to<IR::Type_Declaration>()) {
                 str << "/" << decl->declid;
+            }
         } else if (node->is<IR::Member>()) {
             node->getNode()->Node::dbprint(str);
             str << " ." << node->to<IR::Member>()->member;

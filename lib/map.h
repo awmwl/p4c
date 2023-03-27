@@ -29,21 +29,27 @@ namespace GetImpl {
 template <class K, class T, class V, class Comp, class Alloc>
 inline V get(const std::map<K, V, Comp, Alloc> &m, T key, V def = V()) {
     auto it = m.find(key);
-    if (it != m.end()) return it->second;
+    if (it != m.end()) {
+        return it->second;
+    }
     return def;
 }
 
 template <class K, class T, class V, class Comp, class Alloc>
 inline V *getref(std::map<K, V, Comp, Alloc> &m, T key) {
     auto it = m.find(key);
-    if (it != m.end()) return &it->second;
+    if (it != m.end()) {
+        return &it->second;
+    }
     return 0;
 }
 
 template <class K, class T, class V, class Comp, class Alloc>
 inline const V *getref(const std::map<K, V, Comp, Alloc> &m, T key) {
     auto it = m.find(key);
-    if (it != m.end()) return &it->second;
+    if (it != m.end()) {
+        return &it->second;
+    }
     return 0;
 }
 
@@ -197,7 +203,9 @@ class MapForKey {
      public:
         iterator(const MapForKey &s, decltype(map.begin()) i) : self(s), it(i) {}
         iterator &operator++() {
-            if (++it != self.map.end() && it->first != self.key) it = self.map.end();
+            if (++it != self.map.end() && it->first != self.key) {
+                it = self.map.end();
+            }
             return *this;
         }
         iterator operator++(int) {

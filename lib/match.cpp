@@ -20,7 +20,9 @@ static int chkmask(const match_t &m, int maskbits) {
     big_int mask = (big_int(1) << maskbits) - 1;
     int shift = 0;
     while (mask && ((m.word0 | m.word1) >> shift)) {
-        if ((mask & m.word0 & m.word1) && (mask & m.word0 & m.word1) != mask) return -1;
+        if ((mask & m.word0 & m.word1) && (mask & m.word0 & m.word1) != mask) {
+            return -1;
+        }
         mask <<= maskbits;
         shift += maskbits;
     }
@@ -33,25 +35,30 @@ std::ostream &operator<<(std::ostream &out, const match_t &m) {
         return out;
     }
     int shift, bits;
-    if ((shift = chkmask(m, (bits = 4))) >= 0)
+    if ((shift = chkmask(m, (bits = 4))) >= 0) {
         out << "0x";
-    else if ((shift = chkmask(m, (bits = 3))) >= 0)
+    } else if ((shift = chkmask(m, (bits = 3))) >= 0) {
         out << "0o";
-    else if ((shift = chkmask(m, (bits = 1))) >= 0)
+    } else if ((shift = chkmask(m, (bits = 1))) >= 0) {
         out << "0b";
-    else
+    } else {
         shift = 0, bits = 1;
+    }
     big_int mask = ((big_int(1) << bits) - 1) << shift;
-    for (; mask; shift -= bits, mask >>= bits)
-        if (mask & m.word0 & m.word1)
+    for (; mask; shift -= bits, mask >>= bits) {
+        if (mask & m.word0 & m.word1) {
             out << '*';
-        else
+        } else {
             out << "0123456789abcdef"[int((m.word1 & mask) >> shift)];
+        }
+    }
     return out;
 }
 
 bool operator>>(const char *p, match_t &m) {
-    if (!p) return false;
+    if (!p) {
+        return false;
+    }
     match_t rv;
     unsigned base = 10;
     if (*p == '0') {
@@ -109,7 +116,9 @@ bool operator>>(const char *p, match_t &m) {
                 digit = p[-1] - 'A' + 10;
                 break;
             case '*':
-                if (base == 10) return false;
+                if (base == 10) {
+                    return false;
+                }
                 mask = 0;
                 break;
             default:
@@ -120,7 +129,9 @@ bool operator>>(const char *p, match_t &m) {
         rv.word0 |= digit ^ mask;
         rv.word1 |= digit;
     }
-    if (base == 10) rv.word0 = ~rv.word1;
+    if (base == 10) {
+        rv.word0 = ~rv.word1;
+    }
     m = rv;
     return true;
 }

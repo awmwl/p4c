@@ -57,7 +57,9 @@ Graph *ControlGraphs::ControlStack::getSubgraph() const {
 cstring ControlGraphs::ControlStack::getName(const cstring &name) const {
     std::stringstream sstream;
     for (auto &n : names) {
-        if (n != "") sstream << n << ".";
+        if (n != "") {
+            sstream << n << ".";
+        }
     }
     sstream << name;
     return cstring(sstream);
@@ -75,7 +77,9 @@ ControlGraphs::ControlGraphs(P4::ReferenceMap *refMap, P4::TypeMap *typeMap,
 
 bool ControlGraphs::preorder(const IR::PackageBlock *block) {
     for (auto it : block->constantValue) {
-        if (!it.second) continue;
+        if (!it.second) {
+            continue;
+        }
         if (it.second->is<IR::ControlBlock>()) {
             auto name = it.second->to<IR::ControlBlock>()->container->name;
             LOG1("Generating graph for top-level control " << name);
@@ -122,12 +126,16 @@ bool ControlGraphs::preorder(const IR::P4Control *cont) {
 
     parents.insert(parents.end(), return_parents.begin(), return_parents.end());
     return_parents.clear();
-    if (doPop) g = controlStack.popBack();
+    if (doPop) {
+        g = controlStack.popBack();
+    }
     return false;
 }
 
 bool ControlGraphs::preorder(const IR::BlockStatement *statement) {
-    for (const auto component : statement->components) visit(component);
+    for (const auto component : statement->components) {
+        visit(component);
+    }
     merge_other_statements_into_vertex();
 
     return false;
@@ -185,10 +193,11 @@ bool ControlGraphs::preorder(const IR::SwitchStatement *statement) {
     }
     // TODO(antonin): do not add default statement for action_run if all actions
     // are present
-    if (!hasDefault)
+    if (!hasDefault) {
         new_parents.emplace_back(v, new EdgeSwitch(new IR::DefaultExpression()));
-    else
+    } else {
         new_parents.insert(new_parents.end(), parents.begin(), parents.end());
+    }
     parents = new_parents;
     return false;
 }
@@ -241,7 +250,9 @@ bool ControlGraphs::preorder(const IR::ReturnStatement *) {
 bool ControlGraphs::preorder(const IR::ExitStatement *) {
     merge_other_statements_into_vertex();
 
-    for (auto parent : parents) add_edge(parent.first, exit_v, parent.second->label());
+    for (auto parent : parents) {
+        add_edge(parent.first, exit_v, parent.second->label());
+    }
     parents.clear();
     return false;
 }
@@ -260,7 +271,9 @@ bool ControlGraphs::preorder(const IR::Key *key) {
                 break;
             }
         }
-        if (!has_name) sstream << elVec->expression->toString();
+        if (!has_name) {
+            sstream << elVec->expression->toString();
+        }
         sstream << "\\n";
     }
 

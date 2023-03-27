@@ -38,8 +38,9 @@ bool CodeGenInspector::preorder(const IR::Constant *expression) {
 
     cstring str = EBPFInitializerUtils::genHexStr(expression->value, width, expression);
     builder->append("{ ");
-    for (size_t i = 0; i < str.size() / 2; ++i)
+    for (size_t i = 0; i < str.size() / 2; ++i) {
         builder->appendFormat("0x%s, ", str.substr(2 * i, 2));
+    }
     builder->append("}");
 
     return false;
@@ -65,31 +66,41 @@ static cstring getMask(P4::TypeMap *typeMap, const IR::Node *node) {
     auto type = typeMap->getType(node, true);
     cstring mask = "";
     if (auto tb = type->to<IR::Type_Bits>()) {
-        if (tb->size != 8 && tb->size != 16 && tb->size != 32 && tb->size != 64)
+        if (tb->size != 8 && tb->size != 16 && tb->size != 32 && tb->size != 64) {
             mask = " & ((1 << " + Util::toString(tb->size) + ") - 1)";
+        }
     }
     return mask;
 }
 
 bool CodeGenInspector::preorder(const IR::Operation_Binary *b) {
     if (!b->is<IR::BOr>() && !b->is<IR::BAnd>() && !b->is<IR::BXor>() && !b->is<IR::Equ>() &&
-        !b->is<IR::Neq>())
+        !b->is<IR::Neq>()) {
         widthCheck(b);
+    }
     cstring mask = getMask(typeMap, b);
     int prec = expressionPrecedence;
     bool useParens = getParent<IR::IfStatement>() == nullptr || mask != "";
-    if (mask != "") builder->append("(");
-    if (useParens) builder->append("(");
+    if (mask != "") {
+        builder->append("(");
+    }
+    if (useParens) {
+        builder->append("(");
+    }
     visit(b->left);
     builder->spc();
     builder->append(b->getStringOp());
     builder->spc();
     expressionPrecedence = b->getPrecedence() + 1;
     visit(b->right);
-    if (useParens) builder->append(")");
+    if (useParens) {
+        builder->append(")");
+    }
     builder->append(mask);
     expressionPrecedence = prec;
-    if (mask != "") builder->append(")");
+    if (mask != "") {
+        builder->append(")");
+    }
     return false;
 }
 
@@ -103,16 +114,21 @@ bool CodeGenInspector::comparison(const IR::Operation_Relation *b) {
     if (scalar) {
         int prec = expressionPrecedence;
         bool useParens = prec > b->getPrecedence();
-        if (useParens) builder->append("(");
+        if (useParens) {
+            builder->append("(");
+        }
         visit(b->left);
         builder->spc();
         builder->append(b->getStringOp());
         builder->spc();
         visit(b->right);
-        if (useParens) builder->append(")");
+        if (useParens) {
+            builder->append(")");
+        }
     } else {
-        if (!et->is<IHasWidth>())
+        if (!et->is<IHasWidth>()) {
             BUG("%1%: Comparisons for type %2% not yet implemented", b->left, type);
+        }
         unsigned width = et->to<IHasWidth>()->implementationWidthInBits();
         builder->append("memcmp(&");
         visit(b->left);
@@ -126,7 +142,9 @@ bool CodeGenInspector::comparison(const IR::Operation_Relation *b) {
 bool CodeGenInspector::preorder(const IR::Mux *b) {
     int prec = expressionPrecedence;
     bool useParens = prec >= b->getPrecedence();
-    if (useParens) builder->append("(");
+    if (useParens) {
+        builder->append("(");
+    }
     expressionPrecedence = b->getPrecedence();
     visit(b->e0);
     builder->append(" ? ");
@@ -136,7 +154,9 @@ bool CodeGenInspector::preorder(const IR::Mux *b) {
     expressionPrecedence = b->getPrecedence();
     visit(b->e2);
     expressionPrecedence = prec;
-    if (useParens) builder->append(")");
+    if (useParens) {
+        builder->append(")");
+    }
     return false;
 }
 
@@ -145,29 +165,41 @@ bool CodeGenInspector::preorder(const IR::Operation_Unary *u) {
     int prec = expressionPrecedence;
     cstring mask = getMask(typeMap, u);
     bool useParens = prec > u->getPrecedence() || mask != "";
-    if (mask != "") builder->append("(");
-    if (useParens) builder->append("(");
+    if (mask != "") {
+        builder->append("(");
+    }
+    if (useParens) {
+        builder->append("(");
+    }
     builder->append(u->getStringOp());
     expressionPrecedence = u->getPrecedence();
     visit(u->expr);
     expressionPrecedence = prec;
-    if (useParens) builder->append(")");
+    if (useParens) {
+        builder->append(")");
+    }
     builder->append(mask);
-    if (mask != "") builder->append(")");
+    if (mask != "") {
+        builder->append(")");
+    }
     return false;
 }
 
 bool CodeGenInspector::preorder(const IR::ArrayIndex *a) {
     int prec = expressionPrecedence;
     bool useParens = prec > a->getPrecedence();
-    if (useParens) builder->append("(");
+    if (useParens) {
+        builder->append("(");
+    }
     expressionPrecedence = a->getPrecedence();
     visit(a->left);
     builder->append("[");
     expressionPrecedence = DBPrint::Prec_Low;
     visit(a->right);
     builder->append("]");
-    if (useParens) builder->append(")");
+    if (useParens) {
+        builder->append(")");
+    }
     expressionPrecedence = prec;
     return false;
 }
@@ -176,14 +208,18 @@ bool CodeGenInspector::preorder(const IR::Cast *c) {
     widthCheck(c);
     int prec = expressionPrecedence;
     bool useParens = prec > c->getPrecedence();
-    if (useParens) builder->append("(");
+    if (useParens) {
+        builder->append("(");
+    }
     builder->append("(");
     auto et = EBPFTypeFactory::instance->create(c->destType);
     et->emit(builder);
     builder->append(")");
     expressionPrecedence = c->getPrecedence();
     visit(c->expr);
-    if (useParens) builder->append(")");
+    if (useParens) {
+        builder->append(")");
+    }
     expressionPrecedence = prec;
     return false;
 }
@@ -192,7 +228,9 @@ bool CodeGenInspector::preorder(const IR::Member *expression) {
     bool isErrorAccess = false;
     if (auto tne = expression->expr->to<IR::TypeNameExpression>()) {
         if (auto tn = tne->typeName->to<IR::Type_Name>()) {
-            if (tn->path->name.name == IR::Type_Error::error) isErrorAccess = true;
+            if (tn->path->name.name == IR::Type_Error::error) {
+                isErrorAccess = true;
+            }
         }
     }
 
@@ -219,7 +257,9 @@ bool CodeGenInspector::preorder(const IR::PathExpression *expression) {
 }
 
 bool CodeGenInspector::preorder(const IR::Path *p) {
-    if (p->absolute) ::error(ErrorType::ERR_EXPECTED, "%1%: Unexpected absolute path", p);
+    if (p->absolute) {
+        ::error(ErrorType::ERR_EXPECTED, "%1%: Unexpected absolute path", p);
+    }
     builder->append(p->name);
     return false;
 }
@@ -232,7 +272,9 @@ bool CodeGenInspector::preorder(const IR::StructExpression *expr) {
     builder->append("{");
     bool first = true;
     for (auto c : expr->components) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         builder->append(".");
         builder->append(c->name);
         builder->append(" = ");
@@ -254,7 +296,9 @@ bool CodeGenInspector::preorder(const IR::ListExpression *expression) {
     int prec = expressionPrecedence;
     expressionPrecedence = DBPrint::Prec_Low;
     for (auto e : expression->components) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         first = false;
         visit(e);
     }
@@ -288,12 +332,15 @@ bool CodeGenInspector::preorder(const IR::MethodCallExpression *expression) {
     builder->append("(");
     bool first = true;
     for (auto p : *mi->substitution.getParametersInArgumentOrder()) {
-        if (!first) builder->append(", ");
+        if (!first) {
+            builder->append(", ");
+        }
         expressionPrecedence = DBPrint::Prec_Low;
         first = false;
 
-        if (p->direction == IR::Direction::Out || p->direction == IR::Direction::InOut)
+        if (p->direction == IR::Direction::Out || p->direction == IR::Direction::InOut) {
             builder->append("&");
+        }
         auto arg = mi->substitution.lookup(p);
         visit(arg);
     }
@@ -383,7 +430,9 @@ bool CodeGenInspector::preorder(const IR::BlockStatement *s) {
         first = false;
         visit(a);
     }
-    if (!s->components.empty()) builder->newline();
+    if (!s->components.empty()) {
+        builder->newline();
+    }
     builder->blockEnd(false);
     return false;
 }
@@ -416,7 +465,9 @@ bool CodeGenInspector::preorder(const IR::IfStatement *s) {
         builder->emitIndent();
     }
     visit(s->ifTrue);
-    if (!s->ifTrue->is<IR::BlockStatement>()) builder->decreaseIndent();
+    if (!s->ifTrue->is<IR::BlockStatement>()) {
+        builder->decreaseIndent();
+    }
     if (s->ifFalse != nullptr) {
         builder->newline();
         builder->emitIndent();
@@ -427,7 +478,9 @@ bool CodeGenInspector::preorder(const IR::IfStatement *s) {
             builder->emitIndent();
         }
         visit(s->ifFalse);
-        if (!s->ifFalse->is<IR::BlockStatement>()) builder->decreaseIndent();
+        if (!s->ifFalse->is<IR::BlockStatement>()) {
+            builder->decreaseIndent();
+        }
     }
     return false;
 }
@@ -446,11 +499,17 @@ void CodeGenInspector::widthCheck(const IR::Node *node) const {
     CHECK_NULL(node);
     auto type = typeMap->getType(node, true);
     auto tb = type->to<IR::Type_Bits>();
-    if (tb == nullptr) return;
-    if (tb->size % 8 == 0 && EBPFScalarType::generatesScalar(tb->size)) return;
+    if (tb == nullptr) {
+        return;
+    }
+    if (tb->size % 8 == 0 && EBPFScalarType::generatesScalar(tb->size)) {
+        return;
+    }
 
     if (tb->size <= 64) {
-        if (!tb->isSigned) return;
+        if (!tb->isSigned) {
+            return;
+        }
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
                 "%1%: Computations on signed %2% bits not yet supported", node, tb->size);
     }
@@ -460,12 +519,20 @@ void CodeGenInspector::widthCheck(const IR::Node *node) const {
 
 unsigned EBPFInitializerUtils::ebpfTypeWidth(P4::TypeMap *typeMap, const IR::Expression *expr) {
     auto type = typeMap->getType(expr);
-    if (type == nullptr) type = expr->type;
-    if (type->is<IR::Type_InfInt>()) return 32;  // let's assume 32 bit for int type
-    if (type->is<IR::Type_Set>()) type = type->to<IR::Type_Set>()->elementType;
+    if (type == nullptr) {
+        type = expr->type;
+    }
+    if (type->is<IR::Type_InfInt>()) {
+        return 32;  // let's assume 32 bit for int type
+    }
+    if (type->is<IR::Type_Set>()) {
+        type = type->to<IR::Type_Set>()->elementType;
+    }
     // FIXME: When a select expression from the parser supports more than one field then condition
     //        below takes into account only the first component, remaining fields will be ignored.
-    if (type->is<IR::Type_List>()) type = type->to<IR::Type_List>()->components.front();
+    if (type->is<IR::Type_List>()) {
+        type = type->to<IR::Type_List>()->components.front();
+    }
 
     auto ebpfType = EBPFTypeFactory::instance->create(type);
     if (auto scalar = ebpfType->to<EBPFScalarType>()) {
@@ -482,7 +549,9 @@ cstring EBPFInitializerUtils::genHexStr(const big_int &value, unsigned width,
     // the required length of hex string, must be an even number
     unsigned nibbles = 2 * ROUNDUP(width, 8);
     auto str = value.str(0, std::ios_base::hex);
-    if (str.size() < nibbles) str = std::string(nibbles - str.size(), '0') + str;
+    if (str.size() < nibbles) {
+        str = std::string(nibbles - str.size(), '0') + str;
+    }
     BUG_CHECK(str.size() == nibbles, "%1%: value size does not match %2% bits", expr, width);
     return str;
 }

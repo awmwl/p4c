@@ -71,12 +71,16 @@ class JSONLoader {
 
     JSONLoader(const JSONLoader &unpacker, const std::string &field)
         : node_refs(unpacker.node_refs), json(nullptr) {
-        if (auto obj = dynamic_cast<JsonObject *>(unpacker.json)) json = get(obj, field);
+        if (auto obj = dynamic_cast<JsonObject *>(unpacker.json)) {
+            json = get(obj, field);
+        }
     }
 
  private:
     const IR::Node *get_node() {
-        if (!json || !json->is<JsonObject>()) return nullptr;  // invalid json exception?
+        if (!json || !json->is<JsonObject>()) {
+            return nullptr;  // invalid json exception?
+        }
         int id = json->to<JsonObject>()->get_id();
         if (id >= 0) {
             if (node_refs.find(id) == node_refs.end()) {
@@ -222,27 +226,39 @@ class JSONLoader {
     }
     void unpack_json(big_int &v) { v = json->to<JsonNumber>()->val; }
     void unpack_json(cstring &v) {
-        if (!json->is<JsonNull>()) v = *json->to<std::string>();
+        if (!json->is<JsonNull>()) {
+            v = *json->to<std::string>();
+        }
     }
     void unpack_json(IR::ID &v) {
-        if (!json->is<JsonNull>()) v.name = *json->to<std::string>();
+        if (!json->is<JsonNull>()) {
+            v.name = *json->to<std::string>();
+        }
     }
 
     void unpack_json(LTBitMatrix &m) {
-        if (auto *s = json->to<std::string>()) s->c_str() >> m;
+        if (auto *s = json->to<std::string>()) {
+            s->c_str() >> m;
+        }
     }
 
     void unpack_json(bitvec &v) {
-        if (auto *s = json->to<std::string>()) s->c_str() >> v;
+        if (auto *s = json->to<std::string>()) {
+            s->c_str() >> v;
+        }
     }
 
     template <typename T>
     typename std::enable_if<std::is_enum<T>::value>::type unpack_json(T &v) {
-        if (auto *s = json->to<std::string>()) *s >> v;
+        if (auto *s = json->to<std::string>()) {
+            *s >> v;
+        }
     }
 
     void unpack_json(match_t &v) {
-        if (auto *s = json->to<std::string>()) s->c_str() >> v;
+        if (auto *s = json->to<std::string>()) {
+            s->c_str() >> v;
+        }
     }
 
     void unpack_json(UnparsedConstant *&v) {
@@ -321,7 +337,9 @@ class JSONLoader {
     template <typename T>
     void load(const std::string field, T &v) {
         JSONLoader loader(*this, field);
-        if (loader.json == nullptr) return;
+        if (loader.json == nullptr) {
+            return;
+        }
         loader.unpack_json(v);
     }
 

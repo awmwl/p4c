@@ -54,18 +54,26 @@ struct LocationPath : public IHasDbPrint {
     bool isPrefix(const LocationPath *other) const {
         // Due to the structure of the P4 language, two distinct
         // declarations can never alias.
-        if (root != other->root) return false;
+        if (root != other->root) {
+            return false;
+        }
         size_t len = std::min(path.size(), other->path.size());
         for (size_t i = 0; i < len; i++) {
-            if (path.at(i) == "*" || other->path.at(i) == "*") continue;
-            if (path.at(i) != other->path.at(i)) return false;
+            if (path.at(i) == "*" || other->path.at(i) == "*") {
+                continue;
+            }
+            if (path.at(i) != other->path.at(i)) {
+                return false;
+            }
         }
         return true;
     }
 
     void dbprint(std::ostream &out) const override {
         out << root->getName();
-        for (auto p : path) out << "." << p;
+        for (auto p : path) {
+            out << "." << p;
+        }
     }
 };
 
@@ -85,7 +93,9 @@ class SetOfLocations : public IHasDbPrint {
         // one of the two is a left-value, so this should be fast.
         for (auto s : paths) {
             for (auto so : other->paths) {
-                if (s->isPrefix(so)) return true;
+                if (s->isPrefix(so)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -93,7 +103,9 @@ class SetOfLocations : public IHasDbPrint {
 
     const SetOfLocations *join(const SetOfLocations *other) const {
         auto result = new SetOfLocations(this);
-        for (auto p : other->paths) result->add(p);
+        for (auto p : other->paths) {
+            result->add(p);
+        }
         return result;
     }
 
@@ -108,7 +120,9 @@ class SetOfLocations : public IHasDbPrint {
     }
 
     void dbprint(std::ostream &out) const override {
-        for (auto p : paths) out << p << std::endl;
+        for (auto p : paths) {
+            out << p << std::endl;
+        }
     }
 };
 

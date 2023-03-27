@@ -35,9 +35,10 @@ class EnumOn32Bits : public P4::ChooseEnumRepresentation {
     bool convert(const IR::Type_Enum *type) const override {
         if (type->srcInfo.isValid()) {
             auto sourceFile = type->srcInfo.getSourceFile();
-            if (sourceFile.endsWith(filename))
+            if (sourceFile.endsWith(filename)) {
                 // Don't convert any of the standard enums
                 return false;
+            }
         }
         return true;
     }

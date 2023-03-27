@@ -37,10 +37,11 @@ class DoSimplifyDefUse : public Transform {
     }
 
     const IR::Node *postorder(IR::Function *function) override {
-        if (findContext<IR::Declaration_Instance>() == nullptr)
+        if (findContext<IR::Declaration_Instance>() == nullptr) {
             // not an abstract function implementation: these
             // are processed as part of the control body
             return process(function);
+        }
         return function;
     }
     const IR::Node *postorder(IR::P4Parser *parser) override { return process(parser); }
@@ -51,10 +52,16 @@ class DoSimplifyDefUse : public Transform {
 /// on empty control blocks; remove them
 class RemoveHidden : public Transform {
     const IR::Node *postorder(IR::BlockStatement *stat) override {
-        if (!stat->components.empty()) return stat;
-        if (stat->annotations->size() != 1) return stat;
+        if (!stat->components.empty()) {
+            return stat;
+        }
+        if (stat->annotations->size() != 1) {
+            return stat;
+        }
         auto anno = stat->annotations->getSingle(IR::Annotation::hiddenAnnotation);
-        if (!anno) return stat;
+        if (!anno) {
+            return stat;
+        }
         // Lose the annotation.
         return new IR::BlockStatement(stat->srcInfo);
     }
@@ -98,7 +105,9 @@ class SimplifyDefUse : public PassManager {
         // because it keeps state in hash-maps indexed with PathExpressions.
         // This is achieved by Cloner.
         passes.push_back(new Cloner());
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
 
         auto repeated = new PassRepeated({typeChecking, new DoSimplifyDefUse(refMap, typeMap)});
         passes.push_back(repeated);

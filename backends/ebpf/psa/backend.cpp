@@ -25,7 +25,9 @@ void PSASwitchBackend::convert(const IR::ToplevelBlock *tlb) {
     BMV2::PsaProgramStructure structure(refMap, typeMap);
     auto parsePsaArch = new BMV2::ParsePsaArchitecture(&structure);
     auto main = tlb->getMain();
-    if (!main) return;
+    if (!main) {
+        return;
+    }
 
     if (main->type->name != "PSA_Switch") {
         ::warning(ErrorType::WARN_INVALID,
@@ -53,7 +55,9 @@ void PSASwitchBackend::convert(const IR::ToplevelBlock *tlb) {
     toplevel->apply(*new BMV2::BuildResourceMap(&structure.resourceMap));
 
     main = toplevel->getMain();
-    if (!main) return;  // no main
+    if (!main) {
+        return;  // no main
+    }
     main->apply(*parsePsaArch);
     program = toplevel->getProgram();
 

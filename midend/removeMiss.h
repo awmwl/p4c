@@ -45,7 +45,9 @@ class DoRemoveMiss : public Transform {
 class RemoveMiss : public PassManager {
  public:
     RemoveMiss(ReferenceMap *refMap, TypeMap *typeMap, TypeChecking *typeChecking = nullptr) {
-        if (!typeChecking) typeChecking = new TypeChecking(refMap, typeMap);
+        if (!typeChecking) {
+            typeChecking = new TypeChecking(refMap, typeMap);
+        }
         passes.push_back(typeChecking);
         passes.push_back(new DoRemoveMiss(refMap, typeMap));
         setName("RemoveMiss");

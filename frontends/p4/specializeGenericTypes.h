@@ -79,9 +79,13 @@ struct TypeSpecializationMap : public IHasDbPrint {
     IR::Vector<IR::Node> *getSpecializations(const IR::Node *insertionPoint) {
         IR::Vector<IR::Node> *result = nullptr;
         for (auto s : map) {
-            if (inserted.find(s.second) != inserted.end()) continue;
+            if (inserted.find(s.second) != inserted.end()) {
+                continue;
+            }
             if (s.second->insertion == insertionPoint) {
-                if (result == nullptr) result = new IR::Vector<IR::Node>();
+                if (result == nullptr) {
+                    result = new IR::Vector<IR::Node>();
+                }
                 LOG2("Will insert " << dbp(s.second->replacement) << " before "
                                     << dbp(insertionPoint));
                 result->push_back(s.second->replacement);
@@ -186,11 +190,15 @@ class SpecializeGenericTypes : public PassRepeated {
 class RemoveGenericTypes : public Transform {
  public:
     const IR::Node *postorder(IR::Type_StructLike *type) override {
-        if (!type->typeParameters->empty()) return nullptr;
+        if (!type->typeParameters->empty()) {
+            return nullptr;
+        }
         return type;
     }
     const IR::Node *postorder(IR::Type_Stack *type) override {
-        if (type->elementType->is<IR::Type_Specialized>()) return nullptr;
+        if (type->elementType->is<IR::Type_Specialized>()) {
+            return nullptr;
+        }
         return type;
     }
 };

@@ -25,18 +25,26 @@ limitations under the License.
 class SymBitMatrix : private bitvec {
  public:
     nonconst_bitref operator()(unsigned r, unsigned c) {
-        if (r < c) std::swap(r, c);
+        if (r < c) {
+            std::swap(r, c);
+        }
         return bitvec::operator[]((r * r + r) / 2 + c);
     }
     bool operator()(unsigned r, unsigned c) const {
-        if (r < c) std::swap(r, c);
+        if (r < c) {
+            std::swap(r, c);
+        }
         return bitvec::operator[]((r * r + r) / 2 + c);
     }
     unsigned size() const {
-        if (empty()) return 0;
+        if (empty()) {
+            return 0;
+        }
         unsigned m = *max();
         unsigned r = 1;
-        while ((r * r + r) / 2 <= m) r++;
+        while ((r * r + r) / 2 <= m) {
+            r++;
+        }
         return r;
     }
     using bitvec::clear;
@@ -57,20 +65,30 @@ class SymBitMatrix : private bitvec {
         rowref(rowref &&) = default;
         explicit operator bool() const {
             if (row < bits_per_unit) {
-                if (self.getrange((row * row + row) / 2, row + 1) != 0) return true;
+                if (self.getrange((row * row + row) / 2, row + 1) != 0) {
+                    return true;
+                }
             } else {
-                if (self.getslice((row * row + row) / 2, row + 1)) return true;
+                if (self.getslice((row * row + row) / 2, row + 1)) {
+                    return true;
+                }
             }
             const auto size = self.size();
-            for (auto c = row + 1; c < size; ++c)
-                if (self(row, c)) return true;
+            for (auto c = row + 1; c < size; ++c) {
+                if (self(row, c)) {
+                    return true;
+                }
+            }
             return false;
         }
         operator bitvec() const {
             auto rv = self.getslice((row * row + row) / 2, row + 1);
             const auto size = self.size();
-            for (auto c = row + 1; c < size; ++c)
-                if (self(row, c)) rv[c] = 1;
+            for (auto c = row + 1; c < size; ++c) {
+                if (self(row, c)) {
+                    rv[c] = 1;
+                }
+            }
             return rv;
         }
     };

@@ -83,30 +83,41 @@ const Type_Bits *Type_Bits::get(int width, bool isSigned) {
     // map (width, signed) to type
     using bit_type_key = std::pair<int, bool>;
     static std::map<bit_type_key, const IR::Type_Bits *> *type_map = nullptr;
-    if (type_map == nullptr) type_map = new std::map<bit_type_key, const IR::Type_Bits *>();
+    if (type_map == nullptr) {
+        type_map = new std::map<bit_type_key, const IR::Type_Bits *>();
+    }
     auto &result = (*type_map)[std::make_pair(width, isSigned)];
-    if (!result) result = new Type_Bits(width, isSigned);
-    if (width > P4CContext::getConfig().maximumWidthSupported())
+    if (!result) {
+        result = new Type_Bits(width, isSigned);
+    }
+    if (width > P4CContext::getConfig().maximumWidthSupported()) {
         ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Compiler only supports widths up to %2%", result,
                 P4CContext::getConfig().maximumWidthSupported());
+    }
     return result;
 }
 
 const Type::Unknown *Type::Unknown::get() {
     static const Type::Unknown *singleton = nullptr;
-    if (!singleton) singleton = (new Type::Unknown());
+    if (!singleton) {
+        singleton = (new Type::Unknown());
+    }
     return singleton;
 }
 
 const Type::Boolean *Type::Boolean::get() {
     static const Type::Boolean *singleton = nullptr;
-    if (!singleton) singleton = (new Type::Boolean());
+    if (!singleton) {
+        singleton = (new Type::Boolean());
+    }
     return singleton;
 }
 
 const Type_String *Type_String::get() {
     static const Type_String *singleton = nullptr;
-    if (!singleton) singleton = (new Type_String());
+    if (!singleton) {
+        singleton = (new Type_String());
+    }
     return singleton;
 }
 
@@ -139,39 +150,52 @@ const Type::Varbits *Type::Varbits::get() { return new Type::Varbits(0); }
 
 const Type_Dontcare *Type_Dontcare::get() {
     static const Type_Dontcare *singleton;
-    if (!singleton) singleton = (new Type_Dontcare());
+    if (!singleton) {
+        singleton = (new Type_Dontcare());
+    }
     return singleton;
 }
 
 const Type_State *Type_State::get() {
     static const Type_State *singleton;
-    if (!singleton) singleton = (new Type_State());
+    if (!singleton) {
+        singleton = (new Type_State());
+    }
     return singleton;
 }
 
 const Type_Void *Type_Void::get() {
     static const Type_Void *singleton;
-    if (!singleton) singleton = (new Type_Void());
+    if (!singleton) {
+        singleton = (new Type_Void());
+    }
     return singleton;
 }
 
 const Type_MatchKind *Type_MatchKind::get() {
     static const Type_MatchKind *singleton;
-    if (!singleton) singleton = (new Type_MatchKind());
+    if (!singleton) {
+        singleton = (new Type_MatchKind());
+    }
     return singleton;
 }
 
 bool Type_ActionEnum::contains(cstring name) const {
     for (auto a : actionList->actionList) {
-        if (a->getName() == name) return true;
+        if (a->getName() == name) {
+            return true;
+        }
     }
     return false;
 }
 
 size_t Type_MethodBase::minParameterCount() const {
     size_t rv = 0;
-    for (auto p : *parameters)
-        if (!p->isOptional()) ++rv;
+    for (auto p : *parameters) {
+        if (!p->isOptional()) {
+            ++rv;
+        }
+    }
     return rv;
 }
 
@@ -179,7 +203,9 @@ const Type *Type_List::getP4Type() const {
     auto args = new IR::Vector<Type>();
     for (auto a : components) {
         auto at = a->getP4Type();
-        if (!at) return nullptr;
+        if (!at) {
+            return nullptr;
+        }
         args->push_back(at);
     }
     return new IR::Type_List(srcInfo, *args);
@@ -189,7 +215,9 @@ const Type *Type_Tuple::getP4Type() const {
     auto args = new IR::Vector<Type>();
     for (auto a : components) {
         auto at = a->getP4Type();
-        if (!at) return nullptr;
+        if (!at) {
+            return nullptr;
+        }
         args->push_back(at);
     }
     return new IR::Type_Tuple(srcInfo, *args);
@@ -215,7 +243,9 @@ const Type *Type_SpecializedCanonical::getP4Type() const {
         args->push_back(at);
     }
     auto bt = baseType->getP4Type();
-    if (auto tn = bt->to<IR::Type_Name>()) return new IR::Type_Specialized(srcInfo, tn, args);
+    if (auto tn = bt->to<IR::Type_Name>()) {
+        return new IR::Type_Specialized(srcInfo, tn, args);
+    }
     auto st = baseType->to<IR::Type_StructLike>();
     BUG_CHECK(st != nullptr, "%1%: expected a struct", baseType);
     return new IR::Type_Specialized(srcInfo, new IR::Type_Name(st->getName()), args);

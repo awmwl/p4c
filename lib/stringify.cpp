@@ -29,12 +29,16 @@ cstring toString(bool value) {
 cstring toString(std::string value) { return value; }
 
 cstring toString(const char *value) {
-    if (value == nullptr) return cstring::literal("<nullptr>");
+    if (value == nullptr) {
+        return cstring::literal("<nullptr>");
+    }
     return cstring(value);
 }
 
 cstring toString(const void *value) {
-    if (value == nullptr) return cstring::literal("<nullptr>");
+    if (value == nullptr) {
+        return cstring::literal("<nullptr>");
+    }
     std::stringstream result;
     result << value;
     return result.str();
@@ -113,19 +117,25 @@ cstring toString(big_int value, unsigned width, bool sign, unsigned int base) {
         value /= base;
         buf.push_front(DigitToChar(digit));
     } while (value > 0);
-    for (auto ch : buf) oss << ch;
+    for (auto ch : buf) {
+        oss << ch;
+    }
     return oss.str();
 }
 
 cstring toString(cstring value) {
-    if (value.isNull()) return cstring::literal("<nullptr>");
+    if (value.isNull()) {
+        return cstring::literal("<nullptr>");
+    }
     return value;
 }
 
 cstring toString(StringRef value) { return value; }
 
 cstring printf_format(const char *fmt_str, ...) {
-    if (fmt_str == nullptr) throw std::runtime_error("Null format string");
+    if (fmt_str == nullptr) {
+        throw std::runtime_error("Null format string");
+    }
     va_list ap;
     va_start(ap, fmt_str);
     cstring formatted = vprintf_format(fmt_str, ap);
@@ -138,10 +148,14 @@ cstring vprintf_format(const char *fmt_str, va_list ap) {
     static char buf[128];
     va_list ap_copy;
     va_copy(ap_copy, ap);
-    if (fmt_str == nullptr) throw std::runtime_error("Null format string");
+    if (fmt_str == nullptr) {
+        throw std::runtime_error("Null format string");
+    }
 
     int size = vsnprintf(buf, sizeof(buf), fmt_str, ap);
-    if (size < 0) throw std::runtime_error("Error in vsnprintf");
+    if (size < 0) {
+        throw std::runtime_error("Error in vsnprintf");
+    }
     if (static_cast<size_t>(size) >= sizeof(buf)) {
         char *formatted = new char[size + 1];
         vsnprintf(formatted, size + 1, fmt_str, ap_copy);

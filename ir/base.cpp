@@ -29,10 +29,11 @@ namespace IR {
 
 cstring Annotation::getName() const {
     BUG_CHECK(name == IR::Annotation::nameAnnotation, "%1%: Only works on name annotations", this);
-    if (needsParsing)
+    if (needsParsing) {
         // This can happen if this method is invoked before we have parsed
         // annotation bodies.
         return name;
+    }
     return getSingleString();
 }
 
@@ -50,11 +51,17 @@ cstring Annotation::getSingleString() const {
 }
 
 cstring IDeclaration::externalName(cstring replace /* = cstring() */) const {
-    if (!is<IAnnotated>()) return getName().toString();
+    if (!is<IAnnotated>()) {
+        return getName().toString();
+    }
 
     auto anno = getAnnotation(IR::Annotation::nameAnnotation);
-    if (anno != nullptr) return anno->getName();
-    if (replace) return replace;
+    if (anno != nullptr) {
+        return anno->getName();
+    }
+    if (replace) {
+        return replace;
+    }
     return getName().toString();
 }
 

@@ -198,7 +198,9 @@ class ProcessControls : public P4::RemoveComplexExpressionsPolicy {
         CHECK_NULL(process);
     }
     bool convert(const IR::P4Control *control) const {
-        if (process->find(control->name) != process->end()) return true;
+        if (process->find(control->name) != process->end()) {
+            return true;
+        }
         return false;
     }
 };
