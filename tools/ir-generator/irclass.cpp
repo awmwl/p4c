@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "irclass.h"
+
 #include <fmt/format.h>
 
 #include "lib/enumerator.h"

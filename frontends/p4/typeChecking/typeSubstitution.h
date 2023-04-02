@@ -67,6 +67,12 @@ class TypeSubstitution : public IHasDbPrint {
     }
 
     void clear() { binding.clear(); }
+
+    [[nodiscard]] cstring toString() const {
+        std::stringstream cstr;
+        dbprint(cstr);
+        return cstr.str();
+    }
 };
 
 class TypeVariableSubstitution final : public TypeSubstitution<const IR::ITypeVar *> {

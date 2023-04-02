@@ -17,10 +17,12 @@ limitations under the License.
 #ifndef _FRONTENDS_P4_DEF_USE_H_
 #define _FRONTENDS_P4_DEF_USE_H_
 
+#include <sstream>
 #include <unordered_set>
 
 #include "frontends/p4/typeChecking/typeChecker.h"
 #include "ir/ir.h"
+#include "lib/cstring.h"
 #include "lib/ordered_map.h"
 #include "lib/ordered_set.h"
 
@@ -313,6 +315,12 @@ class ProgramPoint : public IHasDbPrint {
     std::vector<const IR::Node *>::const_iterator end() const { return stack.end(); }
     ProgramPoint &operator=(const ProgramPoint &) = default;
     ProgramPoint &operator=(ProgramPoint &&) = default;
+
+    [[nodiscard]] cstring toString() const {
+        std::stringstream cstr;
+        dbprint(cstr);
+        return cstr.str();
+    }
 };
 }  // namespace P4
 

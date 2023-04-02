@@ -6,15 +6,14 @@
 
 #include "backends/p4tools/common/lib/formulae.h"
 #include "backends/p4tools/common/lib/model.h"
+#include "backends/p4tools/common/lib/util.h"
 #include "ir/id.h"
 #include "lib/exceptions.h"
 #include "lib/null.h"
 
 #include "backends/p4tools/modules/testgen/lib/execution_state.h"
 
-namespace P4Tools {
-
-namespace P4Testgen {
+namespace P4Tools::P4Testgen {
 
 bool ConcolicMethodImpls::matches(const std::vector<cstring> &paramNames,
                                   const IR::Vector<IR::Argument> *args) {
@@ -87,7 +86,7 @@ void ConcolicMethodImpls::add(const ImplList &inputImplList) {
         // overloads to be small in practice.
         for (auto &pair : tmpImplList) {
             BUG_CHECK(pair.first != paramNames, "Multiple implementations of %1%(%2%)", name,
-                      paramNames);
+                      Utils::containerToString(paramNames));
         }
 
         tmpImplList.emplace_back(paramNames, impl);
@@ -135,6 +134,4 @@ const ConcolicMethodImpls::ImplList *Concolic::getCoreConcolicMethodImpls() {
     return &coreConcolicMethodImpls;
 }
 
-}  // namespace P4Testgen
-
-}  // namespace P4Tools
+}  // namespace P4Tools::P4Testgen

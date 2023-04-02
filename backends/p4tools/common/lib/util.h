@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/format.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
 #include "backends/p4tools/common/lib/formulae.h"
@@ -21,25 +20,11 @@
 
 namespace P4Tools {
 
-/// Helper function for @printFeature
-inline std::string logHelper(boost::format &f) { return f.str(); }
-
-/// Helper function for @printFeature
-template <class T, class... Args>
-std::string logHelper(boost::format &f, T &&t, Args &&...args) {
-    return logHelper(f % std::forward<T>(t), std::forward<Args>(args)...);
-}
-
-/// A helper function that allows us to configure logging for a particular feature. This code is
-/// taken from
-// https://stackoverflow.com/a/25859856
+/// A helper function that allows us to configure logging for a particular feature.
 template <typename... Arguments>
-void printFeature(const std::string &label, int level, const std::string &fmt,
+void printFeature(const std::string &label, int level, const std::string &format,
                   Arguments &&...args) {
-    boost::format f(fmt);
-
-    auto result = logHelper(f, std::forward<Arguments>(args)...);
-
+    auto result = fmt::format(format, std::forward<Arguments>(args)...);
     LOG_FEATURE(label.c_str(), level, result);
 }
 

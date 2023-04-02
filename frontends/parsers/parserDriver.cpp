@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/format.hpp>
 
 #include "frontends/common/constantFolding.h"
 #include "frontends/common/options.h"
@@ -104,7 +103,7 @@ void AbstractParserDriver::onParseError(const Util::SourceInfo &location,
     auto &context = BaseCompileContext::get();
     if (boost::equal(message, unexpectedIdentifierError)) {
         context.errorReporter().parser_error(
-            location, boost::format("%s \"%s\"") % unexpectedIdentifierError % lastIdentifier);
+            location, fmt::format("%s \"%s\"", unexpectedIdentifierError, lastIdentifier));
     } else {
         context.errorReporter().parser_error(location, message);
     }

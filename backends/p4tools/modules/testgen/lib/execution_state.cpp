@@ -317,7 +317,7 @@ void ExecutionState::handleException(Continuation::Exception e) {
         }
         stack.pop();
     }
-    BUG("Did not find exception handler for %s.", e);
+    BUG("Did not find exception handler.");
 }
 
 /* =============================================================================================

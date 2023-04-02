@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 
+#include "backends/p4tools/common/lib/util.h"
 #include "ir/ir.h"
 #include "lib/exceptions.h"
 #include "lib/log.h"
@@ -13,9 +14,7 @@
 #include "backends/p4tools/modules/testgen/core/small_step/small_step.h"
 #include "backends/p4tools/modules/testgen/lib/execution_state.h"
 
-namespace P4Tools {
-
-namespace P4Testgen {
+namespace P4Tools::P4Testgen {
 
 bool ExternMethodImpls::exec(const IR::MethodCallExpression *call, const IR::Expression *receiver,
                              IR::ID &name, const IR::Vector<IR::Argument> *args,
@@ -100,13 +99,11 @@ ExternMethodImpls::ExternMethodImpls(const ImplList &inputImplList) {
         // overloads to be small in practice.
         for (auto &pair : tmpImplList) {
             BUG_CHECK(pair.first != paramNames, "Multiple implementations of %1%(%2%)", name,
-                      paramNames);
+                      Utils::containerToString(paramNames));
         }
 
         tmpImplList.emplace_back(paramNames, impl);
     }
 }
 
-}  // namespace P4Testgen
-
-}  // namespace P4Tools
+}  // namespace P4Tools::P4Testgen

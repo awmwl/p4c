@@ -75,6 +75,8 @@ class StateVariable : private AbstractRepCheckedNode<StateVariable, IR::Member> 
  public:
     /// Implicitly converts IR::Expression* to a StateVariable.
     StateVariable(const IR::Expression *expr);  // NOLINT(runtime/explicit)
+
+    [[nodiscard]] cstring toString() const { return node->toString(); }
 };
 
 /// Represents a constraint that can be shipped to and asserted within a solver.
