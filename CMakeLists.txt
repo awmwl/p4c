@@ -127,6 +127,15 @@ if (BUILD_STATIC_RELEASE)
   add_definitions(-DP4C_STATIC_BUILD)
 endif ()
 
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG        ab956f600f0a648b34013a395dd0209e12ce2497
+  GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(fmt)
+include_directories(SYSTEM ${fmt_SOURCE_DIR}/include)
+
 # required tools and libraries
 find_package (PythonInterp 3 REQUIRED)
 find_package (FLEX 2.0 REQUIRED)
@@ -378,7 +387,7 @@ add_subdirectory (ir)
 
 # component libraries: must be defined before being used in the
 # backend executables
-set (P4C_LIBRARIES controlplane midend frontend ir p4ctoolkit)
+set (P4C_LIBRARIES fmt controlplane midend frontend ir p4ctoolkit)
 
 # add extensions - before the frontends as they produce IR and extra frontend sources
 set(EXTENSION_FRONTEND_SOURCES)

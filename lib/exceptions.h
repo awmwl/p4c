@@ -19,11 +19,24 @@ limitations under the License.
 #ifndef _LIB_EXCEPTIONS_H_
 #define _LIB_EXCEPTIONS_H_
 
+#include <stdarg.h>
 #include <unistd.h>
 
-#include <exception>
+#include <fmt/format.h>
 
-#include "lib/error_helper.h"
+#include <cstddef>
+#include <exception>
+#include <map>
+#include <set>
+#include <type_traits>
+#include <unordered_map>
+
+#include <boost/format.hpp>
+
+#include "lib/cstring.h"
+#include "lib/error_message.h"
+#include "lib/source_file.h"
+#include "lib/stringify.h"
 
 namespace Util {
 
@@ -61,6 +74,38 @@ inline const char *cerr_clear_colors() {
     return ANSI_CLR;
 }
 
+inline auto transform(const cstring &value) { return value.c_str(); }
+inline auto transform(const char *value) { return value; }
+inline auto transform(const big_int &value) { return value.str(); }
+
+template <typename T, typename Enabled = void>
+struct hastoString_s {
+    static constexpr bool value = false;
+};
+
+template <typename T>
+struct hastoString_s<T,
+                     std::enable_if_t<std::is_member_function_pointer_v<decltype(&T::toString)>>> {
+    static constexpr bool value = std::is_member_function_pointer_v<decltype(&T::toString)>;
+};
+
+template <typename Class>
+constexpr bool hasToString() {
+    return hastoString_s<Class>::value;
+};
+template <typename T, typename std::enable_if_t<hasToString<T>(), std::nullptr_t> = nullptr>
+auto transform(const T *value) {
+    return value->toString();
+}
+template <typename T, typename std::enable_if_t<hasToString<T>(), std::nullptr_t> = nullptr>
+auto transform(const T &value) {
+    return value.toString();
+}
+template <typename T, typename std::enable_if_t<std::is_arithmetic_v<T>, std::nullptr_t> = nullptr>
+const T &transform(const T &value) {
+    return value;
+}
+
 /// Base class for all exceptions.
 /// The constructor uses boost::format for the format string, i.e.,
 /// %1%, %2%, etc (starting at 1, not at 0)
@@ -68,13 +113,12 @@ class P4CExceptionBase : public std::exception {
  protected:
     cstring message;
     void traceCreation() {}
-
+    // std::is_pointer<T>::value;
  public:
     template <typename... T>
-    P4CExceptionBase(const char *format, T... args) {
+    P4CExceptionBase(const char *format, T... args)
+        : message(fmt::format(format, transform(std::forward<T>(args))...)) {
         traceCreation();
-        boost::format fmt(format);
-        message = ::bug_helper(fmt, "", "", "", std::forward<T>(args)...);
     }
 
     const char *what() const noexcept { return message.c_str(); }

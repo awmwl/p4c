@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "irclass.h"
+#include <fmt/format.h>
 
 #include "lib/enumerator.h"
 #include "lib/exceptions.h"
@@ -573,6 +574,6 @@ void ConstFieldInitializer::generate_hdr(std::ostream &out) const {
     else if (name == "stringOp")
         out << "cstring getStringOp() const override { return ";
     else
-        throw Util::CompilationError("Unexpected constant field %1%", this);
+        throw Util::CompilationError("Unexpected constant field {1}", this);
     out << initializer << "; }" << std::endl;
 }
