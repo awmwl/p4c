@@ -63,19 +63,19 @@ class SymRenameMap {
         CHECK_NULL(decl);
         BUG_CHECK(!name.isNullOrEmpty() && !extName.isNullOrEmpty(), "Empty name");
         LOG3("setNewName " << dbp(decl) << " to " << name);
-        if (internalName.find(decl) != internalName.end()) BUG("%1%: already renamed", decl);
+        if (internalName.find(decl) != internalName.end()) BUG("{0}: already renamed", decl);
         internalName.emplace(decl, name);
         externalName.emplace(decl, extName);
     }
     cstring getName(const IR::IDeclaration *decl) const {
         CHECK_NULL(decl);
-        BUG_CHECK(internalName.find(decl) != internalName.end(), "%1%: no new name", decl);
+        BUG_CHECK(internalName.find(decl) != internalName.end(), "{0}: no new name", decl);
         auto result = ::get(internalName, decl);
         return result;
     }
     cstring getExtName(const IR::IDeclaration *decl) const {
         CHECK_NULL(decl);
-        BUG_CHECK(externalName.find(decl) != externalName.end(), "%1%: no external name", decl);
+        BUG_CHECK(externalName.find(decl) != externalName.end(), "{0}: no external name", decl);
         auto result = ::get(externalName, decl);
         return result;
     }
@@ -330,7 +330,7 @@ class InlineList {
         CHECK_NULL(statement);
         LOG3("Inline invocation " << dbp(instance) << " at " << dbp(statement));
         auto info = inlineMap[instance];
-        BUG_CHECK(info, "Could not locate instance %1% invoked by %2%", instance, statement);
+        BUG_CHECK(info, "Could not locate instance {0} invoked by {1}", instance, statement);
         info->addInvocation(statement);
     }
 

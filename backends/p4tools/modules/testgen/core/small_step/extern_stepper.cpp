@@ -43,7 +43,7 @@ std::vector<std::pair<const IR::Member *, const IR::Expression *>> ExprStepper::
         if (const auto *varbit = fieldType->to<IR::Extracted_Varbits>()) {
             BUG_CHECK(varBitFieldSize >= 0,
                       "varBitFieldSize should be larger or equals to zero at this "
-                      "point. The value is %1%.",
+                      "point. The value is {0}.",
                       varBitFieldSize);
             auto *newVarbit = varbit->clone();
 
@@ -170,7 +170,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
              const auto *prependVar = args->at(0)->expression;
              if (!(prependVar->is<IR::Member>() || prependVar->is<IR::PathExpression>() ||
                    prependVar->is<IR::TaintExpression>() || prependVar->is<IR::Constant>())) {
-                 TESTGEN_UNIMPLEMENTED("Prepend input %1% of type %2% not supported", prependVar,
+                 TESTGEN_UNIMPLEMENTED("Prepend input {0} of type {1} not supported", prependVar,
                                        prependVar->type);
              }
 
@@ -195,7 +195,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
                  nextState.prependToPacketBuffer(prependVar);
 
              } else {
-                 TESTGEN_UNIMPLEMENTED("Prepend input %1% of type %2% not supported", prependVar,
+                 TESTGEN_UNIMPLEMENTED("Prepend input {0} of type {1} not supported", prependVar,
                                        prependType);
              }
              nextState.popBody();
@@ -215,7 +215,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
              const auto *appendVar = args->at(0)->expression;
              if (!(appendVar->is<IR::Member>() || appendVar->is<IR::PathExpression>() ||
                    appendVar->is<IR::TaintExpression>() || appendVar->is<IR::Constant>())) {
-                 TESTGEN_UNIMPLEMENTED("append input %1% of type %2% not supported", appendVar,
+                 TESTGEN_UNIMPLEMENTED("append input {0} of type {1} not supported", appendVar,
                                        appendVar->type);
              }
 
@@ -233,7 +233,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
                  nextState.add(*new TraceEvents::Expression(appendVar, "AppendToProgramHeader"));
                  nextState.appendToPacketBuffer(appendVar);
              } else {
-                 TESTGEN_UNIMPLEMENTED("Append input %1% of type %2% not supported", appendVar,
+                 TESTGEN_UNIMPLEMENTED("Append input {0} of type {1} not supported", appendVar,
                                        appendType);
              }
              nextState.popBody();
@@ -299,13 +299,13 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
                 const ExecutionState &state, SmallStepEvaluator::Result &result) {
              const auto *globalRef = args->at(0)->expression;
              if (!(globalRef->is<IR::Member>() || globalRef->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Global input %1% of type %2% not supported", globalRef,
+                 TESTGEN_UNIMPLEMENTED("Global input {0} of type {1} not supported", globalRef,
                                        globalRef->type);
              }
 
              const auto *argRef = args->at(1)->expression;
              if (!(argRef->is<IR::Member>() || argRef->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Param input %1% of type %2% not supported", argRef,
+                 TESTGEN_UNIMPLEMENTED("Param input {0} of type {1} not supported", argRef,
                                        argRef->type);
              }
 
@@ -356,7 +356,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
                  }
                  generateCopyIn(nextState, argRef, globalRef, dir, forceTaint->value);
              } else {
-                 P4C_UNIMPLEMENTED("Unsupported copy_out type %1%", assignType->node_type_name());
+                 P4C_UNIMPLEMENTED("Unsupported copy_out type {0}", assignType->node_type_name());
              }
              // Push back the current taint level.
              nextState.setProperty("inUndefinedState", currentTaint);
@@ -380,13 +380,13 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
             const ExecutionState &state, SmallStepEvaluator::Result &result) {
              const auto *globalRef = args->at(0)->expression;
              if (!(globalRef->is<IR::Member>() || globalRef->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Global input %1% of type %2% not supported", globalRef,
+                 TESTGEN_UNIMPLEMENTED("Global input {0} of type {1} not supported", globalRef,
                                        globalRef->type);
              }
 
              const auto *argRef = args->at(1)->expression;
              if (!(argRef->is<IR::Member>() || argRef->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Param input %1% of type %2% not supported", argRef,
+                 TESTGEN_UNIMPLEMENTED("Param input {0} of type {1} not supported", argRef,
                                        argRef->type);
              }
 
@@ -430,7 +430,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
                      nextState.set(globalRef, nextState.get(argRef));
                  }
              } else {
-                 P4C_UNIMPLEMENTED("Unsupported copy_out type %1%", assignType->node_type_name());
+                 P4C_UNIMPLEMENTED("Unsupported copy_out type {0}", assignType->node_type_name());
              }
              // Push back the current taint level.
              nextState.setProperty("inUndefinedState", currentTaint);
@@ -442,7 +442,7 @@ void ExprStepper::evalInternalExternMethodCall(const IR::MethodCallExpression *c
     // Provides implementations of extern calls internal to the interpreter.
     // These calls do not exist in P4.
     if (!INTERNAL_EXTERN_METHOD_IMPLS.exec(call, receiver, name, args, state, result)) {
-        BUG("Unknown or unimplemented extern method: %1%", name);
+        BUG("Unknown or unimplemented extern method: {0}", name);
     }
 }
 
@@ -470,7 +470,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
              const auto *lookaheadType = call->typeArguments->at(0);
              if (!lookaheadType->is<IR::Type_Base>()) {
                  TESTGEN_UNIMPLEMENTED(
-                     "Lookahead type %1% not supported. Expected a base type. Got %2%",
+                     "Lookahead type {0} not supported. Expected a base type. Got {1}",
                      lookaheadType, lookaheadType->node_type_name());
              }
              // Calculate the conditions for a failed or successful lookahead, given the size.
@@ -541,7 +541,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
                  auto advanceIsTainted = state.hasTaint(advanceExpr);
                  if (advanceIsTainted) {
                      TESTGEN_UNIMPLEMENTED(
-                         "The advance expression of %1% is tainted. We can not predict how much "
+                         "The advance expression of {0} is tainted. We can not predict how much "
                          "this call will advance the parser cursor. Abort.",
                          call);
                  }
@@ -609,7 +609,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
 
              // Get the extractedType
              const auto *typeArgs = call->typeArguments;
-             BUG_CHECK(typeArgs->size() == 1, "Must have exactly 1 type argument for extract. %1%",
+             BUG_CHECK(typeArgs->size() == 1, "Must have exactly 1 type argument for extract. {0}",
                        call);
 
              const auto *initialType = state.resolveType(typeArgs->at(0));
@@ -679,7 +679,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
 
              // Get the extractedType
              const auto *typeArgs = call->typeArguments;
-             BUG_CHECK(typeArgs->size() == 1, "Must have exactly 1 type argument for extract. %1%",
+             BUG_CHECK(typeArgs->size() == 1, "Must have exactly 1 type argument for extract. {0}",
                        call);
 
              const auto *initialType = state.resolveType(typeArgs->at(0));
@@ -694,7 +694,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
                      break;
                  }
              }
-             BUG_CHECK(varbit != nullptr, "No varbit type present in this structure! %1%", call);
+             BUG_CHECK(varbit != nullptr, "No varbit type present in this structure! {0}", call);
 
              int varBitFieldSize = 0;
              PacketCursorAdvanceInfo condInfo{};
@@ -708,7 +708,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
                  auto advanceIsTainted = state.hasTaint(varbitExtractExpr);
                  if (advanceIsTainted) {
                      TESTGEN_UNIMPLEMENTED(
-                         "The varbit expression of %1% is tainted. We can not predict how much "
+                         "The varbit expression of {0} is tainted. We can not predict how much "
                          "this call will advance the parser cursor. Abort.",
                          call);
                  }
@@ -808,7 +808,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
              const auto *emitOutput = args->at(0)->expression;
              const auto *emitType = emitOutput->type->checkedTo<IR::Type_StructLike>();
              if (!emitOutput->is<IR::Member>()) {
-                 TESTGEN_UNIMPLEMENTED("Emit input %1% of type %2% not supported", emitOutput,
+                 TESTGEN_UNIMPLEMENTED("Emit input {0} of type {1} not supported", emitOutput,
                                        emitType);
              }
              const auto &validVar = Utils::getHeaderValidity(emitOutput);
@@ -818,7 +818,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
              auto emitIsTainted = state.hasTaint(validVar);
              if (emitIsTainted) {
                  TESTGEN_UNIMPLEMENTED(
-                     "The validity bit of %1% is tainted. Tainted emit calls can not be "
+                     "The validity bit of {0} is tainted. Tainted emit calls can not be "
                      "mitigated "
                      "because it is unclear whether the header will be emitted. Abort.",
                      emitOutput);
@@ -831,7 +831,7 @@ void ExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
                  for (const auto *field : emitType->fields) {
                      const auto *fieldType = field->type;
                      if (fieldType->is<IR::Type_StructLike>()) {
-                         BUG("Unexpected emit field %1% of type %2%", field, fieldType);
+                         BUG("Unexpected emit field {0} of type {1}", field, fieldType);
                      }
                      const auto *fieldRef = new IR::Member(fieldType, emitOutput, field->name);
                      const IR::Expression *fieldExpr = nextState.get(fieldRef);

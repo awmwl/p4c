@@ -138,7 +138,7 @@ class TypeWidthValidator : public Inspector {
     void postorder(const IR::Type_Varbits *type) override {
         LOG3("Validating Type_Varbits: " << type);
         if (type->size % 8 != 0) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "%1% varbit width (%2%) not aligned to 8 bits",
+            ::error(ErrorType::ERR_UNSUPPORTED, "{0} varbit width ({1}) not aligned to 8 bits",
                     type->srcInfo, type->size);
         }
     }

@@ -54,7 +54,7 @@ bool BMv2_V1ModelExprStepper::isPartOfFieldList(const IR::StructField *field,
         auto annoExprs = annotation->expr;
         auto annoExprSize = annoExprs.size();
         BUG_CHECK(annoExprSize == 1,
-                  "The field list annotation should only have one member. Has %1%.", annoExprSize);
+                  "The field list annotation should only have one member. Has {0}.", annoExprSize);
         auto annoVal = annoExprs.at(0)->checkedTo<IR::Constant>()->asUint64();
         // If the indices match of this particular annotation, skip resetting.
         if (annoVal == recirculateIndex) {
@@ -153,7 +153,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                  IR::getBitType(BMv2_V1ModelTestgenTarget::getPortNumWidth_bits());
              const auto *metadataLabel = args->at(0)->expression;
              if (!(metadataLabel->is<IR::Member>() || metadataLabel->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Drop input %1% of type %2% not supported", metadataLabel,
+                 TESTGEN_UNIMPLEMENTED("Drop input {0} of type {1} not supported", metadataLabel,
                                        metadataLabel->type);
              }
              // Use an assignment to set egress_spec to true.
@@ -179,7 +179,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
              const auto *lo = args->at(1)->expression->to<IR::Constant>();
              const auto *hi = args->at(2)->expression->to<IR::Constant>();
              BUG_CHECK(lo->value <= hi->value,
-                       "Low value ( %1% ) must be less than high value ( %2% ).", lo, hi);
+                       "Low value ( {0} ) must be less than high value ( {1} ).", lo, hi);
              auto &nextState = state.clone();
              const auto *resultField = args->at(0)->expression;
              const IR::Member *fieldRef = nullptr;
@@ -189,7 +189,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                  fieldRef = resultField->to<IR::Member>();
              }
              if (fieldRef == nullptr) {
-                 TESTGEN_UNIMPLEMENTED("Random output %1% of type %2% not supported", resultField,
+                 TESTGEN_UNIMPLEMENTED("Random output {0} of type {1} not supported", resultField,
                                        resultField->type);
              }
 
@@ -209,7 +209,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                  result->emplace_back(nextState);
                  return false;
              }
-             BUG("Not a Type_Bits: %1%", resultField->type);
+             BUG("Not a Type_Bits: {0}", resultField->type);
          }},
         /* ======================================================================================
          *  assume
@@ -370,7 +370,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                      fieldRef = hashOutput->to<IR::Member>();
                  }
                  if (fieldRef == nullptr) {
-                     TESTGEN_UNIMPLEMENTED("Hash output %1% of type %2% not supported", hashOutput,
+                     TESTGEN_UNIMPLEMENTED("Hash output {0} of type {1} not supported", hashOutput,
                                            hashOutput->type);
                  }
                  if (argsAreTainted) {
@@ -382,7 +382,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                      nextState.set(fieldRef, concolicVar);
                  }
              } else {
-                 TESTGEN_UNIMPLEMENTED("Hash output %1% of type %2% not supported", hashOutput,
+                 TESTGEN_UNIMPLEMENTED("Hash output {0} of type {1} not supported", hashOutput,
                                        hashOutput->type);
              }
 
@@ -463,7 +463,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                  replacements.emplace_back(new IR::AssignmentStatement(readOutput, baseExpr));
 
              } else {
-                 TESTGEN_UNIMPLEMENTED("Read extern output %1% of type %2% not supported",
+                 TESTGEN_UNIMPLEMENTED("Read extern output {0} of type {1} not supported",
                                        readOutput, readOutput->type);
              }
              // TODO: Find a better way to model a trace of this event.
@@ -940,7 +940,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                  return;
              }
 
-             TESTGEN_UNIMPLEMENTED("Unsupported clone type %1%.", cloneType);
+             TESTGEN_UNIMPLEMENTED("Unsupported clone type {0}.", cloneType);
          }},
         /* ======================================================================================
          *  resubmit_preserving_field_list
@@ -1210,7 +1210,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
                  result->emplace_back(cond, state, nextState);
                  return;
              }
-             TESTGEN_UNIMPLEMENTED("Unsupported clone type %1%.", cloneType);
+             TESTGEN_UNIMPLEMENTED("Unsupported clone type {0}.", cloneType);
          }},
         /* ======================================================================================
          *  *check_recirculate
@@ -1513,7 +1513,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
 
              const auto *checksumVar = args->at(2)->expression;
              if (!(checksumVar->is<IR::Member>() || checksumVar->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Checksum input %1% of type %2% not supported", checksumVar,
+                 TESTGEN_UNIMPLEMENTED("Checksum input {0} of type {1} not supported", checksumVar,
                                        checksumVar->node_type_name());
              }
              const auto *updateCond = args->at(0)->expression;
@@ -1595,7 +1595,7 @@ void BMv2_V1ModelExprStepper::evalExternMethodCall(const IR::MethodCallExpressio
 
              const auto *checksumVar = args->at(2)->expression;
              if (!(checksumVar->is<IR::Member>() || checksumVar->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("Checksum input %1% of type %2% not supported", checksumVar,
+                 TESTGEN_UNIMPLEMENTED("Checksum input {0} of type {1} not supported", checksumVar,
                                        checksumVar->node_type_name());
              }
              const auto *updateCond = args->at(0)->expression;

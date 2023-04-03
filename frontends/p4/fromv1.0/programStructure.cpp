@@ -111,7 +111,7 @@ bool ProgramStructure::isHeader(const IR::ConcreteHeaderRef *nhr) const {
     if (stack != nullptr) return true;
     auto meta = metadata.get(name);
     if (meta != nullptr) return false;
-    BUG("Unexpected reference %1%", nhr);
+    BUG("Unexpected reference {0}", nhr);
 }
 
 void ProgramStructure::checkHeaderType(const IR::Type_StructLike *hdr, bool metadata) {
@@ -119,10 +119,10 @@ void ProgramStructure::checkHeaderType(const IR::Type_StructLike *hdr, bool meta
     for (auto f : hdr->fields) {
         if (f->type->is<IR::Type_Varbits>()) {
             if (metadata)
-                ::error(ErrorType::ERR_INVALID, "%1%: varbit types illegal in metadata", f);
+                ::error(ErrorType::ERR_INVALID, "{0}: varbit types illegal in metadata", f);
         } else if (!f->type->is<IR::Type_Bits>()) {
             // These come from P4-14, so they cannot be anything else
-            BUG("%1%: unexpected type", f);
+            BUG("{0}: unexpected type", f);
         }
     }
 }
@@ -139,7 +139,7 @@ bool ProgramStructure::isFieldInList(cstring type, cstring field, const IR::Fiel
             if (etype != nullptr && etype->name == type) return true;
         } else if (auto path = e->to<IR::PathExpression>()) {
             auto l = field_lists.get(path->path->name);
-            BUG_CHECK(l != nullptr, "%1%: unexpected expression in field list", e);
+            BUG_CHECK(l != nullptr, "{0}: unexpected expression in field list", e);
             return isFieldInList(type, field, l);
         } else if (auto chr = e->to<IR::ConcreteHeaderRef>()) {
             auto htype = chr->ref->type;
@@ -149,7 +149,7 @@ bool ProgramStructure::isFieldInList(cstring type, cstring field, const IR::Fiel
                 if (f->name == field) return true;
             }
         } else {
-            BUG("%1%: unexpected expression in field list", e);
+            BUG("{0}: unexpected expression in field list", e);
         }
     }
     return false;
@@ -169,7 +169,7 @@ const IR::Vector<IR::Expression> *ProgramStructure::listIndexes(cstring type, cs
 const IR::Expression *ProgramStructure::listIndex(const IR::Expression *expression) const {
     auto pe = expression->to<IR::PathExpression>();
     if (pe == nullptr) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: Expected a field list", expression);
+        ::error(ErrorType::ERR_EXPECTED, "{0}: Expected a field list", expression);
         return 0;
     }
 
@@ -240,7 +240,7 @@ void ProgramStructure::createTypes() {
                 continue;
             }
 
-            BUG_CHECK(type->is<IR::Type_Header>(), "%1%: unexpected type", type);
+            BUG_CHECK(type->is<IR::Type_Header>(), "{0}: unexpected type", type);
             // Must convert to a struct type
             cstring type_name = makeUniqueName(st->name);
             // Registers always use struct types
@@ -271,13 +271,13 @@ void ProgramStructure::createTypes() {
 
 const IR::Type_Struct *ProgramStructure::createFieldListType(const IR::Expression *expression) {
     if (!expression->is<IR::PathExpression>()) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: expected a field list", expression);
+        ::error(ErrorType::ERR_EXPECTED, "{0}: expected a field list", expression);
         return nullptr;
     }
     auto nr = expression->to<IR::PathExpression>();
     auto fl = field_lists.get(nr->path->name);
     if (fl == nullptr) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: Expected a field list", expression);
+        ::error(ErrorType::ERR_EXPECTED, "{0}: Expected a field list", expression);
         return nullptr;
     }
 
@@ -295,12 +295,12 @@ const IR::Type_Struct *ProgramStructure::createFieldListType(const IR::Expressio
         else if (f->is<IR::ConcreteHeaderRef>())
             name = f->to<IR::ConcreteHeaderRef>()->ref->name;
         else
-            BUG("%1%: unexpected field list member", f);
+            BUG("{0}: unexpected field list member", f);
         name = cstring::make_unique(fieldNames, name, field_id, '_');
         fieldNames.emplace(name);
         auto type = f->type->getP4Type();
         CHECK_NULL(type);
-        BUG_CHECK(!type->is<IR::Type_Unknown>(), "%1%: Unknown field list member type", f);
+        BUG_CHECK(!type->is<IR::Type_Unknown>(), "{0}: Unknown field list member type", f);
         auto sf = new IR::StructField(f->srcInfo, name, type);
         result->fields.push_back(sf);
     }
@@ -318,7 +318,7 @@ void ProgramStructure::createStructures() {
         auto h = headers.get(it.first->name);
         if (h != nullptr)
             ::warning(ErrorType::ERR_DUPLICATE,
-                      "%1%: header and metadata instances %2% with the same name", it.first, h);
+                      "{0}: header and metadata instances {1} with the same name", it.first, h);
         auto ht = type->to<IR::Type_StructLike>();
         auto path = new IR::Path(type_name);
         auto tn = new IR::Type_Name(ht->name.srcInfo, path);
@@ -402,21 +402,21 @@ const IR::Statement *ProgramStructure::convertParserStatement(const IR::Expressi
     if (expr->is<IR::Primitive>()) {
         auto primitive = expr->to<IR::Primitive>();
         if (primitive->name == "extract") {
-            BUG_CHECK(primitive->operands.size() == 1, "Expected 1 operand for %1%", primitive);
+            BUG_CHECK(primitive->operands.size() == 1, "Expected 1 operand for {0}", primitive);
             auto dest = conv.convert(primitive->operands.at(0));
             auto destType = dest->type;
             CHECK_NULL(destType);
             if (!destType->is<IR::Type_Header>()) {
-                ::error(ErrorType::ERR_INVALID, "%1%: invalid argument. Expected a header not %2%",
+                ::error(ErrorType::ERR_INVALID, "{0}: invalid argument. Expected a header not {1}",
                         primitive, destType->toString());
                 return nullptr;
             }
             auto finalDestType =
                 ::get(finalHeaderType, destType->to<IR::Type_Header>()->externalName());
-            BUG_CHECK(finalDestType != nullptr, "%1%: could not find final type",
+            BUG_CHECK(finalDestType != nullptr, "{0}: could not find final type",
                       destType->to<IR::Type_Header>()->externalName());
             destType = finalDestType;
-            BUG_CHECK(destType->is<IR::Type_Header>(), "%1%: expected a header", destType);
+            BUG_CHECK(destType->is<IR::Type_Header>(), "{0}: expected a header", destType);
 
             // A second conversion of dest is used to compute the
             // 'latest' (P4-14 keyword) value if referenced later.
@@ -433,14 +433,14 @@ const IR::Statement *ProgramStructure::convertParserStatement(const IR::Expressi
             extractsSynthesized.emplace(result->methodCall, destType->to<IR::Type_Header>());
             return result;
         } else if (primitive->name == "set_metadata") {
-            BUG_CHECK(primitive->operands.size() == 2, "Expected 2 operands for %1%", primitive);
+            BUG_CHECK(primitive->operands.size() == 2, "Expected 2 operands for {0}", primitive);
 
             auto dest = conv.convert(primitive->operands.at(0));
             auto src = conv.convert(primitive->operands.at(1));
             return assign(primitive->srcInfo, dest, src, primitive->operands.at(0)->type);
         }
     }
-    BUG("Unhandled expression %1%", expr);
+    BUG("Unhandled expression {0}", expr);
 }
 
 const IR::PathExpression *ProgramStructure::getState(IR::ID dest) {
@@ -453,7 +453,7 @@ const IR::PathExpression *ProgramStructure::getState(IR::ID dest) {
             if (ingress != nullptr) {
                 if (ingress != ctrl)
                     ::error(ErrorType::ERR_UNSUPPORTED,
-                            "Parser exits to two different control blocks: %1% and %2%", dest,
+                            "Parser exits to two different control blocks: {0} and {1}", dest,
                             ingressReference);
             } else {
                 ingress = ctrl;
@@ -461,7 +461,7 @@ const IR::PathExpression *ProgramStructure::getState(IR::ID dest) {
             }
             return new IR::PathExpression(IR::ParserState::accept);
         } else {
-            ::error(ErrorType::ERR_NOT_FOUND, "%1%: unknown state", dest);
+            ::error(ErrorType::ERR_NOT_FOUND, "{0}: unknown state", dest);
             return nullptr;
         }
     }
@@ -529,11 +529,11 @@ const IR::ParserState *ProgramStructure::convertParser(
                 fieldTypes.push_back(t);
             } else {
                 auto w = c->type->width_bits();
-                BUG_CHECK(w > 0, "Unknown width for expression %1%", e);
+                BUG_CHECK(w > 0, "Unknown width for expression {0}", e);
                 fieldTypes.push_back(IR::Type::Bits::get(w));
             }
         }
-        BUG_CHECK(list->components.size() > 0, "No select expression in %1%", parser);
+        BUG_CHECK(list->components.size() > 0, "No select expression in {0}", parser);
 
         // select always expects a ListExpression
         IR::Vector<IR::SelectCase> cases;
@@ -563,18 +563,18 @@ const IR::ParserState *ProgramStructure::convertParser(
                 if (sizeAnnotation) {
                     if (sizeAnnotation->expr.size() != 1) {
                         ::error(ErrorType::ERR_INVALID,
-                                "@size should be an integer for declaration %1%", value_set);
+                                "@size should be an integer for declaration {0}", value_set);
                         return nullptr;
                     }
                     sizeConstant = sizeAnnotation->expr[0]->to<IR::Constant>();
                     if (sizeConstant == nullptr || !sizeConstant->fitsInt()) {
                         ::error(ErrorType::ERR_INVALID,
-                                "@size should be an integer for declaration %1%", value_set);
+                                "@size should be an integer for declaration {0}", value_set);
                         return nullptr;
                     }
                 } else {
                     ::warning(ErrorType::WARN_MISSING,
-                              "%1%: parser_value_set has no @parser_value_set_size annotation."
+                              "{0}: parser_value_set has no @parser_value_set_size annotation."
                               "Using default size 4.",
                               c);
                     sizeConstant = new IR::Constant(4);
@@ -592,7 +592,7 @@ const IR::ParserState *ProgramStructure::convertParser(
                     auto c = v.second->to<IR::Constant>();
                     CHECK_NULL(c);  // this is enforced elsewhere
                     if (!c->fitsInt() || c->asInt() != -1) {
-                        ::error(ErrorType::ERR_INVALID, "%1%: masks not supported for value sets",
+                        ::error(ErrorType::ERR_INVALID, "{0}: masks not supported for value sets",
                                 c);
                         continue;
                     }
@@ -607,7 +607,7 @@ const IR::ParserState *ProgramStructure::convertParser(
         select = getState(id);
         if (select == nullptr) return nullptr;
     } else {
-        BUG("No select or default_return %1%", parser);
+        BUG("No select or default_return {0}", parser);
     }
     latest = nullptr;
     auto annos = addGlobalNameAnnotation(parser->name, parser->annotations);
@@ -738,11 +738,11 @@ class HeaderRepresentation {
                         stackNextElement[hdr] = new IR::Member(hdr, IR::ID("next"));
                     return stackNextElement[hdr];
                 } else {
-                    ::error(ErrorType::ERR_EXPRESSION, "%1%: Illegal extract stack expression", pe);
+                    ::error(ErrorType::ERR_EXPRESSION, "{0}: Illegal extract stack expression", pe);
                     return hdr;
                 }
             }
-            BUG_CHECK(hsir->index_->is<IR::Constant>(), "%1%: expected a constant", hsir->index_);
+            BUG_CHECK(hsir->index_->is<IR::Constant>(), "{0}: expected a constant", hsir->index_);
             int index = hsir->index_->to<IR::Constant>()->asInt();
             if (stackElement.find(hdr) != stackElement.end()) {
                 if (stackElement[hdr].find(index) != stackElement[hdr].end())
@@ -752,7 +752,7 @@ class HeaderRepresentation {
             stackElement[hdr][index] = ai;
             return ai;
         }
-        BUG("%1%: Unexpected expression in 'extract'", expression);
+        BUG("{0}: Unexpected expression in 'extract'", expression);
     }
     const IR::Expression *getFakeHeader(cstring state) {
         if (fakeHeader.find(state) == fakeHeader.end())
@@ -823,7 +823,7 @@ void ProgramStructure::createDeparserInternal(
     bool loop = headerOrder.sccSort(startHeader, sortedHeaders);
     if (loop)
         ::warning(ErrorType::WARN_ORDERING,
-                  "%1%: the order of headers in deparser is not uniquely determined by parser!",
+                  "{0}: the order of headers in deparser is not uniquely determined by parser!",
                   startHeader);
 
     auto params = new IR::ParameterList;
@@ -882,7 +882,7 @@ const IR::Declaration_Instance *ProgramStructure::convertActionProfile(
     const IR::ActionProfile *action_profile, cstring newName) {
     auto *action_selector = action_selectors.get(action_profile->selector.name);
     if (!action_profile->selector.name.isNullOrEmpty() && !action_selector)
-        ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate action selector %1%",
+        ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate action selector {0}",
                 action_profile->selector);
     const IR::Type *type = nullptr;
     auto args = new IR::Vector<IR::Argument>();
@@ -989,7 +989,7 @@ const IR::P4Table *ProgramStructure::convertTable(const IR::V1Table *table, cstr
         if (action_selector != nullptr) {
             auto flc = field_list_calculations.get(action_selector->key.name);
             if (flc == nullptr) {
-                ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate field list %1%",
+                ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate field list {0}",
                         action_selector->key);
             } else {
                 auto fl = getFieldLists(flc);
@@ -1101,7 +1101,7 @@ const IR::Expression *ProgramStructure::convertHashAlgorithm(Util::SourceInfo sr
     } else if (algorithm == "xor16") {
         result = v1model.algorithm.xor16.Id();
     } else {
-        ::warning(ErrorType::WARN_UNSUPPORTED, "%1%: unexpected algorithm", algorithm);
+        ::warning(ErrorType::WARN_UNSUPPORTED, "{0}: unexpected algorithm", algorithm);
         result = algorithm;
     }
     auto pe = new IR::TypeNameExpression(v1model.algorithm.Id());
@@ -1131,7 +1131,7 @@ static bool sameBitsType(const IR::Node *errorPosition, const IR::Type *left,
     if (typeid(*left) != typeid(*right)) return false;
     if (left->is<IR::Type_Bits>())
         return left->to<IR::Type_Bits>()->operator==(*right->to<IR::Type_Bits>());
-    ::error(ErrorType::ERR_TYPE_ERROR, "%1%: operation only defined for bit/int types",
+    ::error(ErrorType::ERR_TYPE_ERROR, "{0}: operation only defined for bit/int types",
             errorPosition);
     return true;  // to prevent inserting a cast
 }
@@ -1156,7 +1156,7 @@ const IR::Statement *ProgramStructure::sliceAssign(const IR::Primitive *primitiv
     if (mask->is<IR::Constant>()) {
         auto cst = mask->to<IR::Constant>();
         if (cst->value < 0) {
-            ::error(ErrorType::ERR_INVALID, "%1%: Negative mask not supported", mask);
+            ::error(ErrorType::ERR_INVALID, "{0}: Negative mask not supported", mask);
             return nullptr;
         }
         if (cst->value != 0) {
@@ -1185,13 +1185,13 @@ const IR::Expression *ProgramStructure::convertFieldList(const IR::Expression *e
     ExpressionConverter conv(this);
 
     if (!expression->is<IR::PathExpression>()) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: expected a field list", expression);
+        ::error(ErrorType::ERR_EXPECTED, "{0}: expected a field list", expression);
         return expression;
     }
     auto nr = expression->to<IR::PathExpression>();
     auto fl = field_lists.get(nr->path->name);
     if (fl == nullptr) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: Expected a field list", expression);
+        ::error(ErrorType::ERR_EXPECTED, "{0}: Expected a field list", expression);
         return expression;
     }
     auto result = conv.convert(fl);
@@ -1221,12 +1221,12 @@ const IR::Statement *ProgramStructure::convertPrimitive(const IR::Primitive *pri
         auto stat = new IR::MethodCallStatement(primitive->srcInfo, call);
         return stat;
     }
-    error(ErrorType::ERR_UNSUPPORTED, "Unsupported primitive %1%", primitive);
+    error(ErrorType::ERR_UNSUPPORTED, "Unsupported primitive {0}", primitive);
     return nullptr;
 }
 
 #define OPS_CK(primitive, n) \
-    BUG_CHECK((primitive)->operands.size() == n, "Expected " #n " operands for %1%", primitive)
+    BUG_CHECK((primitive)->operands.size() == n, "Expected " #n " operands for {0}", primitive)
 
 CONVERT_PRIMITIVE(modify_field) {
     auto args = convertArgs(structure, primitive);
@@ -1497,18 +1497,18 @@ static const IR::Constant *push_pop_size(ExpressionConverter &conv, const IR::Pr
     auto op1 = prim->operands.at(1);
     auto count = conv.convert(op1);
     if (!count->is<IR::Constant>()) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Only %2% with a constant value is supported", op1,
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Only {1} with a constant value is supported", op1,
                 prim->name);
         return new IR::Constant(1);
     }
     auto cst = count->to<IR::Constant>();
     auto number = cst->asInt();
     if (number < 0) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: %2% requires a positive amount", op1, prim->name);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: {1} requires a positive amount", op1, prim->name);
         return new IR::Constant(1);
     }
     if (number > 0xFFFF) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: %2% amount is too large", op1, prim->name);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: {1} amount is too large", op1, prim->name);
         return new IR::Constant(1);
     }
     return cst;
@@ -1516,7 +1516,7 @@ static const IR::Constant *push_pop_size(ExpressionConverter &conv, const IR::Pr
 CONVERT_PRIMITIVE(push) {
     ExpressionConverter conv(structure);
     BUG_CHECK(primitive->operands.size() >= 1 || primitive->operands.size() <= 2,
-              "Expected 1 or 2 operands for %1%", primitive);
+              "Expected 1 or 2 operands for {0}", primitive);
     auto hdr = conv.convert(primitive->operands.at(0));
     auto count = push_pop_size(conv, primitive);
     IR::IndexedVector<IR::StatOrDecl> block;
@@ -1534,7 +1534,7 @@ CONVERT_PRIMITIVE(push) {
 CONVERT_PRIMITIVE(pop) {
     ExpressionConverter conv(structure);
     BUG_CHECK(primitive->operands.size() >= 1 || primitive->operands.size() <= 2,
-              "Expected 1 or 2 operands for %1%", primitive);
+              "Expected 1 or 2 operands for {0}", primitive);
     auto hdr = conv.convert(primitive->operands.at(0));
     auto count = push_pop_size(conv, primitive);
     auto methodName = IR::Type_Stack::pop_front;
@@ -1552,7 +1552,7 @@ CONVERT_PRIMITIVE(count) {
     else if (auto nr = ref->to<IR::PathExpression>())
         counter = structure->counters.get(nr->path->name);
     if (counter == nullptr) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected a counter reference %1%", ref);
+        ::error(ErrorType::ERR_EXPECTED, "Expected a counter reference {0}", ref);
         return nullptr;
     }
     auto newname = structure->counters.get(counter);
@@ -1567,7 +1567,7 @@ CONVERT_PRIMITIVE(count) {
 CONVERT_PRIMITIVE(modify_field_from_rng) {
     ExpressionConverter conv(structure);
     BUG_CHECK(primitive->operands.size() == 2 || primitive->operands.size() == 3,
-              "Expected 2 or 3 operands for %1%", primitive);
+              "Expected 2 or 3 operands for {0}", primitive);
     auto field = conv.convert(primitive->operands.at(0));
     auto dest = field;
     auto logRange = conv.convert(primitive->operands.at(1));
@@ -1600,7 +1600,7 @@ CONVERT_PRIMITIVE(modify_field_from_rng) {
 
 CONVERT_PRIMITIVE(modify_field_rng_uniform) {
     ExpressionConverter conv(structure);
-    BUG_CHECK(primitive->operands.size() == 3, "Expected 3 operands for %1%", primitive);
+    BUG_CHECK(primitive->operands.size() == 3, "Expected 3 operands for {0}", primitive);
     auto field = conv.convert(primitive->operands.at(0));
     auto lo = conv.convert(primitive->operands.at(1));
     auto hi = conv.convert(primitive->operands.at(2));
@@ -1618,7 +1618,7 @@ CONVERT_PRIMITIVE(modify_field_rng_uniform) {
 
 CONVERT_PRIMITIVE(recirculate) {
     unsigned opcount = primitive->operands.size();
-    BUG_CHECK(opcount == 0 || opcount == 1, "Expected 0 or 1 operands for %1%", primitive);
+    BUG_CHECK(opcount == 0 || opcount == 1, "Expected 0 or 1 operands for {0}", primitive);
     auto args = new IR::Vector<IR::Argument>();
     if (opcount == 0) {
         // no list should have this index
@@ -1636,7 +1636,7 @@ CONVERT_PRIMITIVE(recirculate) {
 static const IR::Statement *convertClone(ProgramStructure *structure,
                                          const IR::Primitive *primitive, Model::Elem kind) {
     unsigned opcount = primitive->operands.size();
-    BUG_CHECK(opcount == 1 || opcount == 2, "Expected 1 or 2 operands for %1%", primitive);
+    BUG_CHECK(opcount == 1 || opcount == 2, "Expected 1 or 2 operands for {0}", primitive);
     ExpressionConverter conv(structure);
     auto session = conv.convert(primitive->operands.at(0));
 
@@ -1675,7 +1675,7 @@ CONVERT_PRIMITIVE(clone_i2e) {
 CONVERT_PRIMITIVE(resubmit) {
     ExpressionConverter conv(structure);
     unsigned opcount = primitive->operands.size();
-    BUG_CHECK(opcount <= 1, "Expected 0 or 1 operands for %1%", primitive);
+    BUG_CHECK(opcount <= 1, "Expected 0 or 1 operands for {0}", primitive);
     auto args = new IR::Vector<IR::Argument>();
     if (opcount == 1) {
         auto fl = primitive->operands.at(0);
@@ -1703,11 +1703,11 @@ CONVERT_PRIMITIVE(execute_meter) {
     else if (auto nr = ref->to<IR::PathExpression>())
         meter = structure->meters.get(nr->path->name);
     if (!meter) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected a meter reference %1%", ref);
+        ::error(ErrorType::ERR_EXPECTED, "Expected a meter reference {0}", ref);
         return nullptr;
     }
     if (!meter->implementation.name.isNullOrEmpty())
-        ::warning(ErrorType::WARN_IGNORE_PROPERTY, "Ignoring `implementation' field of meter %1%",
+        ::warning(ErrorType::WARN_IGNORE_PROPERTY, "Ignoring `implementation' field of meter {0}",
                   meter);
     auto newname = structure->meters.get(meter);
     auto meterref = new IR::PathExpression(newname);
@@ -1734,7 +1734,7 @@ CONVERT_PRIMITIVE(modify_field_with_hash_based_offset) {
 
     auto flc = structure->getFieldListCalculation(primitive->operands.at(2));
     if (flc == nullptr) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: Expected a field_list_calculation",
+        ::error(ErrorType::ERR_EXPECTED, "{0}: Expected a field_list_calculation",
                 primitive->operands.at(2));
         return nullptr;
     }
@@ -1813,7 +1813,7 @@ CONVERT_PRIMITIVE(register_read) {
     else if (auto nr = ref->to<IR::PathExpression>())
         reg = structure->registers.get(nr->path->name);
     if (!reg) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected a register reference %1%", ref);
+        ::error(ErrorType::ERR_EXPECTED, "Expected a register reference {0}", ref);
         return nullptr;
     }
     auto newname = structure->registers.get(reg);
@@ -1839,7 +1839,7 @@ CONVERT_PRIMITIVE(register_write) {
     else if (auto nr = ref->to<IR::PathExpression>())
         reg = structure->registers.get(nr->path->name);
     if (!reg) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected a register reference %1%", ref);
+        ::error(ErrorType::ERR_EXPECTED, "Expected a register reference {0}", ref);
         return nullptr;
     }
 
@@ -1937,7 +1937,7 @@ const IR::P4Action *ProgramStructure::convertAction(const IR::ActionFunction *ac
             direction = p->write ? IR::Direction::InOut : IR::Direction::None;
         auto type = p->type;
         if (type == IR::Type_Unknown::get()) {
-            ::warning(ErrorType::WARN_TYPE_INFERENCE, "Could not infer type for %1%, using bit<8>",
+            ::warning(ErrorType::WARN_TYPE_INFERENCE, "Could not infer type for {0}, using bit<8>",
                       p);
             type = IR::Type_Bits::get(8);
         } else if (type->is<IR::Type_StructLike>()) {
@@ -2011,16 +2011,16 @@ const IR::Expression *ProgramStructure::counterType(const IR::CounterOrMeter *cm
         else if (cm->type == IR::CounterType::BOTH)
             kind = v1model.counterOrMeter.counterType.both.Id();
         else
-            BUG("%1%: unsupported", cm);
+            BUG("{0}: unsupported", cm);
     } else {
-        BUG_CHECK(cm->is<IR::Meter>(), "%1%: expected a meter", cm);
+        BUG_CHECK(cm->is<IR::Meter>(), "{0}: expected a meter", cm);
         enumName = v1model.counterOrMeter.meterType.Id();
         if (cm->type == IR::CounterType::PACKETS)
             kind = v1model.counterOrMeter.meterType.packets.Id();
         else if (cm->type == IR::CounterType::BYTES)
             kind = v1model.counterOrMeter.meterType.bytes.Id();
         else
-            BUG("%1%: unsupported", cm);
+            BUG("{0}: unsupported", cm);
     }
     auto enumref = new IR::TypeNameExpression(new IR::Type_Name(new IR::Path(enumName)));
     return new IR::Member(cm->srcInfo, enumref, kind);
@@ -2040,7 +2040,7 @@ const IR::Declaration_Instance *ProgramStructure::convert(const IR::Register *re
         if (newName.isNullOrEmpty()) newName = reg->layout;
         regElementType = new IR::Type_Name(new IR::Path(newName));
     } else {
-        ::warning(ErrorType::WARN_MISSING, "%1%: Register width unspecified; using %2%", reg,
+        ::warning(ErrorType::WARN_MISSING, "{0}: Register width unspecified; using {1}", reg,
                   defaultRegisterWidth);
         regElementType = IR::Type_Bits::get(defaultRegisterWidth);
     }
@@ -2098,7 +2098,7 @@ const IR::Declaration_Instance *ProgramStructure::convertDirectMeter(const IR::M
     LOG3("Synthesizing " << m);
     auto meterOutput = m->result;
     if (meterOutput == nullptr) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: direct meter with no result", m);
+        ::error(ErrorType::ERR_EXPECTED, "{0}: direct meter with no result", m);
         return nullptr;
     }
 
@@ -2177,12 +2177,12 @@ const IR::P4Control *ProgramStructure::convertControl(const IR::V1Control *contr
     for (auto c : counters) {
         if (c.first->direct) {
             if (c.first->table.name.isNullOrEmpty()) {
-                ::error(ErrorType::ERR_INVALID, "%1%: Direct counter with no table", c.first);
+                ::error(ErrorType::ERR_INVALID, "{0}: Direct counter with no table", c.first);
                 return nullptr;
             }
             auto tbl = tables.get(c.first->table.name);
             if (tbl == nullptr) {
-                ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate table %1%", c.first->table.name);
+                ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate table {0}", c.first->table.name);
                 return nullptr;
             }
             if (std::find(usedTables.begin(), usedTables.end(), tbl) != usedTables.end()) {
@@ -2207,12 +2207,12 @@ const IR::P4Control *ProgramStructure::convertControl(const IR::V1Control *contr
     for (auto m : meters) {
         if (m.first->direct) {
             if (m.first->table.name.isNullOrEmpty()) {
-                ::error(ErrorType::ERR_NOT_FOUND, "%1%: Direct meter with no table", m.first);
+                ::error(ErrorType::ERR_NOT_FOUND, "{0}: Direct meter with no table", m.first);
                 return nullptr;
             }
             auto tbl = tables.get(m.first->table.name);
             if (tbl == nullptr) {
-                ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate table %1%", m.first->table.name);
+                ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate table {0}", m.first->table.name);
                 return nullptr;
             }
             if (std::find(usedTables.begin(), usedTables.end(), tbl) != usedTables.end()) {
@@ -2268,7 +2268,7 @@ const IR::P4Control *ProgramStructure::convertControl(const IR::V1Control *contr
     for (auto a : actionsToDo) {
         auto act = actions.get(a);
         if (act == nullptr) {
-            ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate action %1%", a);
+            ::error(ErrorType::ERR_NOT_FOUND, "Cannot locate action {0}", a);
             return nullptr;
         }
         auto action = convertAction(act, actions.get(act), nullptr, nullptr);
@@ -2420,14 +2420,14 @@ const IR::FieldListCalculation *ProgramStructure::getFieldListCalculation(const 
 const IR::FieldList *ProgramStructure::getFieldLists(const IR::FieldListCalculation *flc) {
     // FIXME -- this duplicates P4_14::TypeCheck.  Why not just use flc->input_fields?
     if (flc->input->names.size() == 0) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: field_list_calculation with zero inputs", flc);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: field_list_calculation with zero inputs", flc);
         return nullptr;
     }
     if (flc->input->names.size() == 1) {
         auto name = flc->input->names.at(0);
         auto result = field_lists.get(name);
         if (result == nullptr)
-            ::error(ErrorType::ERR_NOT_FOUND, "Could not find field_list %1%", name);
+            ::error(ErrorType::ERR_NOT_FOUND, "Could not find field_list {0}", name);
         return result;
     }
 
@@ -2436,7 +2436,7 @@ const IR::FieldList *ProgramStructure::getFieldLists(const IR::FieldListCalculat
     for (auto name : flc->input->names) {
         auto fl = field_lists.get(name);
         if (fl == nullptr) {
-            ::error(ErrorType::ERR_NOT_FOUND, "Could not find field_list %1%", name);
+            ::error(ErrorType::ERR_NOT_FOUND, "Could not find field_list {0}", name);
             return nullptr;
         }
         result->fields.insert(result->fields.end(), fl->fields.begin(), fl->fields.end());

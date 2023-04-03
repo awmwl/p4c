@@ -46,15 +46,15 @@ bool hasTranslationAnnotation(const IR::Type *type, TranslationAnnotation *paylo
 
     // Syntax: @pruntime_translation(<uri>, <basic_type>).
     BUG_CHECK(ann->expr.size() == 2,
-              "%1%: expected @p4runtime_translation annotation with 2 "
-              "arguments, but found %2% arguments",
+              "{0}: expected @p4runtime_translation annotation with 2 "
+              "arguments, but found {1} arguments",
               type, ann->expr.size());
     const IR::Expression *first_arg = ann->expr[0];
     const IR::Expression *second_arg = ann->expr[1];
 
     auto uri = first_arg->to<IR::StringLiteral>();
     BUG_CHECK(uri != nullptr,
-              "%1%: the first argument to @p4runtime_translation must be a "
+              "{0}: the first argument to @p4runtime_translation must be a "
               "string literal",
               type);
     payload->original_type_uri = std::string(uri->value);
@@ -69,8 +69,8 @@ bool hasTranslationAnnotation(const IR::Type *type, TranslationAnnotation *paylo
             ControllerType{ControllerType::kBit, second_arg->to<IR::Constant>()->asInt()};
         return true;
     }
-    BUG("%1%: expected second argument to @p4runtime_translation to parse as an"
-        " IR::StringLiteral or IR::Constant, but got %2%",
+    BUG("{0}: expected second argument to @p4runtime_translation to parse as an"
+        " IR::StringLiteral or IR::Constant, but got {1}",
         type, second_arg);
     return false;
 }
@@ -93,7 +93,7 @@ TypeSpecConverter::TypeSpecConverter(const P4::ReferenceMap *refMap, P4::TypeMap
 }
 
 bool TypeSpecConverter::preorder(const IR::Type *type) {
-    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected type %1%", type);
+    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected type {0}", type);
     map.emplace(type, new P4DataTypeSpec());
     return false;
 }
@@ -156,7 +156,7 @@ bool TypeSpecConverter::preorder(const IR::Type_Name *type) {
     } else if (decl->is<IR::Type_Newtype>()) {
         typeSpec->mutable_new_type()->set_name(name);
     } else {
-        BUG("Unexpected named type %1%", type);
+        BUG("Unexpected named type {0}", type);
     }
     visit(decl->getNode());
     map.emplace(type, typeSpec);
@@ -181,8 +181,8 @@ bool TypeSpecConverter::preorder(const IR::Type_Newtype *type) {
             bool isTranslatedType = hasTranslationAnnotation(type, &ann);
             if (isTranslatedType && !underlyingType->is<IR::Type_Bits>()) {
                 ::error(ErrorType::ERR_INVALID,
-                        "%1%: P4Runtime requires the underlying type for a user-defined type with "
-                        "the @p4runtime_translation annotation to be bit<W>; it cannot be '%2%'",
+                        "{0}: P4Runtime requires the underlying type for a user-defined type with "
+                        "the @p4runtime_translation annotation to be bit<W>; it cannot be '{1}'",
                         type, underlyingType);
                 // no need to return early here
             }
@@ -198,7 +198,7 @@ bool TypeSpecConverter::preorder(const IR::Type_Newtype *type) {
                 } else if (ann.controller_type.type == ControllerType::kBit) {
                     translatedType->set_sdn_bitwidth(ann.controller_type.width);
                 } else {
-                    BUG("Unexpected controller type: %1%",
+                    BUG("Unexpected controller type: {0}",
                         std::to_string(ann.controller_type.type));
                 }
             } else {
@@ -228,7 +228,7 @@ bool TypeSpecConverter::preorder(const IR::Type_BaseList *type) {
 bool TypeSpecConverter::preorder(const IR::Type_Stack *type) {
     auto typeSpec = new P4DataTypeSpec();
     if (!type->elementType->is<IR::Type_Name>()) {
-        BUG("Unexpected stack element type %1%", type->elementType);
+        BUG("Unexpected stack element type {0}", type->elementType);
     }
 
     auto decl = refMap->getDeclaration(type->elementType->to<IR::Type_Name>()->path, true);
@@ -246,7 +246,7 @@ bool TypeSpecConverter::preorder(const IR::Type_Stack *type) {
         headerUnionStackTypeSpec->mutable_header_union()->set_name(name);
         headerUnionStackTypeSpec->set_size(size);
     } else {
-        BUG("Unexpected declaration %1%", decl);
+        BUG("Unexpected declaration {0}", decl);
     }
     visit(decl->getNode());
     map.emplace(type, typeSpec);
@@ -288,7 +288,7 @@ bool TypeSpecConverter::preorder(const IR::Type_Header *type) {
                 auto fTypeSpec = map.at(fType);
                 CHECK_NULL(fTypeSpec);
                 BUG_CHECK(fTypeSpec->has_bitstring(),
-                          "Only bitstring fields expected in flattened header type %1%",
+                          "Only bitstring fields expected in flattened header type {0}",
                           flattenedHeaderType);
                 auto member = headerTypeSpec->add_members();
                 member->set_name(f->controlPlaneName());
@@ -313,7 +313,7 @@ bool TypeSpecConverter::preorder(const IR::Type_HeaderUnion *type) {
                 auto fTypeSpec = map.at(fType);
                 CHECK_NULL(fTypeSpec);
                 BUG_CHECK(fTypeSpec->has_header(),
-                          "Only header fields expected in header union declaration %1%", type);
+                          "Only header fields expected in header union declaration {0}", type);
                 auto member = headerUnionTypeSpec->add_members();
                 member->set_name(f->controlPlaneName());
                 member->mutable_header()->CopyFrom(fTypeSpec->header());
@@ -355,7 +355,7 @@ bool TypeSpecConverter::preorder(const IR::Type_SerEnum *type) {
                 auto member = enumTypeSpec->add_members();
                 member->set_name(m->controlPlaneName());
                 if (!m->value->is<IR::Constant>()) {
-                    ::error(ErrorType::ERR_UNSUPPORTED, "%1% unsupported SerEnum member value",
+                    ::error(ErrorType::ERR_UNSUPPORTED, "{0} unsupported SerEnum member value",
                             m->value);
                     continue;
                 }

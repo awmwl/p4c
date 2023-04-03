@@ -44,10 +44,10 @@ const IR::Node *RemoveNestedStructs::postorder(IR::Declaration_Variable *decl) {
     auto type = values->typeMap->getType(getOriginal(), true);
     if (!values->isNestedStruct(type)) return decl;
 
-    BUG_CHECK(decl->initializer == nullptr, "%1%: did not expect an initializer", decl);
+    BUG_CHECK(decl->initializer == nullptr, "{0}: did not expect an initializer", decl);
     BUG_CHECK(decl->annotations->size() == 0 || (decl->annotations->size() == 1 &&
                                                  decl->annotations->getSingle("name") != nullptr),
-              "%1%: don't know how to handle variable annotations other than @name", decl);
+              "{0}: don't know how to handle variable annotations other than @name", decl);
     auto map = new ComplexValues::FieldsMap(type);
     values->values.emplace(getOriginal<IR::Declaration_Variable>(), map);
     if (findContext<IR::Function>()) {
@@ -88,7 +88,7 @@ const IR::Node *RemoveNestedStructs::postorder(IR::MethodCallExpression *express
         if (!p->hasOut()) continue;
         if (values->isNestedStruct(p->type)) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "%1%: extern functions with 'out' nested struct argument (%2%) not supported",
+                    "{0}: extern functions with 'out' nested struct argument ({1}) not supported",
                     expression, p);
         }
     }

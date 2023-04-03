@@ -407,7 +407,7 @@ IR::IndexedVector<IR::DpdkAsmStatement> CopyPropagationAndElimination::copyPropA
 cstring EmitDpdkTableConfig::getKeyMatchType(const IR::KeyElement *ke, P4::ReferenceMap *refMap) {
     auto path = ke->matchType->path;
     auto mt = refMap->getDeclaration(path, true)->to<IR::Declaration_ID>();
-    BUG_CHECK(mt != nullptr, "%1%: could not find declaration", ke->matchType);
+    BUG_CHECK(mt != nullptr, "{0}: could not find declaration", ke->matchType);
     return mt->name.name;
 }
 
@@ -443,10 +443,10 @@ big_int EmitDpdkTableConfig::convertSimpleKeyExpressionToBigInt(const IR::Expres
             BUG_CHECK(w == keyWidth, "SerEnum bitwidth mismatch");
             return type->value;
         }
-        ::error(ErrorType::ERR_INVALID, "%1% invalid Member key expression", k);
+        ::error(ErrorType::ERR_INVALID, "{0} invalid Member key expression", k);
         return -1;
     } else {
-        ::error(ErrorType::ERR_INVALID, "%1% invalid key expression", k);
+        ::error(ErrorType::ERR_INVALID, "{0} invalid key expression", k);
         return -1;
     }
 }
@@ -493,7 +493,7 @@ void EmitDpdkTableConfig::addAction(const IR::Expression *actionRef, P4::Referen
                     auto argValue = sei->value->to<IR::Constant>();
                     argVals.push_back(argValue->value);
                 } else {
-                    ::error(ErrorType::ERR_UNSUPPORTED, "%1% unsupported argument expression", arg);
+                    ::error(ErrorType::ERR_UNSUPPORTED, "{0} unsupported argument expression", arg);
                     continue;
                 }
             }
@@ -531,13 +531,13 @@ void EmitDpdkTableConfig::addLpm(const IR::Expression *k, int keyWidth, P4::Type
         mask = km->right->to<IR::Constant>()->value;
         auto len = trailing_zeros(mask);
         if (len + count_ones(mask) != keyWidth) {  // any remaining 0s in the prefix?
-            ::error(ErrorType::ERR_INVALID, "%1% invalid mask for LPM key", k);
+            ::error(ErrorType::ERR_INVALID, "{0} invalid mask for LPM key", k);
             return;
         }
         if ((value & mask) != value) {
             ::warning(ErrorType::WARN_MISMATCH,
                       "P4Runtime requires that LPM matches have masked-off bits set to 0, "
-                      "updating value %1% to conform to the P4Runtime specification",
+                      "updating value {0} to conform to the P4Runtime specification",
                       km->left);
             value &= mask;
         }
@@ -562,7 +562,7 @@ void EmitDpdkTableConfig::addTernary(const IR::Expression *k, int keyWidth, P4::
         if ((value & mask) != value) {
             ::warning(ErrorType::WARN_MISMATCH,
                       "P4Runtime requires that Ternary matches have masked-off bits set to 0, "
-                      "updating value %1% to conform to the P4Runtime specification",
+                      "updating value {0} to conform to the P4Runtime specification",
                       km->left);
             value &= mask;
         }
@@ -634,7 +634,7 @@ void EmitDpdkTableConfig::addMatchKey(const IR::DpdkTable *table, const IR::List
         } else {
             if (!k->is<IR::DefaultExpression>())
                 ::error(ErrorType::ERR_UNSUPPORTED,
-                        "%1%: match type not supported by P4Runtime serializer", matchType);
+                        "{0}: match type not supported by P4Runtime serializer", matchType);
             continue;
         }
     }

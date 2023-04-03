@@ -52,7 +52,7 @@ std::optional<ExternInstance> ExternInstance::resolve(const IR::PathExpression *
     auto instance = decl->to<IR::Declaration_Instance>();
     auto type = typeMap->getType(instance);
     if (!type) {
-        BUG("Couldn't determine the type of expression: %1%", path);
+        BUG("Couldn't determine the type of expression: {0}", path);
         return std::nullopt;
     }
 

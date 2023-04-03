@@ -51,7 +51,7 @@ bool ControlBodyTranslator::preorder(const IR::PathExpression *expression) {
 void ControlBodyTranslator::processCustomExternFunction(const P4::ExternFunction *function,
                                                         EBPFTypeFactory *typeFactory) {
     if (!control->emitExterns)
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Not supported", function->method);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Not supported", function->method);
 
     visit(function->expr->method);
     builder->append("(");
@@ -139,7 +139,7 @@ bool ControlBodyTranslator::preorder(const IR::MethodCallExpression *expression)
     auto ac = mi->to<P4::ActionCall>();
     if (ac != nullptr) {
         // Action arguments have been eliminated by the mid-end.
-        BUG_CHECK(expression->arguments->size() == 0, "%1%: unexpected arguments for action call",
+        BUG_CHECK(expression->arguments->size() == 0, "{0}: unexpected arguments for action call",
                   expression);
         cstring msg =
             Util::printf_format("Control: explicit calling action %s()", ac->action->name.name);
@@ -148,7 +148,7 @@ bool ControlBodyTranslator::preorder(const IR::MethodCallExpression *expression)
         return false;
     }
 
-    ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported method invocation %1%", expression);
+    ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported method invocation {0}", expression);
     return false;
 }
 
@@ -218,13 +218,13 @@ void ControlBodyTranslator::compileEmitField(const IR::Expression *expr, cstring
 }
 
 void ControlBodyTranslator::compileEmit(const IR::Vector<IR::Argument> *args) {
-    BUG_CHECK(args->size() == 1, "%1%: expected 1 argument for emit", args);
+    BUG_CHECK(args->size() == 1, "{0}: expected 1 argument for emit", args);
 
     auto expr = args->at(0)->expression;
     auto type = typeMap->getType(expr);
     auto ht = type->to<IR::Type_Header>();
     if (ht == nullptr) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Cannot emit a non-header type %1%", expr);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Cannot emit a non-header type {0}", expr);
         return;
     }
 
@@ -257,7 +257,7 @@ void ControlBodyTranslator::compileEmit(const IR::Vector<IR::Argument> *args) {
         auto et = dynamic_cast<IHasWidth *>(etype);
         if (et == nullptr) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "Only headers with fixed widths supported %1%", f);
+                    "Only headers with fixed widths supported {0}", f);
             return;
         }
         compileEmitField(expr, f->name, alignment, etype);
@@ -286,14 +286,14 @@ void ControlBodyTranslator::processMethod(const P4::ExternMethod *method) {
             return;
         }
     }
-    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: Unexpected method call", method->expr);
+    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: Unexpected method call", method->expr);
 }
 
 void ControlBodyTranslator::processApply(const P4::ApplyMethod *method) {
     P4::ParameterSubstitution binding;
     cstring actionVariableName, msgStr;
     auto table = control->getTable(method->object->getName().name);
-    BUG_CHECK(table != nullptr, "No table for %1%", method->expr);
+    BUG_CHECK(table != nullptr, "No table for {0}", method->expr);
 
     msgStr = Util::printf_format("Control: applying %s", method->object->getName().name);
     builder->target->emitTraceMessage(builder, msgStr.c_str());
@@ -309,7 +309,7 @@ void ControlBodyTranslator::processApply(const P4::ApplyMethod *method) {
     }
     builder->blockStart();
 
-    BUG_CHECK(method->expr->arguments->size() == 0, "%1%: table apply with arguments", method);
+    BUG_CHECK(method->expr->arguments->size() == 0, "{0}: table apply with arguments", method);
     cstring keyname = "key";
     if (table->keyGenerator != nullptr) {
         builder->emitIndent();
@@ -435,7 +435,7 @@ bool ControlBodyTranslator::preorder(const IR::SwitchStatement *statement) {
     saveAction.push_back(newName);
     // This must be a table.apply().action_run
     auto mem = statement->expression->to<IR::Member>();
-    BUG_CHECK(mem != nullptr, "%1%: Unexpected expression in switch statement",
+    BUG_CHECK(mem != nullptr, "{0}: Unexpected expression in switch statement",
               statement->expression);
     visit(mem->expr);
     saveAction.pop_back();
@@ -446,7 +446,7 @@ bool ControlBodyTranslator::preorder(const IR::SwitchStatement *statement) {
     builder->append(") ");
     builder->blockStart();
 
-    BUG_CHECK(mem->expr->type->is<IR::Type_Declaration>(), "%1%: expected table with name",
+    BUG_CHECK(mem->expr->type->is<IR::Type_Declaration>(), "{0}: expected table with name",
               mem->expr);
     cstring tableName = mem->expr->type->to<IR::Type_Declaration>()->name.name;
     auto table = control->getTable(tableName);
@@ -459,7 +459,7 @@ bool ControlBodyTranslator::preorder(const IR::SwitchStatement *statement) {
             builder->append("case ");
             auto pe = c->label->to<IR::PathExpression>();
             auto decl = control->program->refMap->getDeclaration(pe->path, true);
-            BUG_CHECK(decl->is<IR::P4Action>(), "%1%: expected an action", pe);
+            BUG_CHECK(decl->is<IR::P4Action>(), "{0}: expected an action", pe);
             auto act = decl->to<IR::P4Action>();
             cstring fullActionName = table->p4ActionToActionIDName(act);
             builder->append(fullActionName);
@@ -578,14 +578,14 @@ void EBPFControl::emitDeclaration(CodeBuilder *builder, const IR::Declaration *d
             }
         }
 
-        BUG_CHECK(vd->initializer == nullptr, "%1%: declarations with initializers not supported",
+        BUG_CHECK(vd->initializer == nullptr, "{0}: declarations with initializers not supported",
                   decl);
         return;
     } else if (decl->is<IR::P4Table>() || decl->is<IR::P4Action>() ||
                decl->is<IR::Declaration_Instance>()) {
         return;
     }
-    BUG("%1%: not yet handled", decl);
+    BUG("{0}: not yet handled", decl);
 }
 
 void EBPFControl::emit(CodeBuilder *builder) {

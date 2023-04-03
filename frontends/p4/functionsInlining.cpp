@@ -37,7 +37,7 @@ void DiscoverFunctionsInlining::postorder(const IR::MethodCallExpression *mce) {
     auto stat = findContext<IR::Statement>();
     CHECK_NULL(stat);
     BUG_CHECK(stat->is<IR::MethodCallStatement>() || stat->is<IR::AssignmentStatement>(),
-              "%1%: unexpected statement with call", stat);
+              "{0}: unexpected statement with call", stat);
 
     auto aci = new FunctionCallInfo(caller, ac->function, stat);
     toInline->add(aci);
@@ -105,7 +105,7 @@ const IR::Node *FunctionsInliner::preorder(IR::AssignmentStatement *statement) {
     auto callee = get(*replMap, orig);
     if (callee == nullptr) return statement;
     auto call = statement->right->to<IR::MethodCallExpression>();
-    BUG_CHECK(call != nullptr, "%1%: expected a method call", statement->right);
+    BUG_CHECK(call != nullptr, "{0}: expected a method call", statement->right);
     return inlineBefore(callee, call, statement);
 }
 
@@ -163,7 +163,7 @@ const IR::Node *FunctionsInliner::inlineBefore(const IR::Node *calleeNode,
     LOG2("Inlining: " << dbp(calleeNode) << " before " << dbp(statement));
 
     auto callee = calleeNode->to<IR::Function>();
-    BUG_CHECK(callee, "%1%: expected a function", calleeNode);
+    BUG_CHECK(callee, "{0}: expected a function", calleeNode);
 
     IR::IndexedVector<IR::StatOrDecl> body;
     ParameterSubstitution subst;
@@ -201,7 +201,7 @@ const IR::Node *FunctionsInliner::inlineBefore(const IR::Node *calleeNode,
     auto clone = callee->apply(sp);
     if (::errorCount() > 0) return statement;
     CHECK_NULL(clone);
-    BUG_CHECK(clone->is<IR::Function>(), "%1%: not an function", clone);
+    BUG_CHECK(clone->is<IR::Function>(), "{0}: not an function", clone);
     auto funclone = clone->to<IR::Function>();
     auto retExpr = cloneBody(funclone->body->components, body);
 
@@ -222,7 +222,7 @@ const IR::Node *FunctionsInliner::inlineBefore(const IR::Node *calleeNode,
         auto setRetval = new IR::AssignmentStatement(assign->srcInfo, assign->left, retExpr);
         body.push_back(setRetval);
     } else {
-        BUG_CHECK(statement->is<IR::MethodCallStatement>(), "%1%: expected a method call",
+        BUG_CHECK(statement->is<IR::MethodCallStatement>(), "{0}: expected a method call",
                   statement);
         // ignore the returned value.
     }

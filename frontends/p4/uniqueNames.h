@@ -34,7 +34,7 @@ class RenameMap {
     void setNewName(const IR::IDeclaration *decl, cstring name);
     cstring getName(const IR::IDeclaration *decl) const {
         CHECK_NULL(decl);
-        BUG_CHECK(newName.find(decl) != newName.end(), "%1%: no new name", decl);
+        BUG_CHECK(newName.find(decl) != newName.end(), "{0}: no new name", decl);
         auto result = ::get(newName, decl);
         return result;
     }

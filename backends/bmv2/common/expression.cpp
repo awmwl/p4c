@@ -92,7 +92,7 @@ Util::IJson *ExpressionConverter::get(const IR::Expression *expression) const {
         }
     }
     if (result == nullptr)
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: could not convert expression to Json",
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: could not convert expression to Json",
                 expression);
     return result;
 }
@@ -110,11 +110,11 @@ void ExpressionConverter::postorder(const IR::MethodCallExpression *expression) 
         if (em->originalExternType->name == corelib.packetIn.name &&
             em->method->name == corelib.packetIn.lookahead.name) {
             if (expression->typeArguments->size() != 1)
-                ::error(ErrorType::ERR_INVALID, "Expected 1 type parameter for %1%", em->method);
+                ::error(ErrorType::ERR_INVALID, "Expected 1 type parameter for {0}", em->method);
             auto targ = expression->typeArguments->at(0);
             auto typearg = typeMap->getTypeType(targ, true);
             int width = typearg->width_bits();
-            BUG_CHECK(width > 0, "%1%: unknown width", targ);
+            BUG_CHECK(width > 0, "{0}: unknown width", targ);
             auto j = new Util::JsonObject();
             j->emplace("type", "lookahead");
             auto v = mkArrayField(j, "value");
@@ -163,7 +163,7 @@ void ExpressionConverter::postorder(const IR::MethodCallExpression *expression) 
         }
     }
 
-    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: not supported", expression);
+    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: not supported", expression);
 }
 
 void ExpressionConverter::postorder(const IR::Cast *expression) {
@@ -193,7 +193,7 @@ void ExpressionConverter::postorder(const IR::ArrayIndex *expression) {
     if (auto mem = expression->left->to<IR::Member>()) {
         // This is a header part of the parameters
         auto parentType = typeMap->getType(mem->expr, true);
-        BUG_CHECK(parentType->is<IR::Type_StructLike>(), "%1%: expected a struct", parentType);
+        BUG_CHECK(parentType->is<IR::Type_StructLike>(), "{0}: expected a struct", parentType);
         auto st = parentType->to<IR::Type_StructLike>();
         auto field = st->getField(mem->member);
         elementAccess = field->controlPlaneName();
@@ -211,7 +211,7 @@ void ExpressionConverter::postorder(const IR::ArrayIndex *expression) {
                 LOG3(" " << it.first << " " << it.second);
             }
         }
-        BUG_CHECK(fresult, "%1%: Runtime array index json generation failed", ex);
+        BUG_CHECK(fresult, "{0}: Runtime array index json generation failed", ex);
         Util::JsonObject *fres = fresult->to<Util::JsonObject>();
         result->emplace("type", "expression");
 
@@ -315,7 +315,7 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
             LOG3("looking up field " << field);
             CHECK_NULL(field);
             auto name = ::get(structure->scalarMetadataFields, field);
-            BUG_CHECK((name != nullptr), "NULL name: %1%", field->name);
+            BUG_CHECK((name != nullptr), "NULL name: {0}", field->name);
             if (type->is<IR::Type_Bits>() || type->is<IR::Type_Error>() || leftValue ||
                 simpleExpressionsOnly) {
                 result->emplace("type", "field");
@@ -354,7 +354,7 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
         auto mem = expression->expr->to<IR::Member>();
         auto memtype = typeMap->getType(mem->expr, true);
         if (memtype->is<IR::Type_Stack>() && mem->member == IR::Type_Stack::next)
-            ::error(ErrorType::ERR_UNINITIALIZED, "%1% uninitialized: next field read", mem);
+            ::error(ErrorType::ERR_UNINITIALIZED, "{0} uninitialized: next field read", mem);
         // array.last.field => type: "stack_field", value: [ array, field ]
         if (memtype->is<IR::Type_Stack>() && mem->member == IR::Type_Stack::last) {
             auto l = get(mem->expr);
@@ -433,7 +433,7 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
                         if (index_pos < 0) {
                             ::error(ErrorType::ERR_INVALID,
                                     "BMV2: Struct has no field "
-                                    "for runtime index computation %1%",
+                                    "for runtime index computation {0}",
                                     st);
                         }
                         result->emplace("type", "expression");
@@ -444,7 +444,7 @@ void ExpressionConverter::postorder(const IR::Member *expression) {
                         e->emplace("right", index_pos);
                     }
                 } else {
-                    BUG("%1%: Unexpected json", lv);
+                    BUG("{0}: Unexpected json", lv);
                 }
             } else {
                 CHECK_NULL(e);
@@ -485,7 +485,7 @@ void ExpressionConverter::postorder(const IR::Mux *expression) {
     auto result = new Util::JsonObject();
     mapExpression(expression, result);
     if (simpleExpressionsOnly) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: expression too complex for this target",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: expression too complex for this target",
                 expression);
         return;
     }
@@ -528,7 +528,7 @@ void ExpressionConverter::binary(const IR::Operation_Binary *expression) {
     auto result = new Util::JsonObject();
     mapExpression(expression, result);
     if (simpleExpressionsOnly) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: expression too complex for this target",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: expression too complex for this target",
                 expression);
         return;
     }
@@ -586,7 +586,7 @@ void ExpressionConverter::postorder(const IR::ListExpression *expression) {
     auto result = new Util::JsonArray();
     mapExpression(expression, result);
     if (simpleExpressionsOnly) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: expression too complex for this target",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: expression too complex for this target",
                 expression);
         return;
     }
@@ -603,7 +603,7 @@ void ExpressionConverter::postorder(const IR::StructExpression *expression) {
     auto result = new Util::JsonArray();
     mapExpression(expression, result);
     if (simpleExpressionsOnly) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: expression too complex for this target",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: expression too complex for this target",
                 expression);
         return;
     }
@@ -619,7 +619,7 @@ void ExpressionConverter::postorder(const IR::Operation_Unary *expression) {
     auto result = new Util::JsonObject();
     mapExpression(expression, result);
     if (simpleExpressionsOnly) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: expression too complex for this target",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: expression too complex for this target",
                 expression);
         return;
     }
@@ -710,7 +710,7 @@ void ExpressionConverter::postorder(const IR::PathExpression *expression) {
             f->append(scalarsName);
             f->append(var->name);
         } else {
-            BUG("%1%: type not yet handled", type);
+            BUG("{0}: type not yet handled", type);
         }
         mapExpression(expression, result);
     }
@@ -747,7 +747,7 @@ void ExpressionConverter::postorder(const IR::Slice *expression) {
 }
 
 void ExpressionConverter::postorder(const IR::Expression *expression) {
-    BUG("%1%: Unhandled case", expression);
+    BUG("{0}: Unhandled case", expression);
 }
 
 bool ExpressionConverter::isArrayIndexRuntime(const IR::Expression *e) {
@@ -777,7 +777,7 @@ Util::IJson *ExpressionConverter::convert(const IR::Expression *e, bool doFixup,
     expr->apply(*this);
     auto result = ::get(map, expr->to<IR::Expression>());
     if (result == nullptr) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: Could not generate code for expression",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: Could not generate code for expression",
                 e);
         return new Util::JsonValue();
     }
@@ -825,7 +825,7 @@ Util::IJson *ExpressionConverter::convertLeftValue(const IR::Expression *e) {
     CHECK_NULL(expr);
     expr->apply(*this);
     auto result = ::get(map, expr->to<IR::Expression>());
-    if (result == nullptr) BUG("%1%: Could not convert expression", e);
+    if (result == nullptr) BUG("{0}: Could not convert expression", e);
     leftValue = false;
     return result;
 }

@@ -36,7 +36,7 @@ class EBPFType : public EBPFObject {
     virtual void declareInit(CodeBuilder *builder, cstring id, bool asPointer) = 0;
     virtual void emitInitializer(CodeBuilder *builder) = 0;
     virtual void declareArray(CodeBuilder * /*builder*/, cstring /*id*/, unsigned /*size*/) {
-        BUG("%1%: unsupported array", type);
+        BUG("{0}: unsupported array", type);
     }
     template <typename T>
     bool is() const {

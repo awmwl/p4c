@@ -19,7 +19,7 @@ limitations under the License.
 namespace P4 {
 
 void KeyNameGenerator::error(const IR::Expression *expression) {
-    ::error(ErrorType::ERR_EXPECTED, "%1%: Complex key expression requires a @name annotation",
+    ::error(ErrorType::ERR_EXPECTED, "{0}: Complex key expression requires a @name annotation",
             expression);
 }
 

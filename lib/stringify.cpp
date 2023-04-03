@@ -77,7 +77,7 @@ char DigitToChar(int digit) {
         default:
             break;
     }
-    BUG("Unexpected digit: %1%", digit);
+    BUG("Unexpected digit: {0}", digit);
 }
 
 cstring toString(big_int value, unsigned width, bool sign, unsigned int base) {
@@ -105,7 +105,7 @@ cstring toString(big_int value, unsigned width, bool sign, unsigned int base) {
         case 10:
             break;
         default:
-            BUG("Unexpected base %1%", base);
+            BUG("Unexpected base {0}", base);
     }
     std::deque<char> buf;
     do {

@@ -82,13 +82,13 @@ class UBPFControl : public EBPF::EBPFControl {
 
     UBPFTable *getTable(cstring name) const {
         auto result = ::get(tables, name);
-        BUG_CHECK(result != nullptr, "No table named %1%", name);
+        BUG_CHECK(result != nullptr, "No table named {0}", name);
         return result;
     }
 
     UBPFRegister *getRegister(cstring name) const {
         auto result = ::get(registers, name);
-        BUG_CHECK(result != nullptr, "No register named %1%", name);
+        BUG_CHECK(result != nullptr, "No register named {0}", name);
         return result;
     }
 

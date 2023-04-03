@@ -29,12 +29,12 @@ namespace ControlPlaneAPI {
 std::optional<std::string> stringReprConstant(big_int value, int width) {
     // TODO(antonin): support negative values
     if (value < 0) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Negative values not supported yet", value);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Negative values not supported yet", value);
         return std::nullopt;
     }
     BUG_CHECK(width > 0, "Unexpected width 0");
     size_t bitsRequired = floor_log2(value) + 1;
-    BUG_CHECK(static_cast<size_t>(width) >= bitsRequired, "Cannot represent %1% on %2% bits", value,
+    BUG_CHECK(static_cast<size_t>(width) >= bitsRequired, "Cannot represent {0} on {1} bits", value,
               width);
     // TODO(antonin): P4Runtime defines the canonical representation for bit<W>
     // value as the smallest binary string required to represent the value (no 0

@@ -45,7 +45,7 @@ PnaTestBackend::PnaTestBackend(const ProgramInfo &programInfo, SymbolicExecutor 
         testWriter = new Metadata(testPath.c_str(), seed);
     } else {
         P4C_UNIMPLEMENTED(
-            "Test back end %1% not implemented for this target. Supported back ends are %2%.",
+            "Test back end {0} not implemented for this target. Supported back ends are {1}.",
             testBackendString, Utils::containerToString(SUPPORTED_BACKENDS));
     }
 }

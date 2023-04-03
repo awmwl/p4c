@@ -123,7 +123,7 @@ CompilerOptions::CompilerOptions() : ParserOptions() {
             } else if (!strcmp(arg, "text")) {
                 p4RuntimeFormat = P4::P4RuntimeFormat::TEXT;
             } else {
-                ::error(ErrorType::ERR_INVALID, "Illegal P4Runtime format %1%", arg);
+                ::error(ErrorType::ERR_INVALID, "Illegal P4Runtime format {0}", arg);
                 return false;
             }
             return true;

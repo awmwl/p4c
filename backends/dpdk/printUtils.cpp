@@ -18,17 +18,17 @@ limitations under the License.
 namespace DPDK {
 
 bool ConvertToString::preorder(const IR::Expression *e) {
-    BUG("%1% not implemented", e);
+    BUG("{0} not implemented", e);
     return false;
 }
 
 bool ConvertToString::preorder(const IR::Type *t) {
-    BUG("Not implemented type %1%", t->node_type_name());
+    BUG("Not implemented type {0}", t->node_type_name());
     return false;
 }
 
 bool ConvertToString::preorder(const IR::PropertyValue *p) {
-    BUG("Not implemented property value %1%", p->node_type_name());
+    BUG("Not implemented property value {0}", p->node_type_name());
     return false;
 }
 
@@ -56,7 +56,7 @@ bool ConvertToString::preorder(const IR::TypeNameExpression *e) {
     if (auto tn = e->typeName->to<IR::Type_Name>()) {
         out << tn->path->name;
     } else {
-        BUG("%1%: unexpected typeNameExpression", e);
+        BUG("{0}: unexpected typeNameExpression", e);
     }
     return false;
 }
@@ -66,7 +66,7 @@ bool ConvertToString::preorder(const IR::MethodCallExpression *e) {
     if (auto path = e->method->to<IR::PathExpression>()) {
         out << path->path->name.name;
     } else {
-        ::error(ErrorType::ERR_INVALID, "%1% is not a PathExpression", e->toString());
+        ::error(ErrorType::ERR_INVALID, "{0} is not a PathExpression", e->toString());
     }
     return false;
 }
@@ -80,7 +80,7 @@ bool ConvertToString::preorder(const IR::ArrayIndex *e) {
     if (auto cst = e->right->to<IR::Constant>()) {
         out << toStr(e->left) << "_" << cst->value;
     } else {
-        ::error(ErrorType::ERR_INVALID, "%1% is not a constant", e->right);
+        ::error(ErrorType::ERR_INVALID, "{0} is not a constant", e->right);
     }
     return false;
 }

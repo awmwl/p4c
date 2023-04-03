@@ -44,7 +44,7 @@ void ReferenceMap::setDeclaration(const IR::Path *path, const IR::IDeclaration *
     LOG3("Resolved " << dbp(path) << " to " << dbp(decl));
     auto previous = get(pathToDeclaration, path);
     if (previous != nullptr && previous != decl)
-        BUG("%1% already resolved to %2% instead of %3%", dbp(path), dbp(previous),
+        BUG("{0} already resolved to {1} instead of {2}", dbp(path), dbp(previous),
             dbp(decl->getNode()));
     pathToDeclaration.emplace(path, decl);
     usedName(path->name.name);
@@ -57,7 +57,7 @@ void ReferenceMap::setDeclaration(const IR::This *pointer, const IR::IDeclaratio
     LOG3("Resolved " << dbp(pointer) << " to " << dbp(decl));
     auto previous = get(thisToDeclaration, pointer);
     if (previous != nullptr && previous != decl)
-        BUG("%1% already resolved to %2% instead of %3%", dbp(pointer), dbp(previous), dbp(decl));
+        BUG("{0} already resolved to {1} instead of {2}", dbp(pointer), dbp(previous), dbp(decl));
     thisToDeclaration.emplace(pointer, decl);
 }
 
@@ -70,7 +70,7 @@ const IR::IDeclaration *ReferenceMap::getDeclaration(const IR::This *pointer, bo
     else
         LOG3("Looking up " << dbp(pointer) << " found nothing");
 
-    if (notNull) BUG_CHECK(result != nullptr, "Cannot find declaration for %1%", pointer);
+    if (notNull) BUG_CHECK(result != nullptr, "Cannot find declaration for {0}", pointer);
     return result;
 }
 
@@ -83,7 +83,7 @@ const IR::IDeclaration *ReferenceMap::getDeclaration(const IR::Path *path, bool 
     else
         LOG3("Looking up " << dbp(path) << " found nothing");
 
-    if (notNull) BUG_CHECK(result != nullptr, "Cannot find declaration for %1%", path);
+    if (notNull) BUG_CHECK(result != nullptr, "Cannot find declaration for {0}", path);
     return result;
 }
 

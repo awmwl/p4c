@@ -96,7 +96,7 @@ void TypeMap::checkPrecondition(const IR::Node *element, const IR::Type *type) c
     CHECK_NULL(element);
     CHECK_NULL(type);
     if (type->is<IR::Type_Name>())
-        BUG("Element %1% maps to a Type_Name %2%", dbp(element), dbp(type));
+        BUG("Element {0} maps to a Type_Name {1}", dbp(element), dbp(type));
 }
 
 void TypeMap::setType(const IR::Node *element, const IR::Type *type) {
@@ -105,7 +105,7 @@ void TypeMap::setType(const IR::Node *element, const IR::Type *type) {
     if (it != typeMap.end()) {
         const IR::Type *existingType = it->second;
         if (!implicitlyConvertibleTo(type, existingType))
-            BUG("Changing type of %1% in type map from %2% to %3%", dbp(element), dbp(existingType),
+            BUG("Changing type of {0} in type map from {1} to {2}", dbp(element), dbp(existingType),
                 dbp(type));
         return;
     }
@@ -118,15 +118,15 @@ const IR::Type *TypeMap::getType(const IR::Node *element, bool notNull) const {
     auto result = get(typeMap, element);
     LOG4("Looking up type for " << dbp(element) << " => " << dbp(result));
     if (notNull && result == nullptr)
-        BUG_CHECK(errorCount() > 0, "Could not find type for %1%", dbp(element));
-    if (result != nullptr && result->is<IR::Type_Name>()) BUG("%1% in map", dbp(result));
+        BUG_CHECK(errorCount() > 0, "Could not find type for {0}", dbp(element));
+    if (result != nullptr && result->is<IR::Type_Name>()) BUG("{0} in map", dbp(result));
     return result;
 }
 
 const IR::Type *TypeMap::getTypeType(const IR::Node *element, bool notNull) const {
     CHECK_NULL(element);
     auto result = getType(element, notNull);
-    BUG_CHECK(result->is<IR::Type_Type>(), "%1%: expected a TypeType", result);
+    BUG_CHECK(result->is<IR::Type_Type>(), "{0}: expected a TypeType", result);
     return result->to<IR::Type_Type>()->type;
 }
 
@@ -163,12 +163,12 @@ bool TypeMap::equivalent(const IR::Type *left, const IR::Type *right, bool stric
         auto rs = right->to<IR::Type_Stack>();
         if (!ls->sizeKnown()) {
             ::error(ErrorType::ERR_TYPE_ERROR,
-                    "%1%: Size of header stack type should be a constant", left);
+                    "{0}: Size of header stack type should be a constant", left);
             return false;
         }
         if (!rs->sizeKnown()) {
             ::error(ErrorType::ERR_TYPE_ERROR,
-                    "%1%: Size of header stack type should be a constant", right);
+                    "{0}: Size of header stack type should be a constant", right);
             return false;
         }
         return equivalent(ls->elementType, rs->elementType, strict) &&
@@ -292,7 +292,7 @@ bool TypeMap::equivalent(const IR::Type *left, const IR::Type *right, bool stric
         return le->name == re->name;
     }
 
-    BUG_CHECK(::errorCount(), "%1%: Unexpected type check for equivalence", dbp(left));
+    BUG_CHECK(::errorCount(), "{0}: Unexpected type check for equivalence", dbp(left));
     // The following are not expected to be compared for equivalence:
     // Type_Dontcare, Type_Unknown, Type_Name, Type_Specialized, Type_Typedef
     return false;
@@ -342,7 +342,7 @@ const IR::Type *TypeMap::getCanonical(const IR::Type *type) {
     else if (type->is<IR::Type_P4List>())
         searchIn = &canonicalP4lists;
     else
-        BUG("%1%: unexpected type", type);
+        BUG("{0}: unexpected type", type);
 
     for (auto t : *searchIn) {
         if (equivalent(type, t, true)) return t;
@@ -393,7 +393,7 @@ int TypeMap::widthBits(const IR::Type *type, const IR::Node *errorPosition, bool
         auto w = widthBits(ths->elementType, errorPosition, max);
         return w * ths->getSize();
     }
-    ::error(ErrorType::ERR_UNSUPPORTED, "%1%: width not well-defined for values of type %2%",
+    ::error(ErrorType::ERR_UNSUPPORTED, "{0}: width not well-defined for values of type {1}",
             errorPosition, t);
     return -1;
 }

@@ -186,7 +186,7 @@ class CommandVisitor {
         // state.get(). The P4 program should be fixed in that case, because we can not
         // generate useful tests.
         if (self.get().violatedGuardConditions > SmallStepEvaluator::MAX_GUARD_VIOLATIONS) {
-            BUG("Condition %1% exceeded the maximum number of permitted guard "
+            BUG("Condition {0} exceeded the maximum number of permitted guard "
                 "violations for this run."
                 " This implies that the P4 program produces an output that violates"
                 " test variants. For example, it may set an output port that is not "
@@ -218,7 +218,7 @@ class CommandVisitor {
             std::stringstream condStream;
             guard.cond->dbprint(condStream);
             ::warning(
-                "Guard %1% was not satisfiable."
+                "Guard {0} was not satisfiable."
                 " Incrementing number of guard violations.",
                 condStream.str().c_str());
             self.get().violatedGuardConditions++;

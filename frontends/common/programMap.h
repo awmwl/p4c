@@ -48,7 +48,7 @@ class ProgramMap : public IHasDbPrint {
     void validateMap(const IR::Node *node) const {
         if (node == nullptr || !node->is<IR::P4Program>() || program == nullptr) return;
         if (program != node)
-            BUG("Invalid map %1%: computed for %2%, used for %3%", mapKind, dbp(program),
+            BUG("Invalid map {0}: computed for {1}, used for {2}", mapKind, dbp(program),
                 dbp(node));
     }
     void updateMap(const IR::Node *node) {

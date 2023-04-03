@@ -63,7 +63,7 @@ inline const char *cerr_clear_colors() {
 
 /// Base class for all exceptions.
 /// The constructor uses FmtFormatter for the format string, i.e.,
-/// %1%, %2%, etc (starting at 1, not at 0)
+/// {0}, {1}, etc (starting at 1, not at 0)
 class P4CExceptionBase : public std::exception {
  protected:
     cstring message;

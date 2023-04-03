@@ -32,12 +32,12 @@ EBPFMeterPSA::EBPFMeterPSA(const EBPFProgram *program, cstring instanceName,
 
         auto declaredSize = di->arguments->at(0)->expression->to<IR::Constant>();
         if (!declaredSize->fitsUint()) {
-            ::error(ErrorType::ERR_OVERLIMIT, "%1%: size too large", declaredSize);
+            ::error(ErrorType::ERR_OVERLIMIT, "{0}: size too large", declaredSize);
             return;
         }
         size = declaredSize->asUnsigned();
     } else {
-        ::error(ErrorType::ERR_INVALID, "Not known Meter type: %1%", di);
+        ::error(ErrorType::ERR_INVALID, "Not known Meter type: {0}", di);
         return;
     }
 
@@ -92,7 +92,7 @@ EBPFMeterPSA::MeterType EBPFMeterPSA::toType(const int typeCode) {
     } else if (typeCode == 1) {
         return BYTES;
     } else {
-        BUG("Unknown meter type %1%", typeCode);
+        BUG("Unknown meter type {0}", typeCode);
     }
 }
 

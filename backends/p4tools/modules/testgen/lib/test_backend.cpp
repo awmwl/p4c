@@ -158,7 +158,7 @@ bool TestBackEnd::run(const FinalState &state) {
         auto coverage =
             static_cast<float>(visitedStatements.size()) / static_cast<float>(allStatements.size());
         printFeature("test_info", 4,
-                     "============ Test %1%: Statements covered: %2% (%3%/%4%) ============",
+                     "============ Test {0}: Statements covered: {1} ({2}/{3}) ============",
                      testCount, coverage, visitedStatements.size(), allStatements.size());
         P4::Coverage::logCoverage(allStatements, visitedStatements, executionState->getVisited());
 
@@ -167,7 +167,7 @@ bool TestBackEnd::run(const FinalState &state) {
             testWriter->outputTest(testSpec, selectedBranches, testCount, coverage);
         });
 
-        printTraces("============ End Test %1% ============\n", testCount);
+        printTraces("============ End Test {0} ============\n", testCount);
         testCount++;
         P4::Coverage::coverageReportFinal(allStatements, visitedStatements);
         printPerformanceReport(false);
@@ -200,8 +200,8 @@ TestBackEnd::TestInfo TestBackEnd::produceTestInfo(
             payloadExpr = Utils::getRandConstantForType(payloadType);
         }
         BUG_CHECK(payloadExpr->type->width_bits() == payloadSize,
-                  "The width (%1%) of the payload expression should match the calculated payload "
-                  "size %2%.",
+                  "The width ({0}) of the payload expression should match the calculated payload "
+                  "size {1}.",
                   payloadExpr->type->width_bits(), payloadSize);
         inputPacketExpr =
             new IR::Concat(IR::getBitType(calculatedPacketSize), inputPacketExpr, payloadExpr);
@@ -231,46 +231,46 @@ TestBackEnd::TestInfo TestBackEnd::produceTestInfo(
 bool TestBackEnd::printTestInfo(const ExecutionState *executionState, const TestInfo &testInfo,
                                 const IR::Expression *outputPortExpr) {
     // Print all the important variables and properties of this test.
-    printTraces("============ Program trace for Test %1% ============\n", testCount);
+    printTraces("============ Program trace for Test {0} ============\n", testCount);
     for (const auto &event : testInfo.programTraces) {
-        printTraces("%1%", event);
+        printTraces("{0}", event);
     }
 
     auto inputPacketSize = testInfo.inputPacket->type->width_bits();
     auto outputPacketSize = testInfo.outputPacket->type->width_bits();
 
     printTraces("=======================================");
-    printTraces("============ Input packet for Test %1% ============", testCount);
+    printTraces("============ Input packet for Test {0} ============", testCount);
     printTraces(formatHexExpr(testInfo.inputPacket, false, true, false));
     printTraces("=======================================");
     // We have no control over the test, if the output port is tainted. So we abort.
     if (executionState->hasTaint(outputPortExpr)) {
         printFeature(
             "test_info", 4,
-            "============ Test %1%: Output port tainted - Aborting Test ============", testCount);
+            "============ Test {0}: Output port tainted - Aborting Test ============", testCount);
         return true;
     }
-    printTraces("Input packet size: %1%", inputPacketSize);
-    printTraces("============ Ports for Test %1% ============", testCount);
-    printTraces("Input port: %1%", testInfo.inputPort);
+    printTraces("Input packet size: {0}", inputPacketSize);
+    printTraces("============ Ports for Test {0} ============", testCount);
+    printTraces("Input port: {0}", testInfo.inputPort);
     printTraces("=======================================");
 
     if (testInfo.packetIsDropped) {
-        printTraces("============ Output packet dropped for Test %1% ============", testCount);
+        printTraces("============ Output packet dropped for Test {0} ============", testCount);
         return false;
     }
 
-    BUG_CHECK(outputPacketSize >= 0, "Invalid out packet size (%1% bits) calculated!",
+    BUG_CHECK(outputPacketSize >= 0, "Invalid out packet size ({0} bits) calculated!",
               outputPacketSize);
-    printTraces("============ Output packet for Test %1% ============", testCount);
+    printTraces("============ Output packet for Test {0} ============", testCount);
     printTraces(formatHexExpr(testInfo.outputPacket, false, true, false));
     printTraces("=======================================");
-    printTraces("Output packet size: %1% ", outputPacketSize);
+    printTraces("Output packet size: {0} ", outputPacketSize);
     printTraces("=======================================");
-    printTraces("============ Output mask Test %1% ============", testCount);
+    printTraces("============ Output mask Test {0} ============", testCount);
     printTraces(formatHexExpr(testInfo.packetTaintMask, false, true, false));
     printTraces("=======================================");
-    printTraces("Output port: %1%\n", testInfo.outputPort);
+    printTraces("Output port: {0}\n", testInfo.outputPort);
     printTraces("=======================================");
 
     return false;

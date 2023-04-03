@@ -93,7 +93,7 @@ Continuation::Body Continuation::apply(std::optional<const IR::Node *> value_opt
     BUG_CHECK(!(value_opt && !parameterOpt),
               "Supplied a value to a continuation with no parameters.");
     BUG_CHECK(!(!value_opt && parameterOpt),
-              "Continuation %1% has a parameter of type %2%, but no argument provided.",
+              "Continuation {0} has a parameter of type {1}, but no argument provided.",
               (*parameterOpt), (*parameterOpt)->type->node_type_name());
 
     // No need to substitute if this continuation is parameterless.
@@ -108,7 +108,7 @@ Continuation::Body Continuation::apply(std::optional<const IR::Node *> value_opt
     } else if ((*value_opt)->is<IR::ParserState>()) {
         argType = IR::Type_State::get();
     } else {
-        BUG("Unexpected node passed to continuation: %1%", *value_opt);
+        BUG("Unexpected node passed to continuation: {0}", *value_opt);
     }
 
     // We step into an action enum type when resolving switch expressions. However, we return a bit
@@ -121,7 +121,7 @@ Continuation::Body Continuation::apply(std::optional<const IR::Node *> value_opt
 
     BUG_CHECK(
         paramType->equiv(*argType),
-        "Continuation %1% has parameter of type %2%, but was given an argument %3% of type %4%",
+        "Continuation {0} has parameter of type {1}, but was given an argument {2} of type {3}",
         (*parameterOpt), paramType, *value_opt, argType);
 
     // Create a copy of this continuation's body, with the value substituted for the continuation's

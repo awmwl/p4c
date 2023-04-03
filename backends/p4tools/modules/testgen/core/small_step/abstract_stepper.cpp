@@ -40,7 +40,7 @@ AbstractStepper::Result AbstractStepper::step(const IR::Node *node) {
 bool AbstractStepper::preorder(const IR::Node *node) {
     logStep(node);
     dump(node);
-    BUG("%1%: Unhandled node type in %2%: %3%", node, getClassName(), node->node_type_name());
+    BUG("{0}: Unhandled node type in {1}: {2}", node, getClassName(), node->node_type_name());
 }
 
 const ProgramInfo &AbstractStepper::getProgramInfo() const { return programInfo; }
@@ -55,7 +55,7 @@ void AbstractStepper::logStep(const IR::Node *node) {
 void AbstractStepper::checkMemberInvariant(const IR::Node *node) {
     while (true) {
         const auto *member = node->to<IR::Member>();
-        BUG_CHECK(member, "Not a member expression: %1%", node);
+        BUG_CHECK(member, "Not a member expression: {0}", node);
 
         node = member->expr;
         if (node->is<IR::PathExpression>()) {
@@ -68,7 +68,7 @@ bool AbstractStepper::stepSymbolicValue(const IR::Node *expr) {
     // Pop the topmost continuation and apply the value. This gives us the new body in the next
     // state. The namespace in the topmost continuation frame becomes the namespace in the next
     // state.
-    BUG_CHECK(SymbolicEnv::isSymbolicValue(expr), "Not a symbolic value: %1% of type %2%", expr,
+    BUG_CHECK(SymbolicEnv::isSymbolicValue(expr), "Not a symbolic value: {0} of type {1}", expr,
               expr->node_type_name());
     state.popContinuation(expr);
     result->emplace_back(state);
@@ -135,7 +135,7 @@ bool AbstractStepper::stepToListSubexpr(
     }
 
     BUG_CHECK(nonValueComponent != nullptr && nonValueComponentIdx != components.size(),
-              "This list expression is a symbolic value, but is not expected to be one: %1%",
+              "This list expression is a symbolic value, but is not expected to be one: {0}",
               subexpr);
 
     return stepToSubexpr(
@@ -167,7 +167,7 @@ bool AbstractStepper::stepToStructSubexpr(
     }
 
     BUG_CHECK(nonValueComponent != nullptr && nonValueComponentIdx != components.size(),
-              "This list expression is a symbolic value, but is not expected to be one: %1%",
+              "This list expression is a symbolic value, but is not expected to be one: {0}",
               subexpr);
 
     return stepToSubexpr(
@@ -192,7 +192,7 @@ bool AbstractStepper::stepGetHeaderValidity(const IR::Expression *headerRef) {
                       "At this point, the header validity bit should be initialized.");
             const auto *value = state.getSymbolicEnv().get(variable);
             const auto *res = value->to<IR::BoolLiteral>();
-            BUG_CHECK(res, "%1%: expected a boolean", value);
+            BUG_CHECK(res, "{0}: expected a boolean", value);
             if (res->value) {
                 state.replaceTopBody(
                     Continuation::Return(new IR::BoolLiteral(IR::Type::Boolean::get(), true)));
@@ -299,7 +299,7 @@ bool AbstractStepper::stepStackPushPopFront(const IR::Expression *stackRef,
                                             const IR::Vector<IR::Argument> *args, bool isPush) {
     const auto *stackType = stackRef->type->checkedTo<IR::Type_Stack>();
     auto sz = static_cast<int>(stackType->getSize());
-    BUG_CHECK(args->size() == 1, "Invalid size of arguments for %1%", stackRef);
+    BUG_CHECK(args->size() == 1, "Invalid size of arguments for {0}", stackRef);
     auto count = args->at(0)->expression->checkedTo<IR::Constant>()->asInt();
     std::vector<Continuation::Command> replacements;
     auto &nextState = state.clone();
@@ -368,7 +368,7 @@ void AbstractStepper::setTargetUninitialized(ExecutionState &nextState, const IR
     } else if (const auto *baseType = refType->to<const IR::Type_Base>()) {
         nextState.set(ref, programInfo.createTargetUninitialized(baseType, forceTaint));
     } else {
-        P4C_UNIMPLEMENTED("Unsupported uninitialization type %1%", refType->node_type_name());
+        P4C_UNIMPLEMENTED("Unsupported uninitialization type {0}", refType->node_type_name());
     }
 }
 

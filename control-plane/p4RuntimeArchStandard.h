@@ -450,24 +450,24 @@ struct Register {
 
         auto size = instance->getParameterValue("size")->to<IR::Constant>();
         if (!size->is<IR::Constant>()) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "Register '%1%' has a non-constant size: %2%",
+            ::error(ErrorType::ERR_UNSUPPORTED, "Register '{0}' has a non-constant size: {1}",
                     declaration, size);
             return std::nullopt;
         }
         if (!size->to<IR::Constant>()->fitsInt()) {
             ::error(ErrorType::ERR_UNSUPPORTED,
-                    "Register '%1%' has a size that doesn't fit in an integer: %2%", declaration,
+                    "Register '{0}' has a size that doesn't fit in an integer: {1}", declaration,
                     size);
             return std::nullopt;
         }
 
         // retrieve type parameter for the register instance and convert it to P4DataTypeSpec
-        BUG_CHECK(declaration->type->is<IR::Type_Specialized>(), "%1%: expected Type_Specialized",
+        BUG_CHECK(declaration->type->is<IR::Type_Specialized>(), "{0}: expected Type_Specialized",
                   declaration->type);
         auto type = declaration->type->to<IR::Type_Specialized>();
         auto typeParamIdx = RegisterTraits<arch>::dataTypeParamIdx();
         BUG_CHECK(type->arguments->size() > typeParamIdx,
-                  "%1%: expected at least %2% type arguments", instance, typeParamIdx + 1);
+                  "{0}: expected at least {1} type arguments", instance, typeParamIdx + 1);
         auto typeArg = type->arguments->at(typeParamIdx);
         auto typeSpec = TypeSpecConverter::convert(refMap, typeMap, typeArg, p4RtTypeInfo);
         CHECK_NULL(typeSpec);
@@ -478,10 +478,10 @@ struct Register {
         if (indexTypeParamIdx != std::nullopt) {
             // retrieve type parameter for the index.
             BUG_CHECK(declaration->type->is<IR::Type_Specialized>(),
-                      "%1%: expected Type_Specialized", declaration->type);
+                      "{0}: expected Type_Specialized", declaration->type);
             auto type = declaration->type->to<IR::Type_Specialized>();
             BUG_CHECK(type->arguments->size() > *indexTypeParamIdx,
-                      "%1%: expected at least %2% type arguments", instance,
+                      "{0}: expected at least {1} type arguments", instance,
                       *indexTypeParamIdx + 1);
             auto typeArg = type->arguments->at(*indexTypeParamIdx);
             // We ignore the return type on purpose, but the call is required to update p4RtTypeInfo
@@ -550,7 +550,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
                 if (instance->type->name != ActionProfileTraits<arch>::typeName() &&
                     instance->type->name != ActionSelectorTraits<arch>::typeName()) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "Expected an action profile or action selector: %1%",
+                            "Expected an action profile or action selector: {0}",
                             instance->expression);
                 } else if (isConstructedInPlace) {
                     symbols->add(SymbolType::P4RT_ACTION_PROFILE(), *instance->name);
@@ -562,7 +562,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
                 table, CounterTraits::directPropertyName(), refMap, typeMap, &isConstructedInPlace);
             if (instance) {
                 if (instance->type->name != CounterTraits::directTypeName()) {
-                    ::error(ErrorType::ERR_EXPECTED, "Expected a direct counter: %1%",
+                    ::error(ErrorType::ERR_EXPECTED, "Expected a direct counter: {0}",
                             instance->expression);
                 } else if (isConstructedInPlace) {
                     symbols->add(SymbolType::P4RT_DIRECT_COUNTER(), *instance->name);
@@ -574,7 +574,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
                                                           refMap, typeMap, &isConstructedInPlace);
             if (instance) {
                 if (instance->type->name != MeterTraits::directTypeName()) {
-                    ::error(ErrorType::ERR_EXPECTED, "Expected a direct meter: %1%",
+                    ::error(ErrorType::ERR_EXPECTED, "Expected a direct meter: {0}",
                             instance->expression);
                 } else if (isConstructedInPlace) {
                     symbols->add(SymbolType::P4RT_DIRECT_METER(), *instance->name);
@@ -734,7 +734,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         auto size = instance->substitution.lookupByName(ActionProfileTraits<arch>::sizeParamName())
                         ->expression;
         if (!size->template is<IR::Constant>()) {
-            ::error(ErrorType::ERR_INVALID, "Action profile '%1%' has non-constant size '%2%'",
+            ::error(ErrorType::ERR_INVALID, "Action profile '{0}' has non-constant size '{1}'",
                     *instance->name, size);
             return std::nullopt;
         }
@@ -748,7 +748,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         auto decl = instance->node->to<IR::IDeclaration>();
         auto size = instance->getParameterValue(ActionProfileTraits<arch>::sizeParamName());
         if (!size->template is<IR::Constant>()) {
-            ::error(ErrorType::ERR_INVALID, "Action profile '%1%' has non-constant size '%2%'",
+            ::error(ErrorType::ERR_INVALID, "Action profile '{0}' has non-constant size '{1}'",
                     decl->controlPlaneName(), size);
             return std::nullopt;
         }
@@ -775,7 +775,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
                 profile->set_max_group_size(maxGroupSizeConstant->asInt());
             } else {
                 ::warning(ErrorType::WARN_IGNORE,
-                          "Ignoring annotation @max_group_size on action profile '%1%', "
+                          "Ignoring annotation @max_group_size on action profile '{0}', "
                           "which does not have a selector",
                           actionProfile.annotations);
             }
@@ -904,7 +904,7 @@ class P4RuntimeArchHandlerCommon : public P4RuntimeArchHandlerIface {
         if (impl == nullptr) return std::nullopt;
         if (!impl->value->is<IR::ExpressionValue>()) {
             ::error(ErrorType::ERR_EXPECTED,
-                    "Expected implementation property value for table %1% to be an expression: %2%",
+                    "Expected implementation property value for table {0} to be an expression: {1}",
                     table->controlPlaneName(), impl);
             return std::nullopt;
         }
@@ -977,15 +977,15 @@ class P4RuntimeArchHandlerPSAPNA : public P4RuntimeArchHandlerCommon<arch> {
     /// @return serialization information for the Digest extern instacne @decl
     std::optional<Digest> getDigest(const IR::Declaration_Instance *decl,
                                     p4configv1::P4TypeInfo *p4RtTypeInfo) {
-        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "%1%: expected Type_Specialized",
+        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "{0}: expected Type_Specialized",
                   decl->type);
         auto type = decl->type->to<IR::Type_Specialized>();
-        BUG_CHECK(type->arguments->size() == 1, "%1%: expected one type argument", decl);
+        BUG_CHECK(type->arguments->size() == 1, "{0}: expected one type argument", decl);
         auto typeArg = type->arguments->at(0);
         auto typeSpec =
             TypeSpecConverter::convert(this->refMap, this->typeMap, typeArg, p4RtTypeInfo);
         BUG_CHECK(typeSpec != nullptr,
-                  "P4 type %1% could not be converted to P4Info P4DataTypeSpec");
+                  "P4 type {0} could not be converted to P4Info P4DataTypeSpec");
 
         return Digest{decl->controlPlaneName(), typeSpec, decl->to<IR::IAnnotated>()};
     }
@@ -1007,8 +1007,8 @@ class P4RuntimeArchHandlerPSAPNA : public P4RuntimeArchHandlerCommon<arch> {
                     }
                 } else if (expr->is<IR::PathExpression>()) {
                     ::error(ErrorType::ERR_UNEXPECTED,
-                            "Unresolved value %1% for psa_idle_timeout "
-                            "property on table %2%. Must be a constant and one of "
+                            "Unresolved value {0} for psa_idle_timeout "
+                            "property on table {1}. Must be a constant and one of "
                             "{ NOTIFY_CONTROL, NO_TIMEOUT }",
                             timeout, table);
                     return false;
@@ -1017,8 +1017,8 @@ class P4RuntimeArchHandlerPSAPNA : public P4RuntimeArchHandlerCommon<arch> {
         }
 
         ::error(ErrorType::ERR_UNEXPECTED,
-                "Unexpected value %1% for psa_idle_timeout "
-                "property on table %2%. Supported values are "
+                "Unexpected value {0} for psa_idle_timeout "
+                "property on table {1}. Supported values are "
                 "{ NOTIFY_CONTROL, NO_TIMEOUT }",
                 timeout, table);
         return false;

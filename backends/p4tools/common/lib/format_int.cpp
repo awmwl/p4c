@@ -153,7 +153,7 @@ std::string formatBinExpr(const IR::Expression *expr, bool useSep, bool pad, boo
         return stringExpr->value.c_str();
     }
 
-    P4C_UNIMPLEMENTED("Binary formatting for expression %1% of type %2% not supported.", expr,
+    P4C_UNIMPLEMENTED("Binary formatting for expression {0} of type {1} not supported.", expr,
                       expr->type);
 }
 
@@ -186,7 +186,7 @@ std::string formatOctalExpr(const IR::Expression *expr, bool useSep, bool pad, b
         return stringExpr->value.c_str();
     }
 
-    P4C_UNIMPLEMENTED("Octal formatting for expression %1% of type %2% not supported.", expr,
+    P4C_UNIMPLEMENTED("Octal formatting for expression {0} of type {1} not supported.", expr,
                       expr->type);
 }
 
@@ -219,7 +219,7 @@ std::string formatHexExpr(const IR::Expression *expr, bool useSep, bool pad, boo
         return stringExpr->value.c_str();
     }
 
-    P4C_UNIMPLEMENTED("Hexadecimal formatting for expression %1% of type %2% not supported.", expr,
+    P4C_UNIMPLEMENTED("Hexadecimal formatting for expression {0} of type {1} not supported.", expr,
                       expr->type);
 }
 

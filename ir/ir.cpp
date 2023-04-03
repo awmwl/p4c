@@ -132,7 +132,7 @@ void IGeneralNamespace::checkDuplicateDeclarations() const {
         auto f = seen.find(name.name);
         if (f != seen.end()) {
             ::error(ErrorType::ERR_DUPLICATE,
-                    "Duplicate declaration of %1%: previous declaration at %2%", name,
+                    "Duplicate declaration of {0}: previous declaration at {1}", name,
                     f->second.srcInfo);
         }
         seen.emplace(name.name, name);
@@ -143,21 +143,21 @@ void P4Parser::checkDuplicates() const {
     for (auto decl : states) {
         auto prev = parserLocals.getDeclaration(decl->getName().name);
         if (prev != nullptr)
-            ::error(ErrorType::ERR_DUPLICATE, "State %1% has same name as %2%", decl, prev);
+            ::error(ErrorType::ERR_DUPLICATE, "State {0} has same name as {1}", decl, prev);
     }
 }
 
 bool Type_Stack::sizeKnown() const { return size->is<Constant>(); }
 
 size_t Type_Stack::getSize() const {
-    if (!sizeKnown()) BUG("%1%: Size not yet known", size);
+    if (!sizeKnown()) BUG("{0}: Size not yet known", size);
     auto cst = size->to<IR::Constant>();
     if (!cst->fitsInt()) {
-        ::error(ErrorType::ERR_OVERLIMIT, "Index too large: %1%", cst);
+        ::error(ErrorType::ERR_OVERLIMIT, "Index too large: {0}", cst);
         return 0;
     }
     int size = cst->asInt();
-    if (size < 0) ::error(ErrorType::ERR_OVERLIMIT, "Illegal array size: %1%", cst);
+    if (size < 0) ::error(ErrorType::ERR_OVERLIMIT, "Illegal array size: {0}", cst);
     return static_cast<size_t>(size);
 }
 
@@ -170,12 +170,12 @@ const Method *Type_Extern::lookupMethod(IR::ID name, const Vector<Argument> *arg
             if (result == nullptr) {
                 result = m;
             } else {
-                ::error(ErrorType::ERR_DUPLICATE, "Ambiguous method %1%", name);
+                ::error(ErrorType::ERR_DUPLICATE, "Ambiguous method {0}", name);
                 if (!reported) {
-                    ::error(ErrorType::ERR_DUPLICATE, "Candidate is %1%", result);
+                    ::error(ErrorType::ERR_DUPLICATE, "Candidate is {0}", result);
                     reported = true;
                 }
-                ::error(ErrorType::ERR_DUPLICATE, "Candidate is %1%", m);
+                ::error(ErrorType::ERR_DUPLICATE, "Candidate is {0}", m);
                 return nullptr;
             }
         }
@@ -195,18 +195,18 @@ const IR::Path *ActionListElement::getPath() const {
     auto expr = expression;
     if (expr->is<IR::MethodCallExpression>()) expr = expr->to<IR::MethodCallExpression>()->method;
     if (expr->is<IR::PathExpression>()) return expr->to<IR::PathExpression>()->path;
-    BUG("%1%: unexpected expression", expression);
+    BUG("{0}: unexpected expression", expression);
 }
 
 const Type_Method *P4Table::getApplyMethodType() const {
     // Synthesize a new type for the return
     auto actions = properties->getProperty(IR::TableProperties::actionsPropertyName);
     if (actions == nullptr) {
-        ::error(ErrorType::ERR_INVALID, "%1%: table does not contain a list of actions", this);
+        ::error(ErrorType::ERR_INVALID, "{0}: table does not contain a list of actions", this);
         return nullptr;
     }
     if (!actions->value->is<IR::ActionList>())
-        BUG("Action property is not an IR::ActionList, but %1%", actions);
+        BUG("Action property is not an IR::ActionList, but {0}", actions);
     auto alv = actions->value->to<IR::ActionList>();
     auto hit = new IR::StructField(IR::Type_Table::hit, IR::Type_Boolean::get());
     auto miss = new IR::StructField(IR::Type_Table::miss, IR::Type_Boolean::get());
@@ -222,7 +222,7 @@ void Block::setValue(const Node *node, const CompileTimeValue *value) {
     CHECK_NULL(node);
     auto it = constantValue.find(node);
     if (it != constantValue.end())
-        BUG_CHECK(value->equiv(*constantValue[node]), "%1% already set in %2% to %3%, not %4%",
+        BUG_CHECK(value->equiv(*constantValue[node]), "{0} already set in {1} to {2}, not {3}",
                   node, this, value, constantValue[node]);
     else
         constantValue[node] = value;
@@ -244,8 +244,8 @@ void InstantiatedBlock::instantiate(std::vector<const CompileTimeValue *> *args)
 
 const IR::CompileTimeValue *InstantiatedBlock::getParameterValue(cstring paramName) const {
     auto param = getConstructorParameters()->getDeclByName(paramName);
-    BUG_CHECK(param != nullptr, "No parameter named %1%", paramName);
-    BUG_CHECK(param->is<IR::Parameter>(), "No parameter named %1%", paramName);
+    BUG_CHECK(param != nullptr, "No parameter named {0}", paramName);
+    BUG_CHECK(param->is<IR::Parameter>(), "No parameter named {0}", paramName);
     return getValue(param->getNode());
 }
 
@@ -271,7 +271,7 @@ const IR::PackageBlock *ToplevelBlock::getMain() const {
     }
     auto main = mainDecls->at(0);
     if (mainDecls->size() > 1) {
-        ::error(ErrorType::ERR_DUPLICATE, "Program has multiple `%s' instances: %1%, %2%",
+        ::error(ErrorType::ERR_DUPLICATE, "Program has multiple `%s' instances: {0}, {1}",
                 IR::P4Program::main, main->getNode(), mainDecls->at(1)->getNode());
         return nullptr;
     }
@@ -281,7 +281,7 @@ const IR::PackageBlock *ToplevelBlock::getMain() const {
     }
     auto block = getValue(main->getNode());
     if (block == nullptr) return nullptr;
-    BUG_CHECK(block->is<IR::PackageBlock>(), "%1%: toplevel block is not a package", block);
+    BUG_CHECK(block->is<IR::PackageBlock>(), "{0}: toplevel block is not a package", block);
     return block->to<IR::PackageBlock>();
 }
 

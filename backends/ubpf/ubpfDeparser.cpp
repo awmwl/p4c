@@ -29,7 +29,7 @@ class OutHeaderSize final : public EBPF::CodeGenInspector {
     std::map<const IR::Parameter *, const IR::Parameter *> substitution;
 
     bool illegal(const IR::Statement *statement) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: not supported in deparser", statement);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: not supported in deparser", statement);
         return false;
     }
 
@@ -81,7 +81,7 @@ class OutHeaderSize final : public EBPF::CodeGenInspector {
         auto type = typeMap->getType(h);
         auto ht = type->to<IR::Type_Header>();
         if (ht == nullptr) {
-            ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type %1%", h);
+            ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type {0}", h);
             return false;
         }
         unsigned width = ht->width_bits();
@@ -113,7 +113,7 @@ void UBPFDeparserTranslationVisitor::compileEmitField(const IR::Expression *expr
     auto et = dynamic_cast<EBPF::IHasWidth *>(type);
     if (et == nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "Only headers with fixed widths supported %1%", expr);
+                "Only headers with fixed widths supported {0}", expr);
         return;
     }
 
@@ -215,13 +215,13 @@ void UBPFDeparserTranslationVisitor::compileEmitField(const IR::Expression *expr
 }
 
 void UBPFDeparserTranslationVisitor::compileEmit(const IR::Vector<IR::Argument> *args) {
-    BUG_CHECK(args->size() == 1, "%1%: expected 1 argument for emit", args);
+    BUG_CHECK(args->size() == 1, "{0}: expected 1 argument for emit", args);
 
     auto expr = args->at(0)->expression;
     auto type = typeMap->getType(expr);
     auto ht = type->to<IR::Type_Header>();
     if (ht == nullptr) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type %1%", expr);
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type {0}", expr);
         return;
     }
 
@@ -252,7 +252,7 @@ void UBPFDeparserTranslationVisitor::compileEmit(const IR::Vector<IR::Argument> 
         auto et = dynamic_cast<EBPF::IHasWidth *>(etype);
         if (et == nullptr) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "Only headers with fixed widths supported %1%", f);
+                    "Only headers with fixed widths supported {0}", f);
             return;
         }
         compileEmitField(expr, f->name, alignment, etype);
@@ -278,14 +278,14 @@ bool UBPFDeparserTranslationVisitor::preorder(const IR::MethodCallExpression *ex
         }
     }
 
-    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected method call in deparser %1%", expression);
+    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected method call in deparser {0}", expression);
     return false;
 }
 
 bool UBPFDeparser::build() {
     auto pl = controlBlock->container->type->applyParams;
     if (pl->size() != 2) {
-        ::error(ErrorType::ERR_EXPECTED, "%1%: Expected deparser to have exactly 2 parameters",
+        ::error(ErrorType::ERR_EXPECTED, "{0}: Expected deparser to have exactly 2 parameters",
                 controlBlock->getNode());
         return false;
     }

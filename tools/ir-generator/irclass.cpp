@@ -73,7 +73,7 @@ IrNamespace *IrNamespace::get(IrNamespace *parent, cstring name) {
 void IrNamespace::add_class(IrClass *cl) {
     IrNamespace *ns = cl->containedIn ? cl->containedIn : &global();
     if (ns->classes[cl->name])
-        throw Util::CompilationError("%1%: Duplicate class name", cl->name);
+        throw Util::CompilationError("{0}: Duplicate class name", cl->name);
     else
         ns->classes[cl->name] = cl;
 }
@@ -483,12 +483,12 @@ bool IrClass::shouldSkip(cstring feature) const {
 void IrClass::resolve() {
     for (auto s : parents) {
         const IrClass *p = s->resolve(containedIn);
-        if (p == nullptr) throw Util::CompilationError("Could not find class %1%", s);
+        if (p == nullptr) throw Util::CompilationError("Could not find class {0}", s);
         if (p->kind != NodeKind::Interface) {
             if (concreteParent == nullptr)
                 concreteParent = p;
             else
-                BUG("Class %1% has more than 1 non-interface parent: %2% and %3%", this,
+                BUG("Class {0} has more than 1 non-interface parent: {1} and {2}", this,
                     concreteParent, p);
         }
         parentClasses.push_back(p);
@@ -520,10 +520,10 @@ void IrField::generate(std::ostream &out, bool asField) const {
         // FIXME -- should be doing this in resolve and converting type to PointerType as needed
         if (tmpl) {
             if (cls->kind != NodeKind::Template)
-                throw Util::CompilationError("Template args with non-template class %1%", cls);
+                throw Util::CompilationError("Template args with non-template class {0}", cls);
             unsigned tmpl_args = (cls == IrClass::nodemapClass() ? 2 : 1);
             if (tmpl->args.size() < tmpl_args)
-                throw Util::CompilationError("Wrong number of args for template %1%", cls);
+                throw Util::CompilationError("Wrong number of args for template {0}", cls);
             for (unsigned i = 0; i < tmpl_args; i++) {
                 if (auto acl = tmpl->args[i]->resolve(clss ? clss->containedIn : nullptr)) {
                     if (cls == IrClass::vectorClass())
@@ -536,13 +536,13 @@ void IrField::generate(std::ostream &out, bool asField) const {
                         acl->needNodeMap = true;
                 } else {
                     throw Util::CompilationError(
-                        "%1% template argment %2% is not "
+                        "{0} template argment {1} is not "
                         "an IR class",
                         cls->name, tmpl->args[i]);
                 }
             }
         } else if (cls->kind == NodeKind::Template) {
-            throw Util::CompilationError("No args for template %1%", cls);
+            throw Util::CompilationError("No args for template {0}", cls);
         }
     }
     if (cls != nullptr && !isInline) out << "const ";

@@ -138,7 +138,7 @@ inja::json STF::getControlPlaneForTable(const TableMatchMap &matches,
             j["value"] = formatHexExpr(elem->getEvaluatedValue()).c_str();
             rulesJson["needs_priority"] = true;
         } else {
-            TESTGEN_UNIMPLEMENTED("Unsupported table key match type \"%1%\"",
+            TESTGEN_UNIMPLEMENTED("Unsupported table key match type \"{0}\"",
                                   fieldMatch->getObjectName());
         }
         rulesJson["matches"].push_back(j);

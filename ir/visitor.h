@@ -218,7 +218,7 @@ class Visitor {
     template <class T>
     const T *getOriginal() const {
         CHECK_NULL(ctxt->original);
-        BUG_CHECK(ctxt->original->is<T>(), "%1% does not have the expected type %2%",
+        BUG_CHECK(ctxt->original->is<T>(), "{0} does not have the expected type {1}",
                   ctxt->original, demangle(typeid(T).name()));
         return ctxt->original->to<T>();
     }

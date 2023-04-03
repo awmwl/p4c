@@ -27,7 +27,7 @@ EBPFCounterPSA::EBPFCounterPSA(const EBPFProgram *program, const IR::Declaration
     : EBPFCounterTable(program, name, codeGen, 1, false) {
     CHECK_NULL(di);
     if (!di->type->is<IR::Type_Specialized>()) {
-        ::error(ErrorType::ERR_MODEL, "Missing specialization: %1%", di);
+        ::error(ErrorType::ERR_MODEL, "Missing specialization: {0}", di);
         return;
     }
     auto ts = di->type->to<IR::Type_Specialized>();
@@ -37,30 +37,30 @@ EBPFCounterPSA::EBPFCounterPSA(const EBPFProgram *program, const IR::Declaration
     } else if (ts->baseType->toString() == "DirectCounter") {
         isDirect = true;
     } else {
-        ::error(ErrorType::ERR_UNKNOWN, "Unknown counter type extern: %1%", di);
+        ::error(ErrorType::ERR_UNKNOWN, "Unknown counter type extern: {0}", di);
         return;
     }
 
     if (isDirect && di->arguments->size() != 1) {
-        ::error(ErrorType::ERR_MODEL, "Expected 1 argument: %1%", di);
+        ::error(ErrorType::ERR_MODEL, "Expected 1 argument: {0}", di);
         return;
     } else if (!isDirect && di->arguments->size() != 2) {
-        ::error(ErrorType::ERR_MODEL, "Expected 2 arguments: %1%", di);
+        ::error(ErrorType::ERR_MODEL, "Expected 2 arguments: {0}", di);
         return;
     }
 
     if (isDirect && ts->arguments->size() != 1) {
-        ::error(ErrorType::ERR_MODEL, "Expected a type specialized with one argument: %1%", ts);
+        ::error(ErrorType::ERR_MODEL, "Expected a type specialized with one argument: {0}", ts);
         return;
     } else if (!isDirect && ts->arguments->size() != 2) {
-        ::error(ErrorType::ERR_MODEL, "Expected a type specialized with two arguments: %1%", ts);
+        ::error(ErrorType::ERR_MODEL, "Expected a type specialized with two arguments: {0}", ts);
         return;
     }
 
     // check dataplane counter width
     auto dpwtype = ts->arguments->at(0);
     if (!dpwtype->is<IR::Type_Bits>()) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: %1%", dpwtype);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: {0}", dpwtype);
         return;
     }
 
@@ -68,13 +68,13 @@ EBPFCounterPSA::EBPFCounterPSA(const EBPFProgram *program, const IR::Declaration
     unsigned dataplaneWidth = dpwtype->width_bits();
     if (dataplaneWidth > 64) {
         ::error(ErrorType::ERR_UNSUPPORTED,
-                "Counters dataplane width up to 64 bits are supported: %1%", dpwtype);
+                "Counters dataplane width up to 64 bits are supported: {0}", dpwtype);
         return;
     }
     if (dataplaneWidth < 8 || (dataplaneWidth & (dataplaneWidth - 1)) != 0) {
         ::warning(ErrorType::WARN_UNSUPPORTED,
                   "Counter dataplane width will be extended to "
-                  "nearest type (8, 16, 32 or 64 bits): %1%",
+                  "nearest type (8, 16, 32 or 64 bits): {0}",
                   dpwtype);
     }
 
@@ -87,14 +87,14 @@ EBPFCounterPSA::EBPFCounterPSA(const EBPFProgram *program, const IR::Declaration
     if (!isDirect) {
         auto istype = ts->arguments->at(1);
         if (!dpwtype->is<IR::Type_Bits>()) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: %1%", istype);
+            ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: {0}", istype);
             return;
         }
 
         if (!isHash && istype->width_bits() != 32) {
             // ARRAY_MAP can have only 32 bits key, so assume this and warn user
             ::warning(ErrorType::WARN_UNSUPPORTED,
-                      "Up to 32-bit type for index is supported, using 32 bit: %1%", istype);
+                      "Up to 32-bit type for index is supported, using 32 bit: {0}", istype);
         }
 
         if (isHash) {
@@ -105,7 +105,7 @@ EBPFCounterPSA::EBPFCounterPSA(const EBPFProgram *program, const IR::Declaration
 
         auto declaredSize = di->arguments->at(0)->expression->to<IR::Constant>();
         if (!declaredSize->fitsUint()) {
-            ::error(ErrorType::ERR_OVERLIMIT, "%1%: size too large", declaredSize);
+            ::error(ErrorType::ERR_OVERLIMIT, "{0}: size too large", declaredSize);
             return;
         }
         size = declaredSize->asUnsigned();
@@ -124,7 +124,7 @@ EBPFCounterPSA::CounterType EBPFCounterPSA::toCounterType(const int type) {
     else if (type == 2)
         return CounterType::PACKETS_AND_BYTES;
 
-    BUG("Unknown counter type %1%", type);
+    BUG("Unknown counter type {0}", type);
 }
 
 void EBPFCounterPSA::emitTypes(CodeBuilder *builder) {
@@ -174,11 +174,11 @@ void EBPFCounterPSA::emitInstance(CodeBuilder *builder) {
 void EBPFCounterPSA::emitMethodInvocation(CodeBuilder *builder, const P4::ExternMethod *method,
                                           CodeGenInspector *codeGen) {
     if (method->method->name.name != "count") {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Unexpected method %1%", method->expr);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Unexpected method {0}", method->expr);
         return;
     }
     BUG_CHECK(!isDirect, "DirectCounter used outside of table");
-    BUG_CHECK(method->expr->arguments->size() == 1, "Expected just 1 argument for %1%",
+    BUG_CHECK(method->expr->arguments->size() == 1, "Expected just 1 argument for {0}",
               method->expr);
 
     builder->blockStart();
@@ -189,11 +189,11 @@ void EBPFCounterPSA::emitMethodInvocation(CodeBuilder *builder, const P4::Extern
 void EBPFCounterPSA::emitDirectMethodInvocation(CodeBuilder *builder,
                                                 const P4::ExternMethod *method, cstring valuePtr) {
     if (method->method->name.name != "count") {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Unexpected method %1%", method->expr);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Unexpected method {0}", method->expr);
         return;
     }
     BUG_CHECK(isDirect, "Bad Counter invocation");
-    BUG_CHECK(method->expr->arguments->size() == 0, "Expected no arguments for %1%", method->expr);
+    BUG_CHECK(method->expr->arguments->size() == 0, "Expected no arguments for {0}", method->expr);
 
     cstring target = valuePtr + "->" + instanceName;
     auto pipeline = dynamic_cast<const EBPFPipeline *>(program);

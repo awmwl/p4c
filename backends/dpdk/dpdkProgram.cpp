@@ -215,7 +215,7 @@ const IR::DpdkAsmProgram *ConvertToDpdkProgram::create(IR::P4Program *prog) {
                  << s << std::endl
                  << "Main metadata structure is: " << structure->local_metadata_type);
             BUG_CHECK(structTypeName == structure->local_metadata_type,
-                      "Unexpectedly duplicating declaration of: %1%", structTypeName);
+                      "Unexpectedly duplicating declaration of: {0}", structTypeName);
         } else {
             LOG3("Adding DpdkStructType: " << s);
             auto st = new IR::DpdkStructType(s->srcInfo, s->name, s->annotations, s->fields);
@@ -272,12 +272,12 @@ void ConvertToDpdkParser::getCondVars(const IR::Expression *sv, const IR::Expres
                                       IR::Expression **leftExpr, IR::Expression **rightExpr) {
     if (sv->is<IR::Constant>() && sv->type->width_bits() > 32) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%, Constant expression wider than 32-bit is not permitted", sv);
+                "{0}, Constant expression wider than 32-bit is not permitted", sv);
         return;
     }
     if (sv->type->width_bits() > 64) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%, Select expression wider than 64-bit is not permitted", sv);
+                "{0}, Select expression wider than 64-bit is not permitted", sv);
         return;
     }
     auto width = sv->type->width_bits();
@@ -532,12 +532,12 @@ bool ConvertToDpdkControl::checkTableValid(const IR::P4Table *a) {
     if (lpmCount > 1) {
         ::error(ErrorType::ERR_UNEXPECTED,
                 "Only one LPM match field is permitted per table, "
-                "more than one lpm field found in table (%1%)",
+                "more than one lpm field found in table ({0})",
                 a->name.toString());
         return false;
     } else if (lpmCount == 1 && nonExactCount > 0) {
         ::error(ErrorType::ERR_UNEXPECTED,
-                "Non 'exact' match kind not permitted in table (%1%) "
+                "Non 'exact' match kind not permitted in table ({0}) "
                 "with 'lpm' match kind",
                 a->name.toString());
         return false;
@@ -551,14 +551,14 @@ std::optional<const IR::Member *> ConvertToDpdkControl::getMemExprFromProperty(
     if (property == nullptr) return std::nullopt;
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
+                "Expected {0} property value for table {1} to be an expression: {2}", propertyName,
                 table->controlPlaneName(), property);
         return std::nullopt;
     }
     auto expr = property->value->to<IR::ExpressionValue>()->expression;
     if (!expr->is<IR::Member>()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Exprected %1% property value for table %2% to be a member", propertyName,
+                "Exprected {0} property value for table {1} to be a member", propertyName,
                 table->controlPlaneName());
         return std::nullopt;
     }
@@ -572,14 +572,14 @@ std::optional<int> ConvertToDpdkControl::getNumberFromProperty(const IR::P4Table
     if (property == nullptr) return std::nullopt;
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
+                "Expected {0} property value for table {1} to be an expression: {2}", propertyName,
                 table->controlPlaneName(), property);
         return std::nullopt;
     }
     auto expr = property->value->to<IR::ExpressionValue>()->expression;
     if (!expr->is<IR::Constant>()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Exprected %1% property value for table %2% to be a constant", propertyName,
+                "Exprected {0} property value for table {1} to be a constant", propertyName,
                 table->controlPlaneName());
         return std::nullopt;
     }

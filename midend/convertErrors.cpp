@@ -19,7 +19,7 @@ const IR::Node *DoConvertErrors::preorder(IR::Type_Error *type) {
     }
     size_t count = type->members.size();
     size_t width = policy->errorSize(count);
-    BUG_CHECK(count <= (1ULL << width), "%1%: not enough bits to represent %2%", width, type);
+    BUG_CHECK(count <= (1ULL << width), "{0}: not enough bits to represent {1}", width, type);
     // using the same data structure as for enum elimination.
     auto *r = new P4::EnumRepresentation(type->srcInfo, width);
     const auto *canontype = typeMap->getTypeType(getOriginal(), true);

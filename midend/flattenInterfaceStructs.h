@@ -75,7 +75,7 @@ struct StructTypeReplacement : public IHasDbPrint {
             replacementType =
                 new IR::Type_Header(type->srcInfo, type->name, IR::Annotations::empty, *vec);
         } else {
-            BUG("Unexpected type %1%", type);
+            BUG("Unexpected type {0}", type);
         }
     }
 
@@ -140,7 +140,7 @@ struct StructTypeReplacement : public IHasDbPrint {
     const IR::StructExpression *explode(const IR::Expression *root, cstring prefix) {
         auto vec = new IR::IndexedVector<IR::NamedExpression>();
         auto fieldType = ::get(structFieldMap, prefix);
-        BUG_CHECK(fieldType, "No field for %1%", prefix);
+        BUG_CHECK(fieldType, "No field for {0}", prefix);
         for (auto f : fieldType->fields) {
             cstring fieldName = prefix + "." + f->name.name;
             auto newFieldname = ::get(fieldNameRemap, fieldName);

@@ -48,7 +48,7 @@ std::optional<p4rt_id_t> Protobuf::getIdAnnotation(const IR::IAnnotated *node) {
     const auto *idConstant = idAnnotation->expr[0]->to<IR::Constant>();
     CHECK_NULL(idConstant);
     if (!idConstant->fitsUint()) {
-        ::error(ErrorType::ERR_INVALID, "%1%: @id should be an unsigned integer", node);
+        ::error(ErrorType::ERR_INVALID, "{0}: @id should be an unsigned integer", node);
         return std::nullopt;
     }
     return static_cast<p4rt_id_t>(idConstant->value);
@@ -73,7 +73,7 @@ std::optional<p4rt_id_t> Protobuf::externalId(const P4::ControlPlaneAPI::P4Runti
     const auto typePrefix = static_cast<p4rt_id_t>(type) << 24;
     const auto prefixMask = static_cast<p4rt_id_t>(0xff) << 24;
     if ((id & prefixMask) != 0 && (id & prefixMask) != typePrefix) {
-        ::error(ErrorType::ERR_INVALID, "%1%: @id has the wrong 8-bit prefix", declaration);
+        ::error(ErrorType::ERR_INVALID, "{0}: @id has the wrong 8-bit prefix", declaration);
         return std::nullopt;
     }
     id |= typePrefix;
@@ -122,7 +122,7 @@ inja::json Protobuf::getControlPlane(const TestSpec *testSpec) {
         const auto *table = tblConfig->getTable();
 
         auto p4RuntimeId = externalId(SymbolType::P4RT_TABLE(), table);
-        BUG_CHECK(p4RuntimeId, "Id not present for table %1%. Can not generate test.", table);
+        BUG_CHECK(p4RuntimeId, "Id not present for table {0}. Can not generate test.", table);
         tblJson["id"] = *p4RuntimeId;
 
         const auto *tblRules = tblConfig->getRules();
@@ -135,7 +135,7 @@ inja::json Protobuf::getControlPlane(const TestSpec *testSpec) {
             const auto *actionArgs = actionCall->getArgs();
             rule["action_name"] = actionCall->getActionName().c_str();
             auto p4RuntimeId = externalId(SymbolType::P4RT_ACTION(), actionDecl);
-            BUG_CHECK(p4RuntimeId, "Id not present for action %1%. Can not generate test.",
+            BUG_CHECK(p4RuntimeId, "Id not present for action {0}. Can not generate test.",
                       actionDecl);
             rule["action_id"] = *p4RuntimeId;
             auto j = getControlPlaneForTable(*matches, *actionArgs);
@@ -208,7 +208,7 @@ inja::json Protobuf::getControlPlaneForTable(const TableMatchMap &matches,
             rulesJson["needs_priority"] = true;
             rulesJson["optional_matches"].push_back(j);
         } else {
-            TESTGEN_UNIMPLEMENTED("Unsupported table key match type \"%1%\"",
+            TESTGEN_UNIMPLEMENTED("Unsupported table key match type \"{0}\"",
                                   fieldMatch->getObjectName());
         }
     }

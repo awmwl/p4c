@@ -72,7 +72,7 @@ void CmdStepper::declareVariable(ExecutionState &nextState, const IR::Declaratio
         const auto &left = nextState.convertPathExpr(new IR::PathExpression(decl->name));
         nextState.set(left, programInfo.createTargetUninitialized(decl->type, false));
     } else {
-        TESTGEN_UNIMPLEMENTED("Unsupported declaration type %1% node: %2%", declType,
+        TESTGEN_UNIMPLEMENTED("Unsupported declaration type {0} node: {1}", declType,
                               declType->node_type_name());
     }
 }
@@ -107,7 +107,7 @@ void CmdStepper::initializeBlockParams(const IR::Type_Declaration *typeDecl,
             const auto &paramRef = Utils::addZombiePostfix(paramPath, tb);
             nextState.set(paramRef, programInfo.createTargetUninitialized(paramType, forceTaint));
         } else {
-            P4C_UNIMPLEMENTED("Unsupported initialization type %1%", paramType->node_type_name());
+            P4C_UNIMPLEMENTED("Unsupported initialization type {0}", paramType->node_type_name());
         }
     }
 }
@@ -158,7 +158,7 @@ bool CmdStepper::preorder(const IR::AssignmentStatement *assign) {
         checkMemberInvariant(left);
         state.set(left, assign->right);
     } else {
-        TESTGEN_UNIMPLEMENTED("Unsupported assign type %1% node: %2%", leftType,
+        TESTGEN_UNIMPLEMENTED("Unsupported assign type {0} node: {1}", leftType,
                               leftType->node_type_name());
     }
 
@@ -523,11 +523,11 @@ const Constraint *CmdStepper::startParser(const IR::P4Parser *parser, ExecutionS
 IR::SwitchStatement *CmdStepper::replaceSwitchLabels(const IR::SwitchStatement *switchStatement) {
     const auto *member = switchStatement->expression->to<IR::Member>();
     BUG_CHECK(member != nullptr && member->member.name == IR::Type_Table::action_run,
-              "Invalid format of %1% for action_run", switchStatement->expression);
+              "Invalid format of {0} for action_run", switchStatement->expression);
     const auto *methodCall = member->expr->to<IR::MethodCallExpression>();
-    BUG_CHECK(methodCall, "Invalid format of %1% for action_run", member->expr);
+    BUG_CHECK(methodCall, "Invalid format of {0} for action_run", member->expr);
     const auto *tableCall = methodCall->method->to<IR::Member>();
-    BUG_CHECK(tableCall, "Invalid format of %1% for action_run", methodCall->method);
+    BUG_CHECK(tableCall, "Invalid format of {0} for action_run", methodCall->method);
     const auto *table = state.getTableType(methodCall->method->to<IR::Member>());
     CHECK_NULL(table);
     auto actionVar = TableStepper::getTableActionVar(table);

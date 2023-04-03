@@ -159,7 +159,7 @@ z3::sort Z3Solver::toSort(const IR::Type *type) {
         return z3context.bv_sort(bits->width_bits());
     }
 
-    BUG("Z3Solver: unimplemented type %1%: %2% ", type->node_type_name(), type);
+    BUG("Z3Solver: unimplemented type {0}: {1} ", type->node_type_name(), type);
 }
 
 std::string Z3Solver::generateName(const StateVariable &var) const {
@@ -174,7 +174,7 @@ void Z3Solver::generateName(std::ostringstream &ostr, const StateVariable &var) 
         generateName(ostr, next);
     } else {
         const auto *path = var->expr->to<IR::PathExpression>();
-        BUG_CHECK(path, "Z3Solver: expected to be a PathExpression: %1%", var->expr);
+        BUG_CHECK(path, "Z3Solver: expected to be a PathExpression: {0}", var->expr);
         ostr << path->path->name;
     }
 
@@ -182,7 +182,7 @@ void Z3Solver::generateName(std::ostringstream &ostr, const StateVariable &var) 
 }
 
 z3::expr Z3Solver::declareVar(const StateVariable &var) {
-    BUG_CHECK(var, "Z3Solver: attempted to declare a non-member: %1%", var);
+    BUG_CHECK(var, "Z3Solver: attempted to declare a non-member: {0}", var);
     auto sort = toSort(var->type);
     auto expr = z3context.constant(generateName(var).c_str(), sort);
     BUG_CHECK(
@@ -317,7 +317,7 @@ void Z3Solver::asrt(const Constraint *assertion) {
         BUG_CHECK(isIncremental || z3Assertions.size() == p4Assertions.size(),
                   "Number of assertion in P4 and Z3 formats aren't equal");
     } catch (z3::exception &e) {
-        BUG("Z3Solver: Z3 exception: %1%\nAssertion %2%", e.msg(), assertion);
+        BUG("Z3Solver: Z3 exception: {0}\nAssertion {1}", e.msg(), assertion);
     }
 }
 
@@ -349,16 +349,16 @@ const Model *Z3Solver::getModel() const {
 
             // Convert to a state variable and value.
             auto exprId = z3Expr.id();
-            BUG_CHECK(declaredVars.count(exprId) > 0, "Z3Solver: unknown variable declaration: %1%",
+            BUG_CHECK(declaredVars.count(exprId) > 0, "Z3Solver: unknown variable declaration: {0}",
                       z3Expr.to_string());
             const auto stateVar = declaredVars.at(exprId);
             const auto *value = toValue(z3Value, stateVar->type);
             result->emplace(stateVar, value);
         }
     } catch (z3::exception &e) {
-        BUG("Z3Solver : Z3 exception: %1%", e.msg());
+        BUG("Z3Solver : Z3 exception: {0}", e.msg());
     } catch (std::exception &exception) {
-        BUG("Z3Solver : can't get a model from z3: %1%", exception.what());
+        BUG("Z3Solver : can't get a model from z3: {0}", exception.what());
     } catch (...) {
         BUG("Z3Solver : unknown segmentation fault in getModel");
     }
@@ -368,14 +368,14 @@ const Model *Z3Solver::getModel() const {
 const Value *Z3Solver::toValue(const z3::expr &e, const IR::Type *type) {
     // Handle booleans.
     if (type->is<IR::Type::Boolean>()) {
-        BUG_CHECK(e.is_bool(), "Expected a boolean value: %1%", e.to_string());
+        BUG_CHECK(e.is_bool(), "Expected a boolean value: {0}", e.to_string());
         return new IR::BoolLiteral(type, e.is_true());
     }
 
     // Handle bit vectors.
     const auto *bitsType = type->to<IR::Type::Bits>();
-    BUG_CHECK(bitsType, "Type %1% is not bit<n>", type);
-    BUG_CHECK(e.is_bv(), "Expected a bit vector: %1%", e.to_string());
+    BUG_CHECK(bitsType, "Type {0} is not bit<n>", type);
+    BUG_CHECK(e.is_bv(), "Expected a bit vector: {0}", e.to_string());
     std::string strNum = toString(z3::bv2int(e, bitsType->isSigned).simplify());
     // Z3 prints negative numbers in the following syntax: (- number).
     // For big_int constructor brackets and spaces should be eliminated.
@@ -453,7 +453,7 @@ Z3Solver::Z3Solver(bool isIncremental, std::optional<std::istream *> inOpt)
 Z3Translator::Z3Translator(Z3Solver &solver) : result(solver.z3context), solver(solver) {}
 
 bool Z3Translator::preorder(const IR::Node *node) {
-    BUG("%1%: Unhandled node type: %2%", node, node->node_type_name());
+    BUG("{0}: Unhandled node type: {1}", node, node->node_type_name());
 }
 
 bool Z3Translator::preorder(const IR::Cast *cast) {
@@ -495,7 +495,7 @@ bool Z3Translator::preorder(const IR::Cast *cast) {
             if (exprType->width_bits() == 1) {
                 castExpr = solver.z3context.bool_val(castExpr.bool_value() == Z3_L_TRUE);
             } else {
-                BUG("Cast expression type %1% is not bit<1> : %2%", exprType, castExpr.to_string());
+                BUG("Cast expression type {0} is not bit<1> : {1}", exprType, castExpr.to_string());
             }
         } else if (castExtrType->is<IR::Type_Boolean>()) {
             result = castExpr;
@@ -505,7 +505,7 @@ bool Z3Translator::preorder(const IR::Cast *cast) {
         result = castExpr;
         return false;
     }
-    BUG("%1%: Unhandled cast type: %2%", cast, cast->node_type_name());
+    BUG("{0}: Unhandled cast type: {1}", cast, cast->node_type_name());
 }
 
 bool Z3Translator::preorder(const IR::Constant *constant) {
@@ -526,7 +526,7 @@ bool Z3Translator::preorder(const IR::Constant *constant) {
         return false;
     }
 
-    BUG("Z3Translator: unsupported type for constant %1%", constant);
+    BUG("Z3Translator: unsupported type for constant {0}", constant);
 }
 
 bool Z3Translator::preorder(const IR::BoolLiteral *boolLiteral) {
@@ -554,7 +554,7 @@ bool Z3Translator::preorder(const IR::LNot *op) { return recurseUnary(op, z3::op
 template <class ShiftType>
 const ShiftType *Z3Translator::rewriteShift(const ShiftType *shift) const {
     BUG_CHECK(shift->template is<IR::Shl>() || shift->template is<IR::Shr>(),
-              "Not a shift operation: %1%", shift);
+              "Not a shift operation: {0}", shift);
 
     const IR::Expression *left = shift->left;
     const IR::Expression *right = shift->right;
@@ -568,7 +568,7 @@ const ShiftType *Z3Translator::rewriteShift(const ShiftType *shift) const {
     // The infinite-precision integer should be a compile-time known constant. Rewrite it as a bit
     // vector.
     const auto *shiftAmount = right->to<IR::Constant>();
-    BUG_CHECK(shiftAmount, "Shift amount is not a compile-time known constant: %1%", right);
+    BUG_CHECK(shiftAmount, "Shift amount is not a compile-time known constant: {0}", right);
     const auto *newShiftAmount = IR::getConstant(left->type, shiftAmount->value);
 
     return new ShiftType(shift->type, left, newShiftAmount);
@@ -639,7 +639,7 @@ bool Z3Translator::preorder(const IR::Shr *op) {
 
     // Do an arithmetic shift if the left operand is signed; otherwise, do a logical shift.
     const auto *leftType = op->left->type->to<IR::Type::Bits>();
-    BUG_CHECK(leftType, "Shift operand is not a bits<n>: %1%", op->left);
+    BUG_CHECK(leftType, "Shift operand is not a bits<n>: {0}", op->left);
 
     if (leftType->isSigned) {
         return recurseBinary(op, z3::ashr);

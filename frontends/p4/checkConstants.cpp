@@ -24,18 +24,18 @@ void DoCheckConstants::postorder(const IR::MethodCallExpression *expression) {
     auto mi = MethodInstance::resolve(expression, refMap, typeMap);
     if (auto bi = mi->to<BuiltInMethod>()) {
         if (bi->name == IR::Type_Stack::push_front || bi->name == IR::Type_Stack::pop_front) {
-            BUG_CHECK(expression->arguments->size() == 1, "Expected 1 argument for %1%",
+            BUG_CHECK(expression->arguments->size() == 1, "Expected 1 argument for {0}",
                       expression);
             auto arg0 = expression->arguments->at(0)->expression;
             if (!arg0->is<IR::Constant>())
-                ::error(ErrorType::ERR_INVALID, "%1%: argument must be a constant", arg0);
+                ::error(ErrorType::ERR_INVALID, "{0}: argument must be a constant", arg0);
         }
     }
 }
 
 void DoCheckConstants::postorder(const IR::KeyElement *key) {
     if (key->expression->is<IR::Literal>())
-        warn(ErrorType::WARN_MISMATCH, "%1%: Constant key field", key->expression);
+        warn(ErrorType::WARN_MISMATCH, "{0}: Constant key field", key->expression);
 }
 
 void DoCheckConstants::postorder(const IR::P4Table *table) {

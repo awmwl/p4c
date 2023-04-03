@@ -55,7 +55,7 @@ bool ParseAnnotations::parseSkip(IR::Annotation *) { return false; }
 
 bool ParseAnnotations::parseEmpty(IR::Annotation *annotation) {
     if (!annotation->body.empty()) {
-        ::error(ErrorType::ERR_OVERLIMIT, "%1% should not have any arguments", annotation);
+        ::error(ErrorType::ERR_OVERLIMIT, "{0} should not have any arguments", annotation);
         return false;
     }
 
@@ -136,7 +136,7 @@ void ParseAnnotations::postorder(IR::Annotation *annotation) {
         // Unknown annotation. Leave as is, but warn if desired.
         if (warnUnknown && warned.count(name) == 0) {
             warned.insert(name);
-            warn(ErrorType::WARN_UNKNOWN, "Unknown annotation: %1%", annotation->name);
+            warn(ErrorType::WARN_UNKNOWN, "Unknown annotation: {0}", annotation->name);
         }
         return;
     }

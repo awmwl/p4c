@@ -27,7 +27,7 @@ class AbstractRepCheckedNode {
     template <class T>
     static const T *checkedTo(const IR::Node *n) {
         const T *result = n->to<T>();
-        BUG_CHECK(result, "Cast failed: %1% is not a %2%. It is a %3% instead.", n,
+        BUG_CHECK(result, "Cast failed: {0} is not a {1}. It is a {2} instead.", n,
                   T::static_type_name(), n->node_type_name());
         return result;
     }
@@ -35,7 +35,7 @@ class AbstractRepCheckedNode {
     /// @param classDesc a user-friendly description of the class, for reporting errors to the
     ///     user.
     explicit AbstractRepCheckedNode(const Node *node, std::string classDesc) : node(*node) {
-        BUG_CHECK(Self::repOk(node), "%1%: Not a valid %2%.", node, classDesc);
+        BUG_CHECK(Self::repOk(node), "{0}: Not a valid {1}.", node, classDesc);
     }
 };
 

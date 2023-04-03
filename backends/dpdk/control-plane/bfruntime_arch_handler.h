@@ -296,15 +296,15 @@ class BFRuntimeArchHandler : public P4RuntimeArchHandlerCommon<arch> {
     /// @return serialization information for the Digest extern instacne @decl
     std::optional<Digest> getDigest(const IR::Declaration_Instance *decl,
                                     p4configv1::P4TypeInfo *p4RtTypeInfo) {
-        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "%1%: expected Type_Specialized",
+        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "{0}: expected Type_Specialized",
                   decl->type);
         auto type = decl->type->to<IR::Type_Specialized>();
-        BUG_CHECK(type->arguments->size() == 1, "%1%: expected one type argument", decl);
+        BUG_CHECK(type->arguments->size() == 1, "{0}: expected one type argument", decl);
         auto typeArg = type->arguments->at(0);
         auto typeSpec =
             TypeSpecConverter::convert(this->refMap, this->typeMap, typeArg, p4RtTypeInfo);
         BUG_CHECK(typeSpec != nullptr,
-                  "P4 type %1% could not be converted to P4Info P4DataTypeSpec");
+                  "P4 type {0} could not be converted to P4Info P4DataTypeSpec");
 
         return Digest{decl->controlPlaneName(), typeSpec, decl->to<IR::IAnnotated>()};
     }
@@ -326,8 +326,8 @@ class BFRuntimeArchHandler : public P4RuntimeArchHandlerCommon<arch> {
                     }
                 } else if (expr->is<IR::PathExpression>()) {
                     ::error(ErrorType::ERR_UNEXPECTED,
-                            "Unresolved value %1% for psa_idle_timeout "
-                            "property on table %2%. Must be a constant and one of "
+                            "Unresolved value {0} for psa_idle_timeout "
+                            "property on table {1}. Must be a constant and one of "
                             "{ NOTIFY_CONTROL, NO_TIMEOUT }",
                             timeout, table);
                     return false;
@@ -336,8 +336,8 @@ class BFRuntimeArchHandler : public P4RuntimeArchHandlerCommon<arch> {
         }
 
         ::error(ErrorType::ERR_UNEXPECTED,
-                "Unexpected value %1% for psa_idle_timeout "
-                "property on table %2%. Supported values are "
+                "Unexpected value {0} for psa_idle_timeout "
+                "property on table {1}. Supported values are "
                 "{ NOTIFY_CONTROL, NO_TIMEOUT }",
                 timeout, table);
         return false;

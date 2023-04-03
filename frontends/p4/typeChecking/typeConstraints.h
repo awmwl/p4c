@@ -160,7 +160,7 @@ class TypeConstraint : public IHasDbPrint, public ICastable {
         if (lastIsEmpty) message += "\n";
 
         CHECK_NULL(o);
-        ::errorWithSuffix(ErrorType::ERR_TYPE_ERROR, "%1%", message.c_str(), o);
+        ::errorWithSuffix(ErrorType::ERR_TYPE_ERROR, "{0}", message.c_str(), o);
         return false;
     }
     // Default error message; returns 'false'
@@ -186,7 +186,7 @@ class BinaryConstraint : public TypeConstraint {
         CHECK_NULL(left);
         CHECK_NULL(right);
         if (left->is<IR::Type_Name>() || right->is<IR::Type_Name>())
-            BUG("type names should not appear in unification: %1% and %2%", left, right);
+            BUG("type names should not appear in unification: {0} and {1}", left, right);
     }
 
  public:
@@ -207,7 +207,7 @@ class EqualityConstraint : public BinaryConstraint {
     }
     using TypeConstraint::reportError;
     bool reportError(const TypeVariableSubstitution *subst) const override {
-        return reportError(subst, "Cannot unify type '%1%' with type '%2%'", right, left);
+        return reportError(subst, "Cannot unify type '{0}' with type '{1}'", right, left);
     }
     BinaryConstraint *create(const IR::Type *left, const IR::Type *right) const override {
         return new EqualityConstraint(left, right, this);
@@ -228,7 +228,7 @@ class CanBeImplicitlyCastConstraint : public BinaryConstraint {
     }
     using TypeConstraint::reportError;
     bool reportError(const TypeVariableSubstitution *subst) const override {
-        return reportError(subst, "Cannot cast implicitly type '%1%' to type '%2%'", right, left);
+        return reportError(subst, "Cannot cast implicitly type '{0}' to type '{1}'", right, left);
     }
     BinaryConstraint *create(const IR::Type *left, const IR::Type *right) const override {
         return new CanBeImplicitlyCastConstraint(left, right, this);

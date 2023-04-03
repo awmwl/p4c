@@ -196,7 +196,7 @@ class RenameUserMetadata : public Transform {
     }
 
     void end_apply(const IR::Node *) override {
-        BUG_CHECK(renamed, "Could not identify user metadata type declaration %1%", userMetaType);
+        BUG_CHECK(renamed, "Could not identify user metadata type declaration {0}", userMetaType);
     }
 };
 

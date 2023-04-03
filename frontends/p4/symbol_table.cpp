@@ -72,14 +72,14 @@ class Namespace : public NamedSymbol {
             // Check that both declarations have the same type
             if (!it->second->sameType(symbol)) {
                 ::error(ErrorType::ERR_DUPLICATE,
-                        "Re-declaration of %1%%2% with different type: %3%", symbol->getName(),
+                        "Re-declaration of {0}{1} with different type: {2}", symbol->getName(),
                         symbol->getSourceInfo(), it->second->getSourceInfo());
                 return;
             }
 
             if (!allowDuplicates) {
                 ::error(ErrorType::ERR_DUPLICATE,
-                        "Duplicate declaration of %1%%2%; previous at %3%", symbol->getName(),
+                        "Duplicate declaration of {0}{1}; previous at {2}", symbol->getName(),
                         symbol->getSourceInfo(), it->second->getSourceInfo());
                 return;
             }

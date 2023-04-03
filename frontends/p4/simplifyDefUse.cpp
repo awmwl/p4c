@@ -219,7 +219,7 @@ class HeaderDefinitions : public IHasDbPrint {
     void checkLocation(const StorageLocation *storage) {
         BUG_CHECK(storage->is<StructLocation>() && (storage->to<StructLocation>()->isHeader() ||
                                                     storage->to<StructLocation>()->isHeaderUnion()),
-                  "location %1% is not a header", storage->name);
+                  "location {0} is not a header", storage->name);
     }
 
     bool isNonConstIndexing(const IR::Expression *expr) const {
@@ -380,12 +380,12 @@ class FindUninitialized : public Inspector {
 
     const LocationSet *getReads(const IR::Expression *expression, bool nonNull = false) const {
         auto result = ::get(readLocations, expression);
-        if (nonNull) BUG_CHECK(result != nullptr, "no locations known for %1%", dbp(expression));
+        if (nonNull) BUG_CHECK(result != nullptr, "no locations known for {0}", dbp(expression));
         return result;
     }
     /// 'expression' is reading the 'loc' location set
     void reads(const IR::Expression *expression, const LocationSet *loc) {
-        BUG_CHECK(!unreachable, "reached an unreachable expression %1% in FindUninitialized",
+        BUG_CHECK(!unreachable, "reached an unreachable expression {0} in FindUninitialized",
                   expression);
         LOG3(expression << " reads " << loc);
         CHECK_NULL(expression);
@@ -484,8 +484,8 @@ class FindUninitialized : public Inspector {
                 points = defs->getPoints(loc);
                 if (points->containsBeforeStart())
                     warn(ErrorType::WARN_UNINITIALIZED_OUT_PARAM,
-                         "out parameter '%1%' may be uninitialized when "
-                         "'%2%' terminates",
+                         "out parameter '{0}' may be uninitialized when "
+                         "'{1}' terminates",
                          p, block->getName());
             }
         }
@@ -529,7 +529,7 @@ class FindUninitialized : public Inspector {
             // not executed a 'return' on all possible paths.
             if (!defs->isUnreachable())
                 ::error(ErrorType::ERR_INSUFFICIENT,
-                        "Function '%1%' does not return a value on all paths", func);
+                        "Function '{0}' does not return a value on all paths", func);
         }
 
         currentPoint = point.after();
@@ -674,7 +674,7 @@ class FindUninitialized : public Inspector {
         } else if (auto slice = parent->to<IR::Slice>()) {
             loc = checkHeaderFieldWrite(expr, slice->e0);
         } else {
-            BUG("%1%: unexpected expression on LHS", parent);
+            BUG("{0}: unexpected expression on LHS", parent);
         }
 
         auto type = typeMap->getType(parent, true);
@@ -705,7 +705,7 @@ class FindUninitialized : public Inspector {
                 auto valid = headerDefs->find(src);
                 headerDefs->update(dst, valid);
             } else {
-                BUG("%1%: unexpected expression on RHS", src);
+                BUG("{0}: unexpected expression on RHS", src);
             }
             return;
         }
@@ -736,7 +736,7 @@ class FindUninitialized : public Inspector {
                     processHeadersInAssignment(dst_member, src_member, ftype, ftype);
                 }
             } else {
-                BUG("%1%: unexpected expression on RHS", src);
+                BUG("{0}: unexpected expression on RHS", src);
             }
             return;
         }
@@ -768,7 +768,7 @@ class FindUninitialized : public Inspector {
                 if (!non_constant_indexing || valid == TernaryBool::Yes)
                     headerDefs->update(headerDefs->getStorageLocation(dst), TernaryBool::Yes);
             } else {
-                BUG("%1%: unexpected expression on RHS", src);
+                BUG("{0}: unexpected expression on RHS", src);
             }
             return;
         }
@@ -816,7 +816,7 @@ class FindUninitialized : public Inspector {
                     }
                 }
             } else {
-                BUG("%1%: unexpected expression on RHS", src);
+                BUG("{0}: unexpected expression on RHS", src);
             }
         }
     }
@@ -1021,9 +1021,9 @@ class FindUninitialized : public Inspector {
             auto type = typeMap->getType(expression, true);
             cstring message;
             if (type->is<IR::Type_Base>())
-                message = "%1% may be uninitialized";
+                message = "{0} may be uninitialized";
             else
-                message = "%1% may not be completely initialized";
+                message = "{0} may not be completely initialized";
             warn(ErrorType::WARN_UNINITIALIZED_USE, message, expression);
         }
 
@@ -1139,7 +1139,7 @@ class FindUninitialized : public Inspector {
         auto actions = table->getActionList();
         for (auto ale : actions->actionList) {
             BUG_CHECK(ale->expression->is<IR::MethodCallExpression>(),
-                      "%1%: unexpected entry in action list", ale);
+                      "{0}: unexpected entry in action list", ale);
             headerDefs = saveHeaderDefsAfterKey->clone();
             visit(ale->expression);
             currentPoint = savePoint;  // restore the current point
@@ -1166,13 +1166,13 @@ class FindUninitialized : public Inspector {
         if (valid == TernaryBool::No) {
             LOG3("accessing a field of an invalid header [" << expression->id
                                                             << "]: " << expression);
-            warn(ErrorType::WARN_INVALID_HEADER, "accessing a field of an invalid header %1%",
+            warn(ErrorType::WARN_INVALID_HEADER, "accessing a field of an invalid header {0}",
                  expression);
         } else if (valid == TernaryBool::Maybe) {
             LOG3("accessing a field of a potentially invalid header [" << expression->id
                                                                        << "]: " << expression);
             warn(ErrorType::WARN_INVALID_HEADER,
-                 "accessing a field of a potentially invalid header %1%", expression);
+                 "accessing a field of a potentially invalid header {0}", expression);
         } else {
             LOG3("acessing a field of a valid header [" << expression->id << "]: " << expression);
         }
@@ -1350,7 +1350,7 @@ class FindUninitialized : public Inspector {
                 reads(expression, storage);
                 registerUses(expression, false);
                 if (!lhs && expression->member.name == IR::Type_Stack::next)
-                    warn(ErrorType::WARN_UNINITIALIZED, "%1%: reading uninitialized value",
+                    warn(ErrorType::WARN_UNINITIALIZED, "{0}: reading uninitialized value",
                          expression);
                 return false;
             } else if (expression->member.name == IR::Type_Stack::lastIndex) {
@@ -1394,7 +1394,7 @@ class FindUninitialized : public Inspector {
     }
 
     void otherExpression(const IR::Expression *expression) {
-        BUG_CHECK(!lhs, "%1%: unexpected operation on LHS", expression);
+        BUG_CHECK(!lhs, "{0}: unexpected operation on LHS", expression);
         LOG3("FU Visiting [" << expression->id << "]: " << expression);
         // This expression in fact reads the result of the operation,
         // which is a temporary storage location, which we do not model
@@ -1471,10 +1471,10 @@ class RemoveUnused : public Transform {
             if (se.nodeWithSideEffect != nullptr) {
                 // We expect that at this point there can't be more than 1
                 // method call expression in each statement.
-                BUG_CHECK(se.sideEffectCount == 1, "%1%: too many side-effect in one expression",
+                BUG_CHECK(se.sideEffectCount == 1, "{0}: too many side-effect in one expression",
                           statement->right);
                 BUG_CHECK(se.nodeWithSideEffect->is<IR::MethodCallExpression>(),
-                          "%1%: expected method call", se.nodeWithSideEffect);
+                          "{0}: expected method call", se.nodeWithSideEffect);
                 auto mce = se.nodeWithSideEffect->to<IR::MethodCallExpression>();
                 return new IR::MethodCallStatement(statement->srcInfo, mce);
             }

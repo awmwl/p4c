@@ -53,7 +53,7 @@ std::string Utils::getTimeStamp() {
 
 void Utils::setRandomSeed(int seed) {
     if (currentSeed.has_value()) {
-        BUG("Seed already initialized with %1%.", currentSeed.value());
+        BUG("Seed already initialized with {0}.", currentSeed.value());
     }
     currentSeed = seed;
     rng.seed(seed);

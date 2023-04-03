@@ -54,7 +54,7 @@ const IR::Node *ReplaceHeaders::postorder(IR::Type_Header *type) {
     auto repl = findHeaderTypesToReplace->getReplacement(name);
     if (repl != nullptr) {
         LOG3("Replace " << type << " with " << repl->replacementType);
-        BUG_CHECK(repl->replacementType->is<IR::Type_Header>(), "%1% not a header", type);
+        BUG_CHECK(repl->replacementType->is<IR::Type_Header>(), "{0} not a header", type);
         return repl->replacementType;
     }
     return type;
@@ -90,7 +90,7 @@ const IR::Node *ReplaceHeaders::postorder(IR::Member *expression) {
             return expression;
         if (isWrite()) {
             ::error(ErrorType::ERR_UNSUPPORTED,
-                    "%1%: writing to a structure nested in a header is not supported", expression);
+                    "{0}: writing to a structure nested in a header is not supported", expression);
             return expression;
         }
         result = repl->explode(e, prefix);

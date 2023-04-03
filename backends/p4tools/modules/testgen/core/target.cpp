@@ -27,11 +27,11 @@ const ProgramInfo *TestgenTarget::initProgram_impl(const IR::P4Program *program)
     // Resolve the program's main declaration instance and delegate to the version of
     // initProgram_impl that takes the main declaration.
     const auto *mainIDecl = program->getDeclsByName(IR::P4Program::main)->single();
-    BUG_CHECK(mainIDecl, "Program's main declaration not found: %1%", program->main);
+    BUG_CHECK(mainIDecl, "Program's main declaration not found: {0}", program->main);
 
     const auto *mainNode = mainIDecl->getNode();
     const auto *mainDecl = mainIDecl->to<IR::Declaration_Instance>();
-    BUG_CHECK(mainDecl, "%1%: Program's main declaration is a %2%, not a Declaration_Instance",
+    BUG_CHECK(mainDecl, "{0}: Program's main declaration is a {1}, not a Declaration_Instance",
               mainNode, mainNode->node_type_name());
 
     return initProgram_impl(program, mainDecl);
@@ -59,17 +59,17 @@ void TestgenTarget::argumentsToTypeDeclarations(
                 ns->findDecl(pathExpr->path)->checkedTo<IR::Declaration_Instance>();
             declType = declInstance->type->checkedTo<IR::Type_Declaration>();
         } else {
-            BUG("Unexpected main-declaration argument node type: %1%", expr->node_type_name());
+            BUG("Unexpected main-declaration argument node type: {0}", expr->node_type_name());
         }
 
         // The constructor's parameter list should be empty, since the compiler should have
         // substituted the constructor arguments for us.
         if (const auto *iApply = declType->to<IR::IContainer>()) {
             const IR::ParameterList *ctorParams = iApply->getConstructorParameters();
-            BUG_CHECK(ctorParams->empty(), "Compiler did not eliminate constructor parameters: %1%",
+            BUG_CHECK(ctorParams->empty(), "Compiler did not eliminate constructor parameters: {0}",
                       ctorParams);
         } else {
-            BUG("Does not instantiate an IContainer: %1%", expr);
+            BUG("Does not instantiate an IContainer: {0}", expr);
         }
 
         resultDecls.emplace_back(declType);

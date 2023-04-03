@@ -101,7 +101,7 @@ bool SameExpression::sameExpression(const IR::Expression *left, const IR::Expres
         }
         return true;
     } else {
-        BUG("%1%: Unexpected expression", left);
+        BUG("{0}: Unexpected expression", left);
     }
 }
 

@@ -29,7 +29,7 @@ void PSASwitchBackend::convert(const IR::ToplevelBlock *tlb) {
 
     if (main->type->name != "PSA_Switch") {
         ::warning(ErrorType::WARN_INVALID,
-                  "%1%: the main package should be called PSA_Switch"
+                  "{0}: the main package should be called PSA_Switch"
                   "; are you using the wrong architecture?",
                   main->type->name);
         return;

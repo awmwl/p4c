@@ -32,7 +32,7 @@ PnaDpdkProgramInfo::PnaDpdkProgramInfo(
     const auto *programmableBlocks = getProgrammableBlocks();
 
     BUG_CHECK(archSpec->getArchVectorSize() == programmableBlocks->size(),
-              "The PNA architecture requires %1% pipes (provided %2% pipes).",
+              "The PNA architecture requires {0} pipes (provided {1} pipes).",
               archSpec->getArchVectorSize(), programmableBlocks->size());
 
     /// Compute the series of nodes corresponding to the in-order execution of top-level

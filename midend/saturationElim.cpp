@@ -13,10 +13,10 @@ bool SaturationElim::isSaturationOperation(const IR::Expression *expr) {
 
 const IR::Mux *SaturationElim::eliminate(const IR::Operation_Binary *binary) {
     BUG_CHECK(isSaturationOperation(binary),
-              "Can't do saturation elimination on a non-saturating operation: %1%", binary);
+              "Can't do saturation elimination on a non-saturating operation: {0}", binary);
 
     const auto *bitType = binary->type->to<IR::Type_Bits>();
-    BUG_CHECK(bitType, "Unsupported type for conversion %1%", binary->type);
+    BUG_CHECK(bitType, "Unsupported type for conversion {0}", binary->type);
 
     // overflowNumber is the largest value that can be represented before overflowing.
     // This is 2^(bits->size) - 1 for unsigned and 2^(bits->size - 1) - 1 for signed.
@@ -107,7 +107,7 @@ const IR::Mux *SaturationElim::eliminate(const IR::Operation_Binary *binary) {
             underflowCondition = new IR::Lss(boolType, binary->left, binary->right);
         }
     } else {
-        BUG("EliminateSaturation : unsuported operation %1%", binary);
+        BUG("EliminateSaturation : unsuported operation {0}", binary);
     }
 
     BUG_CHECK(expr != nullptr, "Invalid pointer of addition/subtraction calculation result");

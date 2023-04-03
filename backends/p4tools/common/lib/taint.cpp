@@ -92,7 +92,7 @@ static bitvec computeTaintedBits(const SymbolicMapType &varMap, const IR::Expres
     if (expr->is<IR::ConcolicVariable>()) {
         return {};
     }
-    BUG("Taint pair collection is unsupported for %1% of type %2%", expr, expr->node_type_name());
+    BUG("Taint pair collection is unsupported for {0} of type {1}", expr, expr->node_type_name());
 }
 
 bool Taint::hasTaint(const SymbolicMapType &varMap, const IR::Expression *expr) {
@@ -142,14 +142,14 @@ bool Taint::hasTaint(const SymbolicMapType &varMap, const IR::Expression *expr) 
     if (expr->is<IR::ConcolicVariable>()) {
         return false;
     }
-    BUG("Taint checking is unsupported for %1% of type %2%", expr, expr->node_type_name());
+    BUG("Taint checking is unsupported for {0} of type {1}", expr, expr->node_type_name());
 }
 
 class TaintPropagator : public Transform {
     const SymbolicMapType &varMap;
 
     const IR::Node *postorder(IR::Expression *node) override {
-        P4C_UNIMPLEMENTED("Taint transformation not supported for node %1% of type %2%", node,
+        P4C_UNIMPLEMENTED("Taint transformation not supported for node {0} of type {1}", node,
                           node->node_type_name());
     }
 
@@ -203,14 +203,14 @@ class TaintPropagator : public Transform {
     const IR::Node *postorder(IR::Concat *concat) override { return concat; }
 
     const IR::Node *postorder(IR::Operation_Ternary *ternary_op) override {
-        BUG("Operation ternary %1% of type %2% should not be encountered in the taint propagator.",
+        BUG("Operation ternary {0} of type {1} should not be encountered in the taint propagator.",
             ternary_op, ternary_op->node_type_name());
     }
 
     const IR::Node *preorder(IR::Slice *slice) override {
         // We assume a bit type here...
         BUG_CHECK(!slice->e0->is<IR::Type_Bits>(),
-                  "Expected Type_Bits for the slice expression but received %1%",
+                  "Expected Type_Bits for the slice expression but received {0}",
                   slice->e0->type->node_type_name());
         auto slLeftInt = slice->e1->checkedTo<IR::Constant>()->asInt();
         auto slRightInt = slice->e2->checkedTo<IR::Constant>()->asInt();

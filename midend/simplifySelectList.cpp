@@ -29,7 +29,7 @@ void SubstituteStructures::explode(const IR::Expression *expression, const IR::T
         }
     } else {
         BUG_CHECK(!type->is<IR::Type_StructLike>() && !type->is<IR::Type_Stack>(),
-                  "%1%: unexpected type", type);
+                  "{0}: unexpected type", type);
         output->push_back(expression);
     }
 }
@@ -60,12 +60,12 @@ void UnnestSelectList::flatten(const IR::Expression *expression, unsigned *nesti
                                IR::Vector<IR::Expression> *vec) {
     char c = nesting.get(*nestingIndex);
     if (expression->is<IR::ListExpression>()) {
-        BUG_CHECK(c == '[', "%1%: expected [, got %2%", *nestingIndex, c);
+        BUG_CHECK(c == '[', "{0}: expected [, got {1}", *nestingIndex, c);
         (*nestingIndex)++;
         for (auto e : expression->to<IR::ListExpression>()->components)
             flatten(e, nestingIndex, vec);
         char c = nesting.get(*nestingIndex);
-        BUG_CHECK(c == ']', "%1%: expected ], got %2%", *nestingIndex, c);
+        BUG_CHECK(c == ']', "{0}: expected ], got {1}", *nestingIndex, c);
         (*nestingIndex)++;
     } else if (expression->is<IR::DefaultExpression>()) {
         unsigned depth = 0;
@@ -81,7 +81,7 @@ void UnnestSelectList::flatten(const IR::Expression *expression, unsigned *nesti
             c = nesting.get(*nestingIndex);
         } while (depth > 0);
     } else {
-        BUG_CHECK(c == '_', "%1%: expected _, got %2%", *nestingIndex, c);
+        BUG_CHECK(c == '_', "{0}: expected _, got {1}", *nestingIndex, c);
         vec->push_back(expression);
         (*nestingIndex)++;
     }

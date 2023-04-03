@@ -35,7 +35,7 @@ const IR::Expression *PnaDpdkRegisterValue::getCurrentValue(const IR::Expression
 
 const IR::Constant *PnaDpdkRegisterValue::getEvaluatedValue() const {
     const auto *constant = initialValue->to<IR::Constant>();
-    BUG_CHECK(constant, "Variable is not a constant, has the test object %1% been evaluated?",
+    BUG_CHECK(constant, "Variable is not a constant, has the test object {0} been evaluated?",
               getObjectName());
     return constant;
 }
@@ -56,14 +56,14 @@ PnaDpdkRegisterCondition::PnaDpdkRegisterCondition(const IR::Expression *index,
 
 const IR::Constant *PnaDpdkRegisterCondition::getEvaluatedValue() const {
     const auto *constant = value->to<IR::Constant>();
-    BUG_CHECK(constant, "Variable is not a constant, has the test object %1% been evaluated?",
+    BUG_CHECK(constant, "Variable is not a constant, has the test object {0} been evaluated?",
               getObjectName());
     return constant;
 }
 
 const IR::Constant *PnaDpdkRegisterCondition::getEvaluatedIndex() const {
     const auto *constant = index->to<IR::Constant>();
-    BUG_CHECK(constant, "Variable is not a constant, has the test object %1% been evaluated?",
+    BUG_CHECK(constant, "Variable is not a constant, has the test object {0} been evaluated?",
               getObjectName());
     return constant;
 }
@@ -142,7 +142,7 @@ Optional::Optional(const IR::KeyElement *key, const IR::Expression *val, bool ad
 const IR::Constant *Optional::getEvaluatedValue() const {
     const auto *constant = value->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               value->type->node_type_name(), getObjectName());
     return constant;
@@ -163,7 +163,7 @@ Range::Range(const IR::KeyElement *key, const IR::Expression *low, const IR::Exp
 const IR::Constant *Range::getEvaluatedLow() const {
     const auto *constant = low->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               low->type->node_type_name(), getObjectName());
     return constant;
@@ -172,7 +172,7 @@ const IR::Constant *Range::getEvaluatedLow() const {
 const IR::Constant *Range::getEvaluatedHigh() const {
     const auto *constant = high->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               high->type->node_type_name(), getObjectName());
     return constant;
@@ -193,7 +193,7 @@ MetadataCollection::MetadataCollection() = default;
 cstring MetadataCollection::getObjectName() const { return "MetadataCollection"; }
 
 const MetadataCollection *MetadataCollection::evaluate(const Model & /*model*/) const {
-    P4C_UNIMPLEMENTED("%1% has no implementation for \"evaluate\".", getObjectName());
+    P4C_UNIMPLEMENTED("{0} has no implementation for \"evaluate\".", getObjectName());
 }
 
 const std::map<cstring, const IR::Literal *> &MetadataCollection::getMetadataFields() const {

@@ -77,11 +77,11 @@ int IR::Member::msb() const {
 }
 
 void IR::Constant::handleOverflow(bool noWarning) {
-    if (type == nullptr) BUG("%1%: Null type in typed constant", this);
+    if (type == nullptr) BUG("{0}: Null type in typed constant", this);
     if (type->is<IR::Type_InfInt>()) return;
     auto tb = type->to<IR::Type_Bits>();
     if (tb == nullptr) {
-        BUG("%1%: Unexpected type for constant %2%", this, type);
+        BUG("{0}: Unexpected type for constant {1}", this, type);
         return;
     }
 
@@ -94,7 +94,7 @@ void IR::Constant::handleOverflow(bool noWarning) {
         big_int min = -(one << (width - 1));
         if (value < min || value > max) {
             if (!noWarning)
-                ::warning(ErrorType::WARN_OVERFLOW, "%1%: signed value does not fit in %2% bits",
+                ::warning(ErrorType::WARN_OVERFLOW, "{0}: signed value does not fit in {1} bits",
                           this, width);
             LOG2("value=" << value << ", min=" << min << ", max=" << max << ", masked="
                           << (value & mask) << ", adj=" << ((value & mask) - (one << width)));
@@ -104,15 +104,15 @@ void IR::Constant::handleOverflow(bool noWarning) {
     } else {
         if (value < 0) {
             if (!noWarning)
-                ::warning(ErrorType::WARN_MISMATCH, "%1%: negative value with unsigned type", this);
+                ::warning(ErrorType::WARN_MISMATCH, "{0}: negative value with unsigned type", this);
         } else if ((value & mask) != value) {
             if (!noWarning)
-                ::warning(ErrorType::WARN_MISMATCH, "%1%: value does not fit in %2% bits", this,
+                ::warning(ErrorType::WARN_MISMATCH, "{0}: value does not fit in {1} bits", this,
                           width);
         }
 
         value = value & mask;
-        if (value < 0) BUG("Negative value after masking %1%", value);
+        if (value < 0) BUG("Negative value after masking {0}", value);
     }
 }
 

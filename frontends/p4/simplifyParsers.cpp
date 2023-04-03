@@ -42,7 +42,7 @@ class RemoveUnreachableStates : public Transform {
     const IR::Node *preorder(IR::P4Parser *parser) override {
         auto start = parser->getDeclByName(IR::ParserState::start);
         if (start == nullptr) {
-            ::error(ErrorType::ERR_NOT_FOUND, "%1%: parser does not have a `start' state", parser);
+            ::error(ErrorType::ERR_NOT_FOUND, "{0}: parser does not have a `start' state", parser);
         } else {
             transitions->reachable(start->to<IR::ParserState>(), reachable);
             // Remove unreachable states from call-graph
@@ -60,7 +60,7 @@ class RemoveUnreachableStates : public Transform {
             }
             if (!rejectReachable && !acceptReachable)
                 ::error(ErrorType::ERR_UNREACHABLE,
-                        "%1%: Parser never reaches accept or reject state", parser);
+                        "{0}: Parser never reaches accept or reject state", parser);
             LOG1("Parser " << dbp(parser) << " has " << transitions->size() << " reachable states");
         }
         return parser;
@@ -73,7 +73,7 @@ class RemoveUnreachableStates : public Transform {
         auto orig = getOriginal<IR::ParserState>();
         if (reachable.find(orig) == reachable.end()) {
             if (state->name == IR::ParserState::accept) {
-                warn(ErrorType::WARN_UNREACHABLE, "%1% state in %2% is unreachable", state,
+                warn(ErrorType::WARN_UNREACHABLE, "{0} state in {1} is unreachable", state,
                      findContext<IR::P4Parser>());
                 return state;
             } else {

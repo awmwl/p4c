@@ -87,21 +87,21 @@ class SimpleSwitchExpressionConverter : public ExpressionConverter {
         auto st = dynamic_cast<V1ProgramStructure *>(structure);
         auto params = st->parser->getApplyParameters();
         if (params->size() != 4) {
-            modelError("%1%: Expected 4 parameter for parser", st->parser);
+            modelError("{0}: Expected 4 parameter for parser", st->parser);
             return false;
         }
         if (params->parameters.at(3) == param) return true;
 
         params = st->ingress->getApplyParameters();
         if (params->size() != 3) {
-            modelError("%1%: Expected 3 parameter for ingress", st->ingress);
+            modelError("{0}: Expected 3 parameter for ingress", st->ingress);
             return false;
         }
         if (params->parameters.at(2) == param) return true;
 
         params = st->egress->getApplyParameters();
         if (params->size() != 3) {
-            modelError("%1%: Expected 3 parameter for egress", st->egress);
+            modelError("{0}: Expected 3 parameter for egress", st->egress);
             return false;
         }
         if (params->parameters.at(2) == param) return true;

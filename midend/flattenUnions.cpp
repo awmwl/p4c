@@ -264,11 +264,11 @@ const IR::Node *DoFlattenHeaderUnionStack::postorder(IR::ArrayIndex *e) {
             if (!e->right->is<IR::Constant>())
                 ::error(ErrorType::ERR_INVALID,
                         "Target expects constant array indices for accessing header union stack "
-                        "elements, %1% is not a constant",
+                        "elements, {0} is not a constant",
                         e->right);
             unsigned cst = e->right->to<IR::Constant>()->asUnsigned();
             if (cst >= stackSize)
-                ::error(ErrorType::ERR_OVERLIMIT, "Array index out of bound for %1%", e);
+                ::error(ErrorType::ERR_OVERLIMIT, "Array index out of bound for {0}", e);
             if (auto mem = e->left->to<IR::Member>()) {
                 auto uName = stackMap[mem->member.name];
                 BUG_CHECK(uName.size() > cst, "Header stack element mapping not found for %1", e);
@@ -281,7 +281,7 @@ const IR::Node *DoFlattenHeaderUnionStack::postorder(IR::ArrayIndex *e) {
                     new IR::PathExpression(stack->elementType, new IR::Path(IR::ID(uName[cst])));
                 return path1;
             } else {
-                BUG("Unsupported node type for header union stack element %1%",
+                BUG("Unsupported node type for header union stack element {0}",
                     e->left->to<IR::Node>()->node_type_name());
             }
         } else {

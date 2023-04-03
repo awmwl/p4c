@@ -34,13 +34,13 @@ static IR::Constant *parseConstantWithWidth(Util::SourceInfo srcInfo, const char
     char *sep;
     auto size = strtol(text, &sep, 10);
     sep += strspn(sep, " \t\r\n");
-    if (sep == nullptr || !*sep) BUG("Expected to find separator %1%", text);
+    if (sep == nullptr || !*sep) BUG("Expected to find separator {0}", text);
     if (size < 0) {
-        ::error(ErrorType::ERR_INVALID, "%1%: invalid width; %2% must be positive", srcInfo, size);
+        ::error(ErrorType::ERR_INVALID, "{0}: invalid width; {1} must be positive", srcInfo, size);
         return nullptr;
     }
     if (size > P4CContext::getConfig().maximumWidthSupported()) {
-        ::error(ErrorType::ERR_OVERLIMIT, "%1%: %2% size too large", srcInfo, size);
+        ::error(ErrorType::ERR_OVERLIMIT, "{0}: {1} size too large", srcInfo, size);
         return nullptr;
     }
 

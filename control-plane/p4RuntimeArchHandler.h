@@ -372,7 +372,7 @@ struct Counterlike {
         auto unit = instance->getParameterValue("type");
         if (!unit->is<IR::Declaration_ID>()) {
             ::error(ErrorType::ERR_INVALID,
-                    "%1% '%2%' has a unit type which is not an enum constant: %3%",
+                    "{0} '{1}' has a unit type which is not an enum constant: {2}",
                     CounterlikeTraits<Kind>::name(), declaration, unit);
             return std::nullopt;
         }
@@ -385,7 +385,7 @@ struct Counterlike {
             auto sem = size->template to<IR::SerEnumMember>();
             val = sem->value->template to<IR::Constant>()->value;
         } else {
-            ::error(ErrorType::ERR_INVALID, "%1% '%2%' has a non-constant size: %3%",
+            ::error(ErrorType::ERR_INVALID, "{0} '{1}' has a non-constant size: {2}",
                     CounterlikeTraits<Kind>::name(), declaration, size);
             return std::nullopt;
         }
@@ -396,10 +396,10 @@ struct Counterlike {
         if (indexTypeParamIdx != std::nullopt) {
             // retrieve type parameter for the index.
             BUG_CHECK(declaration->type->is<IR::Type_Specialized>(),
-                      "%1%: expected Type_Specialized", declaration->type);
+                      "{0}: expected Type_Specialized", declaration->type);
             auto type = declaration->type->to<IR::Type_Specialized>();
             BUG_CHECK(type->arguments->size() > *indexTypeParamIdx,
-                      "%1%: expected at least %2% type arguments", instance,
+                      "{0}: expected at least {1} type arguments", instance,
                       *indexTypeParamIdx + 1);
             auto typeArg = type->arguments->at(*indexTypeParamIdx);
             // We ignore the return type on purpose, but the call is required to update p4RtTypeInfo
@@ -425,7 +425,7 @@ struct Counterlike {
         BUG_CHECK(instance.name != std::nullopt, "Caller should've ensured we have a name");
 
         if (instance.type->name != CounterlikeTraits<Kind>::directTypeName()) {
-            ::error(ErrorType::ERR_EXPECTED, "Expected a direct %1%: %2%",
+            ::error(ErrorType::ERR_EXPECTED, "Expected a direct {0}: {1}",
                     CounterlikeTraits<Kind>::name(), instance.expression);
             return std::nullopt;
         }
@@ -433,13 +433,13 @@ struct Counterlike {
         auto unitArgument = instance.substitution.lookupByName("type")->expression;
         if (unitArgument == nullptr) {
             ::error(ErrorType::ERR_EXPECTED,
-                    "Direct %1% instance %2% should take a constructor argument",
+                    "Direct {0} instance {1} should take a constructor argument",
                     CounterlikeTraits<Kind>::name(), instance.expression);
             return std::nullopt;
         }
         if (!unitArgument->is<IR::Member>()) {
             ::error(ErrorType::ERR_UNEXPECTED,
-                    "Direct %1% instance %2% has an unexpected constructor argument",
+                    "Direct {0} instance {1} has an unexpected constructor argument",
                     CounterlikeTraits<Kind>::name(), instance.expression);
             return std::nullopt;
         }

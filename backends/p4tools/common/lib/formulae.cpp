@@ -40,7 +40,7 @@ int StateVariable::compare(const IR::Expression *e1, const IR::Expression *e2) {
     if (const auto *p1 = e1->to<IR::PathExpression>()) {
         return compare(p1, e2);
     }
-    BUG("Not a valid StateVariable: %1%", e1);
+    BUG("Not a valid StateVariable: {0}", e1);
 }
 
 int StateVariable::compare(const IR::Member *m1, const IR::Expression *e2) {
@@ -50,7 +50,7 @@ int StateVariable::compare(const IR::Member *m1, const IR::Expression *e2) {
     if (e2->is<IR::PathExpression>()) {
         return 1;
     }
-    BUG("Not a valid StateVariable: %1%", e2);
+    BUG("Not a valid StateVariable: {0}", e2);
 }
 
 int StateVariable::compare(const IR::Member *m1, const IR::Member *m2) {
@@ -74,7 +74,7 @@ int StateVariable::compare(const IR::PathExpression *p1, const IR::Expression *e
     if (e2->is<IR::Member>()) {
         return -1;
     }
-    BUG("Not a valid StateVariable: %1%", e2);
+    BUG("Not a valid StateVariable: {0}", e2);
 }
 
 int StateVariable::compare(const IR::PathExpression *p1, const IR::PathExpression *p2) {

@@ -73,7 +73,7 @@ class PsaSwitchExpressionConverter : public ExpressionConverter {
                 cstring repr = BMV2::stringRepr(2, ROUNDUP(bitwidth, 32));
                 jsn->emplace("value", repr);
             } else {
-                modelError("%1%: Exptected a PSA_CounterType_t", fieldName);
+                modelError("{0}: Exptected a PSA_CounterType_t", fieldName);
                 return nullptr;
             }
             return jsn;

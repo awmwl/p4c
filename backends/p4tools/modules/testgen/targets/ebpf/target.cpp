@@ -51,7 +51,7 @@ const EBPFProgramInfo *EBPFTestgenTarget::initProgram_impl(
     argumentsToTypeDeclarations(ns, mainDecl->arguments, blocks);
 
     // We should have six arguments.
-    BUG_CHECK(blocks.size() == 2, "%1%: The EBPF architecture requires 2 blocks. Received %2%.",
+    BUG_CHECK(blocks.size() == 2, "{0}: The EBPF architecture requires 2 blocks. Received {1}.",
               mainDecl, blocks.size());
 
     ordered_map<cstring, const IR::Type_Declaration *> programmableBlocks;
@@ -65,7 +65,7 @@ const EBPFProgramInfo *EBPFTestgenTarget::initProgram_impl(
     // packets. There might be a bug in the framework
     auto &testgenOptions = TestgenOptions::get();
     if (testgenOptions.maxPktSize > 12000) {
-        ::warning("Max packet size %1% larger than 12000 bits. Bounding size to 12000 bits.",
+        ::warning("Max packet size {0} larger than 12000 bits. Bounding size to 12000 bits.",
                   testgenOptions.maxPktSize);
         testgenOptions.maxPktSize = 12000;
     }

@@ -43,7 +43,7 @@ std::optional<p4rt_id_t> getIdAnnotation(const IR::IAnnotated *node) {
     const auto *idConstant = idAnnotation->expr[0]->to<IR::Constant>();
     CHECK_NULL(idConstant);
     if (!idConstant->fitsUint()) {
-        ::error(ErrorType::ERR_INVALID, "%1%: @id should be an unsigned integer", node);
+        ::error(ErrorType::ERR_INVALID, "{0}: @id should be an unsigned integer", node);
         return std::nullopt;
     }
     return static_cast<p4rt_id_t>(idConstant->value);
@@ -71,7 +71,7 @@ static std::optional<p4rt_id_t> externalId(const P4RuntimeSymbolType &type,
     const auto typePrefix = static_cast<p4rt_id_t>(type) << 24;
     const auto prefixMask = static_cast<p4rt_id_t>(0xff) << 24;
     if ((id & prefixMask) != 0 && (id & prefixMask) != typePrefix) {
-        ::error(ErrorType::ERR_INVALID, "%1%: @id has the wrong 8-bit prefix", declaration);
+        ::error(ErrorType::ERR_INVALID, "{0}: @id has the wrong 8-bit prefix", declaration);
         return std::nullopt;
     }
     id |= typePrefix;
@@ -200,7 +200,7 @@ P4::ControlPlaneAPI::p4rt_id_t P4::ControlPlaneAPI::P4RuntimeSymbolTable::getId(
     }
     const auto symbolId = symbolTable->second.find(name);
     if (symbolId == symbolTable->second.end()) {
-        BUG("Looking up symbol '%1%' without adding it to the table", name);
+        BUG("Looking up symbol '{0}' without adding it to the table", name);
     }
     return symbolId->second;
 }
@@ -218,7 +218,7 @@ P4::ControlPlaneAPI::p4rt_id_t P4::ControlPlaneAPI::P4RuntimeSymbolTable::tryToA
     }
 
     if (assignedIds.find(*id) != assignedIds.end()) {
-        ::error(ErrorType::ERR_INVALID, "@id %1% is assigned to multiple declarations", *id);
+        ::error(ErrorType::ERR_INVALID, "@id {0} is assigned to multiple declarations", *id);
         return INVALID_ID;
     }
 
@@ -259,7 +259,7 @@ void P4::ControlPlaneAPI::P4RuntimeSymbolTable::computeIdsForSymbols(P4RuntimeSy
             nameId, [=](uint32_t nameId) { return (resourceType << 24) | (nameId & 0xffffff); });
 
         if (!id) {
-            ::error(ErrorType::ERR_OVERLIMIT, "No available id to represent %1% in P4Runtime",
+            ::error(ErrorType::ERR_OVERLIMIT, "No available id to represent {0} in P4Runtime",
                     name);
             return;
         }
@@ -299,7 +299,7 @@ cstring P4::ControlPlaneAPI::P4SymbolSuffixSet::shortestUniqueSuffix(const cstri
     auto *node = suffixesRoot;
     for (auto &component : boost::adaptors::reverse(components)) {
         if (node->edges.find(component) == node->edges.end()) {
-            BUG("Symbol is not in suffix set: %1%", symbol);
+            BUG("Symbol is not in suffix set: {0}", symbol);
         }
 
         node = node->edges[component];

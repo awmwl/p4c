@@ -29,7 +29,7 @@ void CheckDeprecated::warnIfDeprecated(const IR::IAnnotated *annotated, const IR
     for (auto a : anno->expr) {
         if (auto str = a->to<IR::StringLiteral>()) message += str->value;
     }
-    ::warning(ErrorType::WARN_DEPRECATED, "%1%: Using deprecated feature %2%. %3%", errorNode,
+    ::warning(ErrorType::WARN_DEPRECATED, "{0}: Using deprecated feature {1}. {2}", errorNode,
               annotated->getNode(), message);
 }
 

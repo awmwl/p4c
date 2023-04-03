@@ -60,8 +60,8 @@ const IR::Expression *Bmv2Concolic::setAndComputePayload(
     }
     payloadExpr = Utils::getRandConstantForType(payloadType);
     BUG_CHECK(payloadExpr->type->width_bits() == payloadSize,
-              "The width (%1%) of the payload expression should match the calculated payload "
-              "size %2%.",
+              "The width ({0}) of the payload expression should match the calculated payload "
+              "size {1}.",
               payloadExpr->type->width_bits(), payloadSize);
     // Set the payload variable.
     resolvedConcolicVariables->emplace(payLoadVar, payloadExpr);
@@ -100,7 +100,7 @@ big_int Bmv2Concolic::computeChecksum(const std::vector<const IR::Expression *> 
         case Bmv2HashAlgorithm::crc32_custom:
         case Bmv2HashAlgorithm::crc16_custom:
         default:
-            TESTGEN_UNIMPLEMENTED("Algorithm %1% not implemented for hash.", algo);
+            TESTGEN_UNIMPLEMENTED("Algorithm {0} not implemented for hash.", algo);
     }
 
     std::vector<char> bytes;
@@ -154,7 +154,7 @@ const ConcolicMethodImpls::ImplList Bmv2Concolic::BMV2_CONCOLIC_METHOD_IMPLS{
          const auto *args = var->arguments;
          const auto *checksumVar = args->at(0)->expression;
          if (!(checksumVar->is<IR::Member>() || checksumVar->is<IR::PathExpression>())) {
-             TESTGEN_UNIMPLEMENTED("Checksum input %1% of type %2% not supported", checksumVar,
+             TESTGEN_UNIMPLEMENTED("Checksum input {0} of type {1} not supported", checksumVar,
                                    checksumVar->node_type_name());
          }
          // Assign arguments to concrete variables and perform type checking.
@@ -194,7 +194,7 @@ const ConcolicMethodImpls::ImplList Bmv2Concolic::BMV2_CONCOLIC_METHOD_IMPLS{
                  IR::getConstant(checksumVarType, computedResult);
 
          } else {
-             TESTGEN_UNIMPLEMENTED("Checksum output %1% of type %2% not supported", checksumVar,
+             TESTGEN_UNIMPLEMENTED("Checksum output {0} of type {1} not supported", checksumVar,
                                    checksumVar->type);
          }
          // Generated equations for all the variables that were assigned a value in this iteration
@@ -248,7 +248,7 @@ const ConcolicMethodImpls::ImplList Bmv2Concolic::BMV2_CONCOLIC_METHOD_IMPLS{
              (*resolvedConcolicVariables)[concolicMember] =
                  IR::getConstant(checksumVarType, computedResult);
          } else {
-             TESTGEN_UNIMPLEMENTED("Checksum output %1% of type %2% not supported", checksumVar,
+             TESTGEN_UNIMPLEMENTED("Checksum output {0} of type {1} not supported", checksumVar,
                                    checksumVarType);
          }
          // Generated equations for all the variables that were assigned a value in this iteration
@@ -313,7 +313,7 @@ const ConcolicMethodImpls::ImplList Bmv2Concolic::BMV2_CONCOLIC_METHOD_IMPLS{
              (*resolvedConcolicVariables)[concolicMember] =
                  IR::getConstant(checksumVarType, computedResult);
          } else {
-             TESTGEN_UNIMPLEMENTED("Checksum output %1% of type %2% not supported", checksumVar,
+             TESTGEN_UNIMPLEMENTED("Checksum output {0} of type {1} not supported", checksumVar,
                                    checksumVarType);
          }
          // Generated equations for all the variables that were assigned a value in this iteration

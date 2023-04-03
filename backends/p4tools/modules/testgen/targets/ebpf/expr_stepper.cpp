@@ -91,7 +91,7 @@ void EBPFExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
             const ExecutionState &state, SmallStepEvaluator::Result &result) {
              const auto *ipHdrRef = args->at(0)->expression;
              if (!(ipHdrRef->is<IR::Member>() || ipHdrRef->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("IP header input %1% of type %2% not supported", ipHdrRef,
+                 TESTGEN_UNIMPLEMENTED("IP header input {0} of type {1} not supported", ipHdrRef,
                                        ipHdrRef->type);
              }
              // Input must be an IPv4 header.
@@ -168,7 +168,7 @@ void EBPFExprStepper::evalExternMethodCall(const IR::MethodCallExpression *call,
             const ExecutionState &state, SmallStepEvaluator::Result &result) {
              const auto *headers = args->at(0)->expression;
              if (!(headers->is<IR::Member>() || headers->is<IR::PathExpression>())) {
-                 TESTGEN_UNIMPLEMENTED("IP header input %1% of type %2% not supported", headers,
+                 TESTGEN_UNIMPLEMENTED("IP header input {0} of type {1} not supported", headers,
                                        headers->type);
              }
              // Input must be the headers struct.

@@ -76,7 +76,7 @@ class ParserState : ISimpleNamespace, Declaration, IAnnotated {
         if (selectExpression != nullptr)
             BUG_CHECK(selectExpression->is<IR::PathExpression>() ||
                       selectExpression->is<IR::SelectExpression>(),
-                      "%1%: unexpected select expression", selectExpression);
+                      "{0}: unexpected select expression", selectExpression);
     }
 }
 
@@ -106,12 +106,12 @@ class P4Parser : Type_Declaration, INestedNamespace, ISimpleNamespace, IApply, I
 #apply
     validate {
         if (!(name == type->name))
-            BUG("Name mismatch for %1%: %2% != %3%", this, name, type->name);
+            BUG("Name mismatch for {0}: {1} != {2}", this, name, type->name);
         parserLocals.check_null();
         states.check_null();
         checkDuplicates();
         for (auto d : parserLocals)
-            BUG_CHECK(!d->is<ParserState>(), "%1%: state in locals", d);
+            BUG_CHECK(!d->is<ParserState>(), "{0}: state in locals", d);
     }
     toString { return cstring("parser ") + externalName(); }
 }
@@ -138,7 +138,7 @@ class P4Control : Type_Declaration, INestedNamespace, ISimpleNamespace, IApply, 
 #apply
     validate {
         if (!(name == type->name))
-            BUG("Name mismatch for %1%: %2% != %3%", this, name, type->name);
+            BUG("Name mismatch for {0}: {1} != {2}", this, name, type->name);
         controlLocals.check_null();
     }
     toString { return cstring("control ") + externalName(); }
@@ -202,7 +202,7 @@ class ActionListElement : IAnnotated, IDeclaration {
     validate {
         BUG_CHECK(expression->is<IR::PathExpression>() ||
                   expression->is<IR::MethodCallExpression>(),
-                  "%1%: unexpected expression", expression);
+                  "{0}: unexpected expression", expression);
     }
     toString{ return getName().toString(); }
 }
@@ -312,7 +312,7 @@ class P4Table : Declaration, IAnnotated, IApply {
         if (ap == nullptr)
             return nullptr;
         if (!ap->value->is<IR::ActionList>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must be an action list", ap);
+            ::error(ErrorType::ERR_INVALID, "{0}: must be an action list", ap);
             return nullptr; }
         return ap->value->to<IR::ActionList>(); }
     Key getKey() const {
@@ -320,7 +320,7 @@ class P4Table : Declaration, IAnnotated, IApply {
         if (kp == nullptr)
             return nullptr;
         if (!kp->value->is<IR::Key>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must be a key", kp);
+            ::error(ErrorType::ERR_INVALID, "{0}: must be a key", kp);
             return nullptr; }
         return kp->value->to<IR::Key>(); }
     Expression getDefaultAction() const {
@@ -328,7 +328,7 @@ class P4Table : Declaration, IAnnotated, IApply {
         if (d == nullptr)
             return nullptr;
         if (!d->value->is<IR::ExpressionValue>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must be an expression", d);
+            ::error(ErrorType::ERR_INVALID, "{0}: must be an expression", d);
             return nullptr; }
         return d->value->to<IR::ExpressionValue>()->expression; }
     Constant getConstantProperty(cstring name) const {
@@ -336,7 +336,7 @@ class P4Table : Declaration, IAnnotated, IApply {
             if (auto ev = d->value->to<IR::ExpressionValue>()) {
                 if (auto k = ev->expression->to<IR::Constant>()) {
                     return k; } }
-            error(ErrorType::ERR_INVALID, "%1% must be a constant numeric expression", d); }
+            error(ErrorType::ERR_INVALID, "{0} must be a constant numeric expression", d); }
         return nullptr; }
     Constant getSizeProperty() const {
         return getConstantProperty(TableProperties::sizePropertyName);
@@ -346,7 +346,7 @@ class P4Table : Declaration, IAnnotated, IApply {
         if (ep == nullptr)
             return nullptr;
         if (!ep->value->is<IR::EntriesList>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must be a list of entries", ep);
+            ::error(ErrorType::ERR_INVALID, "{0}: must be a list of entries", ep);
             return nullptr;
         }
         return ep->value->to<IR::EntriesList>();
@@ -399,7 +399,7 @@ class Declaration_Instance : Declaration, IAnnotated, IInstance {
     validate{ BUG_CHECK(type->is<Type_Name>() ||
                         type->is<Type_Specialized>() ||
                         type->is<Type_Extern>(),        // P4_14 only?
-                        "%1%: unexpected type", type);
+                        "{0}: unexpected type", type);
         arguments->check_null(); }
 }
 
@@ -478,7 +478,7 @@ class SwitchCase {
 #nodbprint
     validate{
         BUG_CHECK(statement == nullptr || statement->is<IR::BlockStatement>(),
-                  "%1%: Expected a block statement",
+                  "{0}: Expected a block statement",
                   statement);
     }
 }
@@ -536,7 +536,7 @@ abstract Block : CompileTimeValue {
     CompileTimeValue getValue(Node node) const {
         CHECK_NULL(node);
         auto it = constantValue.find(node);
-        BUG_CHECK(it != constantValue.end(), "%1%: No such node %2%", this, node);
+        BUG_CHECK(it != constantValue.end(), "{0}: No such node {1}", this, node);
         return it->second; }
     visit_children { (void)v; }
     virtual const IDeclaration* getContainer() const { return nullptr; }
@@ -610,7 +610,7 @@ class ToplevelBlock : Block, IDeclaration {
     PackageBlock getMain() const;
     ID getName() const override { return "main"; }
 #nodbprint
-    validate { BUG_CHECK(node->is<IR::P4Program>(), "%1%: expected a P4Program", node); }
+    validate { BUG_CHECK(node->is<IR::P4Program>(), "{0}: expected a P4Program", node); }
 }
 
 /** @} *//* end group irdefs */

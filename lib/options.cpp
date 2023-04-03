@@ -63,7 +63,7 @@ std::vector<const char *> *Util::Options::process(int argc, char *const argv[]) 
             option = get(options, opt);
             if (!option && (arg = opt.find('='))) option = get(options, opt.before(arg++));
             if (option == nullptr) {
-                ::error(ErrorType::ERR_UNKNOWN, "Unknown option %1%", opt);
+                ::error(ErrorType::ERR_UNKNOWN, "Unknown option {0}", opt);
                 usage();
                 return nullptr;
             }
@@ -78,7 +78,7 @@ std::vector<const char *> *Util::Options::process(int argc, char *const argv[]) 
                 option = get(options, opt);
             }
             if (option == nullptr) {
-                ::error(ErrorType::ERR_UNKNOWN, "Unknown option %1%", opt);
+                ::error(ErrorType::ERR_UNKNOWN, "Unknown option {0}", opt);
                 usage();
                 return nullptr;
             }
@@ -92,7 +92,7 @@ std::vector<const char *> *Util::Options::process(int argc, char *const argv[]) 
             if (option->argName != nullptr && arg == nullptr &&
                 !(option->flags & OptionFlags::OptionalArgument)) {
                 if (i == argc - 1) {
-                    ::error(ErrorType::ERR_EXPECTED, "Option %1% is missing required argument %2%",
+                    ::error(ErrorType::ERR_EXPECTED, "Option {0} is missing required argument {1}",
                             opt, option->argName);
                     usage();
                     return nullptr;

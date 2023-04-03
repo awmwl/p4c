@@ -38,7 +38,7 @@ EBPFProgramInfo::EBPFProgramInfo(const IR::P4Program *program,
     // Iterate through the (ordered) pipes of the target architecture.
     const auto *archSpec = TestgenTarget::getArchSpec();
     BUG_CHECK(archSpec->getArchVectorSize() == programmableBlocks.size(),
-              "The eBPF architecture requires %1% pipes (provided %2% pipes).",
+              "The eBPF architecture requires {0} pipes (provided {1} pipes).",
               archSpec->getArchVectorSize(), programmableBlocks.size());
 
     /// Compute the series of nodes corresponding to the in-order execution of top-level

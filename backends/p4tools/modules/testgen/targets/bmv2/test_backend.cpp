@@ -60,7 +60,7 @@ Bmv2TestBackend::Bmv2TestBackend(const ProgramInfo &programInfo, SymbolicExecuto
         testWriter = new Metadata(testPath, seed);
     } else {
         P4C_UNIMPLEMENTED(
-            "Test back end %1% not implemented for this target. Supported back ends are %2%.",
+            "Test back end {0} not implemented for this target. Supported back ends are {1}.",
             testBackendString, Utils::containerToString(SUPPORTED_BACKENDS));
     }
 }

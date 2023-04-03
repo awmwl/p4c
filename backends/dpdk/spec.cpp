@@ -60,7 +60,7 @@ std::ostream &IR::DpdkAsmProgram::toSpec(std::ostream &out) const {
 }
 
 std::ostream &IR::DpdkAsmStatement::toSpec(std::ostream &out) const {
-    BUG("asm statement %1% not implemented", this);
+    BUG("asm statement {0} not implemented", this);
     return out;
 }
 
@@ -74,7 +74,7 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         auto args = arguments;
         if (args->size() == 0) {
             ::error(ErrorType::ERR_INVALID,
-                    "Hash extern declaration %1% must contain hash algorithm \n", Name());
+                    "Hash extern declaration {0} must contain hash algorithm \n", Name());
         } else {
             auto hashAlg = args->at(0)->expression;
             unsigned hashAlgValue = CRC1;
@@ -90,7 +90,7 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         auto args = arguments;
         if (args->size() == 0) {
             ::error(ErrorType::ERR_INVALID,
-                    "Register extern declaration %1% must contain a size parameter\n", Name());
+                    "Register extern declaration {0} must contain a size parameter\n", Name());
         } else {
             auto size = args->at(0)->expression;
             auto init_val = args->size() == 2 ? args->at(1)->expression : nullptr;
@@ -102,7 +102,7 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         unsigned value = 0;
         if (args->size() < 2) {
             ::error(ErrorType::ERR_INVALID,
-                    "Counter extern declaration %1% must contain 2 parameters\n", Name());
+                    "Counter extern declaration {0} must contain 2 parameters\n", Name());
         } else {
             auto n_counters = args->at(0)->expression;
             auto counter_type = args->at(1)->expression;
@@ -128,13 +128,13 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         unsigned value = 0;
         if (args->size() != 1) {
             ::error(ErrorType::ERR_INVALID,
-                    "Counter extern declaration %1% must contain 1 parameters\n", Name());
+                    "Counter extern declaration {0} must contain 1 parameters\n", Name());
         } else {
             IR::Expression *n_counters = nullptr;
             if (directMeterCounterSizeMap.count(Name())) {
                 n_counters = new IR::Constant(directMeterCounterSizeMap.at(Name()));
             } else {
-                BUG("%1%: Direct Counter size is not populated", Name());
+                BUG("{0}: Direct Counter size is not populated", Name());
             }
 
             auto counter_type = args->at(0)->expression;
@@ -159,7 +159,7 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         auto args = arguments;
         if (args->size() < 2) {
             ::error(ErrorType::ERR_INVALID,
-                    "Meter extern declaration %1% must contain a size parameter"
+                    "Meter extern declaration {0} must contain a size parameter"
                     " and meter type parameter",
                     Name());
         } else {
@@ -171,7 +171,7 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
         auto args = arguments;
         if (args->size() < 1) {
             ::error(ErrorType::ERR_INVALID,
-                    "Meter extern declaration %1% must have "
+                    "Meter extern declaration {0} must have "
                     "meter type parameter",
                     Name());
         } else {
@@ -179,7 +179,7 @@ std::ostream &IR::DpdkExternDeclaration::toSpec(std::ostream &out) const {
             if (directMeterCounterSizeMap.count(Name())) {
                 n_meters = new IR::Constant(directMeterCounterSizeMap.at(Name()));
             } else {
-                BUG("%1%, Direct Meter size is not populated", Name());
+                BUG("{0}, Direct Meter size is not populated", Name());
             }
             auto metDecl = new IR::DpdkMeterDeclStatement(Name(), n_meters);
             metDecl->toSpec(out) << std::endl;
@@ -201,7 +201,7 @@ std::ostream &IR::DpdkHeaderType::toSpec(std::ostream &out) const {
         else if (auto t = (*it)->type->to<IR::Type_Varbits>())
             out << "\tvarbit<" << t->size << ">";
         else {
-            BUG("Unsupported type: %1% ", *it);
+            BUG("Unsupported type: {0} ", *it);
         }
         out << " " << (*it)->externalName();
         out << std::endl;
@@ -218,17 +218,17 @@ std::ostream &IR::DpdkStructType::toSpec(std::ostream &out) const {
                 out << "header " << (*it)->name << " instanceof " << t->path->name;
             } else if (auto t = (*it)->type->to<IR::Type_Stack>()) {
                 if (!t->elementType->is<IR::Type_Name>())
-                    BUG("%1% Unsupported type", t->elementType);
+                    BUG("{0} Unsupported type", t->elementType);
                 cstring type_name = t->elementType->to<IR::Type_Name>()->path->name;
                 if (!t->size->is<IR::Constant>()) {
-                    BUG("Header stack index in %1% must be compile-time constant", t);
+                    BUG("Header stack index in {0} must be compile-time constant", t);
                 }
                 for (auto i = 0; i < t->size->to<IR::Constant>()->value; i++) {
                     out << "header " << (*it)->name << "_" << i << " instanceof " << type_name
                         << std::endl;
                 }
             } else {
-                BUG("Unsupported type %1%", *it);
+                BUG("Unsupported type {0}", *it);
             }
             out << std::endl;
         }
@@ -331,8 +331,8 @@ std::ostream &IR::DpdkJmpCondStatement::toSpec(std::ostream &out) const {
 
 std::ostream &IR::DpdkBinaryStatement::toSpec(std::ostream &out) const {
     BUG_CHECK(dst->equiv(*src1),
-              "The first source field %1% in a binary operation"
-              "must be the same as the destination field %2% to be supported by DPDK",
+              "The first source field {0} in a binary operation"
+              "must be the same as the destination field {1} to be supported by DPDK",
               src1, dst);
     out << instruction << " " << DPDK::toStr(dst) << " " << DPDK::toStr(src2);
     return out;
@@ -585,7 +585,7 @@ std::ostream &IR::DpdkGetHashStatement::toSpec(std::ostream &out) const {
             out << " " << DPDK::toStr(l->components.at(l->components.size() - 1));
         }
     } else {
-        ::error(ErrorType::ERR_INVALID, "%1%: get_hash's arg is not a ListExpression.", this);
+        ::error(ErrorType::ERR_INVALID, "{0}: get_hash's arg is not a ListExpression.", this);
     }
     return out;
 }

@@ -74,7 +74,7 @@ class Type_Type : Type {
     toString { return "Type(" + type->toString() + ")"; }
     dbprint { out << "Type(" << type << ")"; }
     const Type* getP4Type() const override { return type; }
-    validate { BUG_CHECK(!type->is<IR::Type_Type>(), "%1%: nested Type_Type", type); }
+    validate { BUG_CHECK(!type->is<IR::Type_Type>(), "{0}: nested Type_Type", type); }
 }
 
 class Type_Boolean : Type_Base {
@@ -142,7 +142,7 @@ class ParameterList : ISimpleNamespace {
     IR::Parameter getParameter(unsigned index) const {
         for (auto &param : parameters)
             if (0 == index--) return param;
-        BUG("Only %1% parameters; index #%2% requested", size(), size()+index); }
+        BUG("Only {0} parameters; index #{1} requested", size(), size()+index); }
     IR::IDeclaration getDeclByName(cstring name) const override { return getParameter(name); }
     void push_back(const Parameter *p) { parameters.push_back(p); }
     toString {
@@ -510,8 +510,8 @@ class Type_SpecializedCanonical : Type {
 #nodbprint
     validate{
         arguments->check_null();
-        BUG_CHECK(baseType->is<IMayBeGenericType>(), "base type %1% is not generic", baseType);
-        BUG_CHECK(substituted->is<IMayBeGenericType>(), "substituted %1% is not generic", substituted);
+        BUG_CHECK(baseType->is<IMayBeGenericType>(), "base type {0} is not generic", baseType);
+        BUG_CHECK(substituted->is<IMayBeGenericType>(), "substituted {0} is not generic", substituted);
     }
     const Type* getP4Type() const override;
     toString{ return baseType->toString() + "<...>"; }

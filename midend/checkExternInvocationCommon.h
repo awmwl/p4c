@@ -137,7 +137,7 @@ class CheckExternInvocationCommon : public Inspector {
      */
     void checkPipeConstraints(cstring extType, bitvec bv, const IR::MethodCallExpression *expr,
                               cstring extName, cstring pipe) {
-        BUG_CHECK(pipeConstraints.count(extType), "pipe constraints not defined for %1%", extType);
+        BUG_CHECK(pipeConstraints.count(extType), "pipe constraints not defined for {0}", extType);
         auto constraint = pipeConstraints.at(extType) & bv;
         if (!bv.empty() && constraint.empty()) {
             if (extName != "")

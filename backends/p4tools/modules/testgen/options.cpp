@@ -50,7 +50,7 @@ TestgenOptions::TestgenOptions()
                     throw std::invalid_argument("Invalid input.");
                 }
             } catch (std::invalid_argument &) {
-                ::error("Invalid input value %1% for --max-tests. Expected positive integer.", arg);
+                ::error("Invalid input value {0} for --max-tests. Expected positive integer.", arg);
                 return false;
             }
             return true;
@@ -64,8 +64,8 @@ TestgenOptions::TestgenOptions()
             stopMetric = cstring(arg).toUpper();
             if (SUPPORTED_STOP_METRICS.count(stopMetric) == 0) {
                 ::error(
-                    "Stop metric %1% not supported. Supported stop metrics are "
-                    "%2%.",
+                    "Stop metric {0} not supported. Supported stop metrics are "
+                    "{1}.",
                     stopMetric, Utils::containerToString(SUPPORTED_STOP_METRICS));
                 return false;
             }
@@ -84,20 +84,20 @@ TestgenOptions::TestgenOptions()
                 minPktSize = std::stoi(minPacketLenStr);
                 if (minPktSize < 0) {
                     ::error(
-                        "Invalid minimum packet size %1%. Minimum packet size must be at least 0.",
+                        "Invalid minimum packet size {0}. Minimum packet size must be at least 0.",
                         minPktSize);
                 }
                 auto maxPacketLenStr = rangeStr.substr(packetLenStr + 1);
                 maxPktSize = std::stoi(maxPacketLenStr);
                 if (maxPktSize < minPktSize) {
                     ::error(
-                        "Invalid packet size range %1%:%2%.  The maximum packet size must be at "
+                        "Invalid packet size range {0}:{1}.  The maximum packet size must be at "
                         "least the size of the minimum packet size.",
                         minPktSize, maxPktSize);
                 }
             } catch (std::invalid_argument &) {
                 ::error(
-                    "Invalid packet size range %1%. Expected format is [min]:[max], where [min] "
+                    "Invalid packet size range {0}. Expected format is [min]:[max], where [min] "
                     "and [max] are integers.",
                     arg);
                 return false;
@@ -195,8 +195,8 @@ TestgenOptions::TestgenOptions()
                                return mapTuple.first;
                            });
             ::error(
-                "Path selection policy %1% not supported. Supported path selection policies are "
-                "%2%.",
+                "Path selection policy {0} not supported. Supported path selection policies are "
+                "{1}.",
                 pathSelectionPolicy, Utils::containerToString(printSet));
             return false;
         },
@@ -217,7 +217,7 @@ TestgenOptions::TestgenOptions()
                 }
             } catch (std::invalid_argument &) {
                 ::error(
-                    "Invalid input value %1% for --saddle-point. Expected an integer greater than "
+                    "Invalid input value {0} for --saddle-point. Expected an integer greater than "
                     "1.",
                     arg);
                 return false;

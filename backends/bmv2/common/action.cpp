@@ -79,7 +79,7 @@ void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
                         auto args = new IR::Vector<IR::Argument>();
                         args->push_back(dest);
                         BUG_CHECK(mce->arguments->size() == 1 || mce->arguments->size() == 3,
-                                  "Expected 1 or 3 argument for %1%", mce);
+                                  "Expected 1 or 3 argument for {0}", mce);
                         if (mce->arguments->size() == 3) {
                             args->push_back(mce->arguments->at(0));  // base
                             args->push_back(mce->arguments->at(1));  // data
@@ -135,7 +135,7 @@ void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
             auto mc = s->to<IR::MethodCallStatement>()->methodCall;
             auto mi = P4::MethodInstance::resolve(mc, ctxt->refMap, ctxt->typeMap);
             if (mi->is<P4::ActionCall>()) {
-                BUG("%1%: action call should have been inlined", mc);
+                BUG("{0}: action call should have been inlined", mc);
                 continue;
             } else if (mi->is<P4::BuiltInMethod>()) {
                 auto builtin = mi->to<P4::BuiltInMethod>();
@@ -150,17 +150,17 @@ void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
                 } else if (builtin->name == IR::Type_Header::setInvalid) {
                     prim = "remove_header";
                 } else if (builtin->name == IR::Type_Stack::push_front) {
-                    BUG_CHECK(mc->arguments->size() == 1, "Expected 1 argument for %1%", mc);
+                    BUG_CHECK(mc->arguments->size() == 1, "Expected 1 argument for {0}", mc);
                     auto arg = ctxt->conv->convert(mc->arguments->at(0)->expression);
                     prim = "push";
                     parameters->append(arg);
                 } else if (builtin->name == IR::Type_Stack::pop_front) {
-                    BUG_CHECK(mc->arguments->size() == 1, "Expected 1 argument for %1%", mc);
+                    BUG_CHECK(mc->arguments->size() == 1, "Expected 1 argument for {0}", mc);
                     auto arg = ctxt->conv->convert(mc->arguments->at(0)->expression);
                     prim = "pop";
                     parameters->append(arg);
                 } else {
-                    BUG("%1%: Unexpected built-in method", s);
+                    BUG("{0}: Unexpected built-in method", s);
                 }
                 auto primitive = mkPrimitive(prim, result);
                 primitive->emplace("parameters", parameters);
@@ -184,7 +184,7 @@ void ActionConverter::convertActionBody(const IR::Vector<IR::StatOrDecl> *body,
                 continue;
             }
         }
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1% not yet supported on this target", s);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0} not yet supported on this target", s);
     }
 }
 
@@ -192,7 +192,7 @@ void ActionConverter::convertActionParams(const IR::ParameterList *parameters,
                                           Util::JsonArray *params) {
     for (auto p : *parameters->getEnumerator()) {
         if (!ctxt->refMap->isUsed(p))
-            warn(ErrorType::WARN_UNUSED, "Unused action parameter %1%", p);
+            warn(ErrorType::WARN_UNUSED, "Unused action parameter {0}", p);
 
         auto param = new Util::JsonObject();
         param->emplace("name", p->externalName());
@@ -201,7 +201,7 @@ void ActionConverter::convertActionParams(const IR::ParameterList *parameters,
         // should re-consider how to support action parameters that is neither bit<> nor int<>
         if (!(type->is<IR::Type_Bits>() || type->is<IR::Type_Enum>()))
             ::error(ErrorType::ERR_INVALID,
-                    "%1%: action parameters must be bit<> or int<> on this target", p);
+                    "{0}: action parameters must be bit<> or int<> on this target", p);
         param->emplace("bitwidth", type->width_bits());
         params->append(param);
     }

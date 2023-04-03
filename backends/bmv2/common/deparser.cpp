@@ -79,7 +79,7 @@ void DeparserConverter::convertDeparserBody(const IR::Vector<IR::StatOrDecl> *bo
                 auto em = mi->to<P4::ExternMethod>();
                 if (em->originalExternType->name.name == corelib.packetOut.name) {
                     if (em->method->name.name == corelib.packetOut.emit.name) {
-                        BUG_CHECK(mc->arguments->size() == 1, "Expected exactly 1 argument for %1%",
+                        BUG_CHECK(mc->arguments->size() == 1, "Expected exactly 1 argument for {0}",
                                   mc);
                         auto arg = mc->arguments->at(0);
                         auto type = ctxt->typeMap->getType(arg, true);
@@ -92,7 +92,7 @@ void DeparserConverter::convertDeparserBody(const IR::Vector<IR::StatOrDecl> *bo
                             // like header unions or stacks; they were
                             // expanded by the expandEmit pass.
                             ::error(ErrorType::ERR_UNSUPPORTED,
-                                    "%1%: emit only supports header arguments, not %2%", arg, type);
+                                    "{0}: emit only supports header arguments, not {1}", arg, type);
                         }
                     }
                     continue;
@@ -124,7 +124,7 @@ void DeparserConverter::convertDeparserBody(const IR::Vector<IR::StatOrDecl> *bo
                 continue;
             }
         }
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: not supported within a deparser on this target",
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: not supported within a deparser on this target",
                 s);
     }
     ctxt->conv->simpleExpressionsOnly = false;
@@ -157,7 +157,7 @@ bool DeparserConverter::preorder(const IR::P4Control *control) {
                 continue;
             }
         }
-        P4C_UNIMPLEMENTED("%1%: not yet handled", c);
+        P4C_UNIMPLEMENTED("{0}: not yet handled", c);
     }
     return false;
 }

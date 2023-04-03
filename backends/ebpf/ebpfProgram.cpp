@@ -32,12 +32,12 @@ bool EBPFProgram::build() {
     auto pack = toplevel->getMain();
     if (pack->type->name != "ebpfFilter")
         ::warning(ErrorType::WARN_INVALID,
-                  "%1%: the main ebpf package should be called ebpfFilter"
+                  "{0}: the main ebpf package should be called ebpfFilter"
                   "; are you using the wrong architecture?",
                   pack->type->name);
 
     if (pack->getConstructorParameters()->size() != 2) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected toplevel package %1% to have 2 parameters",
+        ::error(ErrorType::ERR_EXPECTED, "Expected toplevel package {0} to have 2 parameters",
                 pack->type);
         return false;
     }

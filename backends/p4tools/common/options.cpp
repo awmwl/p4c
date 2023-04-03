@@ -66,7 +66,7 @@ std::optional<ICompileContext *> AbstractP4cToolOptions::process(
     // Remaining arguments should be source files. Ensure we have exactly one and send it to the
     // compiler.
     if (remainingArgs->size() > 1) {
-        ::error("Only one input file can be specified. Duplicate args:\n%1%",
+        ::error("Only one input file can be specified. Duplicate args:\n{0}",
                 cstring::join(remainingArgs->begin(), remainingArgs->end(), "\n  "));
         usage();
         return std::nullopt;

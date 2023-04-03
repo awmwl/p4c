@@ -112,7 +112,7 @@ bool CodeGenInspector::comparison(const IR::Operation_Relation *b) {
         if (useParens) builder->append(")");
     } else {
         if (!et->is<IHasWidth>())
-            BUG("%1%: Comparisons for type %2% not yet implemented", b->left, type);
+            BUG("{0}: Comparisons for type {1} not yet implemented", b->left, type);
         unsigned width = et->to<IHasWidth>()->implementationWidthInBits();
         builder->append("memcmp(&");
         visit(b->left);
@@ -219,7 +219,7 @@ bool CodeGenInspector::preorder(const IR::PathExpression *expression) {
 }
 
 bool CodeGenInspector::preorder(const IR::Path *p) {
-    if (p->absolute) ::error(ErrorType::ERR_EXPECTED, "%1%: Unexpected absolute path", p);
+    if (p->absolute) ::error(ErrorType::ERR_EXPECTED, "{0}: Unexpected absolute path", p);
     builder->append(p->name);
     return false;
 }
@@ -452,9 +452,9 @@ void CodeGenInspector::widthCheck(const IR::Node *node) const {
     if (tb->size <= 64) {
         if (!tb->isSigned) return;
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%: Computations on signed %2% bits not yet supported", node, tb->size);
+                "{0}: Computations on signed {1} bits not yet supported", node, tb->size);
     }
-    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: Computations on %2% bits not supported",
+    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: Computations on {1} bits not supported",
             node, tb->size);
 }
 
@@ -483,7 +483,7 @@ cstring EBPFInitializerUtils::genHexStr(const big_int &value, unsigned width,
     unsigned nibbles = 2 * ROUNDUP(width, 8);
     auto str = value.str(0, std::ios_base::hex);
     if (str.size() < nibbles) str = std::string(nibbles - str.size(), '0') + str;
-    BUG_CHECK(str.size() == nibbles, "%1%: value size does not match %2% bits", expr, width);
+    BUG_CHECK(str.size() == nibbles, "{0}: value size does not match {1} bits", expr, width);
     return str;
 }
 

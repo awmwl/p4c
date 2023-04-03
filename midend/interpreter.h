@@ -192,7 +192,7 @@ class ExpressionEvaluator : public Inspector {
 
     SymbolicValue *get(const IR::Expression *expression) const {
         auto r = ::get(value, expression);
-        BUG_CHECK(r != nullptr, "no evaluation for %1%", expression);
+        BUG_CHECK(r != nullptr, "no evaluation for {0}", expression);
         return r;
     }
 };
@@ -209,7 +209,7 @@ class SymbolicError : public SymbolicValue {
     void assign(const SymbolicValue *) override {}
     bool isScalar() const override { return true; }
     bool merge(const SymbolicValue *) override {
-        BUG("%1%: cannot merge errors", this);
+        BUG("{0}: cannot merge errors", this);
         return false;
     }
     virtual cstring message() const = 0;
@@ -293,7 +293,7 @@ class SymbolicVoid : public SymbolicValue {
     static SymbolicVoid *get() { return instance; }
     SymbolicValue *clone() const override { return instance; }
     bool merge(const SymbolicValue *other) override {
-        BUG_CHECK(other->is<SymbolicVoid>(), "%1%: expected void", other);
+        BUG_CHECK(other->is<SymbolicVoid>(), "{0}: expected void", other);
         return false;
     }
     bool equals(const SymbolicValue *other) const override { return other == instance; }
@@ -531,7 +531,7 @@ class SymbolicTuple final : public SymbolicValue {
     SymbolicValue *clone() const override;
     bool isScalar() const override { return false; }
     void setAllUnknown() override;
-    void assign(const SymbolicValue *) override { BUG("%1%: tuples are read-only", this); }
+    void assign(const SymbolicValue *) override { BUG("{0}: tuples are read-only", this); }
     void add(SymbolicValue *value) { values.push_back(value); }
     bool merge(const SymbolicValue *other) override;
     bool equals(const SymbolicValue *other) const override;
@@ -547,8 +547,8 @@ class SymbolicExtern : public SymbolicValue {
         return new SymbolicExtern(type->to<IR::Type_Extern>());
     }
     bool isScalar() const override { return false; }
-    void setAllUnknown() override { BUG("%1%: extern is read-only", this); }
-    void assign(const SymbolicValue *) override { BUG("%1%: extern is read-only", this); }
+    void setAllUnknown() override { BUG("{0}: extern is read-only", this); }
+    void assign(const SymbolicValue *) override { BUG("{0}: extern is read-only", this); }
     bool merge(const SymbolicValue *) override { return false; }
     bool equals(const SymbolicValue *other) const override;
     bool hasUninitializedParts() const override { return false; }

@@ -33,7 +33,7 @@ class CheckTableSize : public Modifier {
         auto key = table->getKey();
         if (key == nullptr) {
             if (size->value != 1) {
-                warn(ErrorType::WARN_MISMATCH, "%1%: size %2% specified for table without keys",
+                warn(ErrorType::WARN_MISMATCH, "{0}: size {1} specified for table without keys",
                      table, size);
                 deleteSize = true;
             }
@@ -41,7 +41,7 @@ class CheckTableSize : public Modifier {
         auto entries = table->properties->getProperty(IR::TableProperties::entriesPropertyName);
         if (entries != nullptr && entries->isConstant) {
             warn(ErrorType::WARN_MISMATCH,
-                 "%1%: size %2% specified for table with constant entries", table, size);
+                 "{0}: size {1} specified for table with constant entries", table, size);
             deleteSize = true;
         }
         if (deleteSize) {

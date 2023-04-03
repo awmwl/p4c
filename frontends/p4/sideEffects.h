@@ -46,7 +46,7 @@ class HasTableApply : public Inspector {
         if (!mi->isApply()) return;
         auto am = mi->to<P4::ApplyMethod>();
         if (!am->object->is<IR::P4Table>()) return;
-        BUG_CHECK(table == nullptr, "%1% and %2%: multiple table applications in one expression",
+        BUG_CHECK(table == nullptr, "{0} and {1}: multiple table applications in one expression",
                   table, am->object);
         table = am->object->to<IR::P4Table>();
         call = expression;
@@ -381,7 +381,7 @@ class TablesInActions : public Inspector {
             hta.setCalledBy(this);
             (void)expression->apply(hta);
             if (hta.table != nullptr) {
-                ::error(ErrorType::ERR_UNSUPPORTED, "%1%: table invocation in action argument",
+                ::error(ErrorType::ERR_UNSUPPORTED, "{0}: table invocation in action argument",
                         expression);
             }
         }

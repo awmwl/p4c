@@ -25,14 +25,14 @@ const IR::Expression *LowerExpressions::shift(const IR::Operation_Binary *expres
         auto cst = rhs->to<IR::Constant>();
         big_int maxShift = Util::shift_left(1, LowerExpressions::maxShiftWidth);
         if (cst->value > maxShift)
-            ::error(ErrorType::ERR_OVERLIMIT, "%1%: shift amount limited to %2% on this target",
+            ::error(ErrorType::ERR_OVERLIMIT, "{0}: shift amount limited to {1} on this target",
                     expression, maxShift);
     } else {
-        BUG_CHECK(rhstype->is<IR::Type_Bits>(), "%1%: expected a bit<> type", rhstype);
+        BUG_CHECK(rhstype->is<IR::Type_Bits>(), "{0}: expected a bit<> type", rhstype);
         auto bs = rhstype->to<IR::Type_Bits>();
         if (bs->size > LowerExpressions::maxShiftWidth)
             ::error(ErrorType::ERR_OVERLIMIT,
-                    "%1%: shift amount limited to %2% bits on this target", expression,
+                    "{0}: shift amount limited to {1} bits on this target", expression,
                     LowerExpressions::maxShiftWidth);
     }
     auto ltype = typeMap->getType(getOriginal(), true);
@@ -70,9 +70,9 @@ const IR::Node *LowerExpressions::postorder(IR::Concat *expression) {
     // a ++ b  -> ((cast)a << sizeof(b)) | ((cast)b & mask)
     auto type = typeMap->getType(expression->right, true);
     auto resulttype = typeMap->getType(getOriginal(), true);
-    BUG_CHECK(type->is<IR::Type_Bits>(), "%1%: expected a bitstring got a %2%", expression->right,
+    BUG_CHECK(type->is<IR::Type_Bits>(), "{0}: expected a bitstring got a {1}", expression->right,
               type);
-    BUG_CHECK(resulttype->is<IR::Type_Bits>(), "%1%: expected a bitstring got a %2%",
+    BUG_CHECK(resulttype->is<IR::Type_Bits>(), "{0}: expected a bitstring got a {1}",
               expression->right, type);
     unsigned sizeofb = type->to<IR::Type_Bits>()->size;
     unsigned sizeofresult = resulttype->to<IR::Type_Bits>()->size;

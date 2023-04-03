@@ -38,7 +38,7 @@ bool DoExpandEmit::expandArg(const IR::Type *type, const IR::Argument *arg,
         return true;
     } else if (auto tup = type->to<IR::Type_Tuple>()) {
         auto le = arg->expression->to<IR::ListExpression>();
-        BUG_CHECK(le != nullptr && le->size() == tup->getSize(), "%1%: not a list?", arg);
+        BUG_CHECK(le != nullptr && le->size() == tup->getSize(), "{0}: not a list?", arg);
         for (size_t i = 0; i < le->size(); i++) {
             auto expr = new IR::Argument(arg->srcInfo, arg->name, le->components.at(i));
             auto type = tup->components.at(i);
@@ -46,7 +46,7 @@ bool DoExpandEmit::expandArg(const IR::Type *type, const IR::Argument *arg,
         }
         return true;
     } else {
-        BUG_CHECK(type->is<IR::Type_StructLike>(), "%1%: expected a struct or header_union type",
+        BUG_CHECK(type->is<IR::Type_StructLike>(), "{0}: expected a struct or header_union type",
                   type);
         auto strct = type->to<IR::Type_StructLike>();
         for (auto f : strct->fields) {
@@ -65,7 +65,7 @@ const IR::Node *DoExpandEmit::postorder(IR::MethodCallStatement *statement) {
         if (em->originalExternType->name.name == P4::P4CoreLibrary::instance.packetOut.name &&
             em->method->name.name == P4::P4CoreLibrary::instance.packetOut.emit.name) {
             if (em->expr->arguments->size() != 1) {
-                ::error(ErrorType::ERR_UNEXPECTED, "%1%: expected exactly 1 argument", statement);
+                ::error(ErrorType::ERR_UNEXPECTED, "{0}: expected exactly 1 argument", statement);
                 return statement;
             }
 

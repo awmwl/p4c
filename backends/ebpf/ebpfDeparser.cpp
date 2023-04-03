@@ -80,7 +80,7 @@ void DeparserPrepareBufferTranslator::processMethod(const P4::ExternMethod *meth
             auto exprType = deparser->program->typeMap->getType(expr);
             auto headerToEmit = exprType->to<IR::Type_Header>();
             if (headerToEmit == nullptr) {
-                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type %1%",
+                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type {0}",
                         expr);
                 return;
             }
@@ -115,7 +115,7 @@ void DeparserHdrEmitTranslator::processMethod(const P4::ExternMethod *method) {
             auto exprType = deparser->program->typeMap->getType(expr);
             auto headerToEmit = exprType->to<IR::Type_Header>();
             if (headerToEmit == nullptr) {
-                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type %1%",
+                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot emit a non-header type {0}",
                         expr);
             }
 
@@ -152,7 +152,7 @@ void DeparserHdrEmitTranslator::processMethod(const P4::ExternMethod *method) {
                 auto et = dynamic_cast<EBPF::IHasWidth *>(etype);
                 if (et == nullptr) {
                     ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                            "Only headers with fixed widths supported %1%", f);
+                            "Only headers with fixed widths supported {0}", f);
                     return;
                 }
                 emitField(builder, f->name, expr, alignment, etype);
@@ -174,7 +174,7 @@ void DeparserHdrEmitTranslator::emitField(CodeBuilder *builder, cstring field,
     auto et = dynamic_cast<EBPF::IHasWidth *>(type);
     if (et == nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "Only headers with fixed widths supported %1%", hdrExpr);
+                "Only headers with fixed widths supported {0}", hdrExpr);
         return;
     }
     unsigned widthToEmit = et->widthInBits();

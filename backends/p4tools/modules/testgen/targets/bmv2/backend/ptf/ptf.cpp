@@ -156,7 +156,7 @@ inja::json PTF::getControlPlaneForTable(const TableMatchMap &matches,
             rulesJson["needs_priority"] = true;
             rulesJson["optional_matches"].push_back(j);
         } else {
-            TESTGEN_UNIMPLEMENTED("Unsupported table key match type \"%1%\"",
+            TESTGEN_UNIMPLEMENTED("Unsupported table key match type \"{0}\"",
                                   fieldMatch->getObjectName());
         }
     }

@@ -43,9 +43,9 @@ SourceInfo::SourceInfo(const InputSources *sources, SourcePosition start, Source
     : sources(sources), start(start), end(end) {
     BUG_CHECK(sources != nullptr, "Invalid InputSources in SourceInfo");
     if (!start.isValid() || !end.isValid())
-        BUG("Invalid source position in SourceInfo %1%-%2%", start.toString(), end.toString());
+        BUG("Invalid source position in SourceInfo {0}-{1}", start.toString(), end.toString());
     if (start > end)
-        BUG("SourceInfo position start %1% after end %2%", start.toString(), end.toString());
+        BUG("SourceInfo position start {0} after end {1}", start.toString(), end.toString());
 }
 
 cstring SourceInfo::toDebugString() const {
@@ -154,7 +154,7 @@ SourceFileLine InputSources::getSourceLine(unsigned line) const {
     auto it = line_file_map.upper_bound(line);
     if (it == line_file_map.begin())
         // There must be always something mapped to line 0
-        BUG("No source information for line %1%", line);
+        BUG("No source information for line {0}", line);
     LOG3(line << " mapped to " << it->first << "," << it->second.toString());
     --it;
     LOG3(line << " corrected to " << it->first << "," << it->second.toString());

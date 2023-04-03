@@ -102,7 +102,7 @@ const Value *Model::evaluate(const IR::Expression *expr, ExpressionMap *resolved
 
      public:
         const IR::Literal *preorder(IR::Member *member) override {
-            BUG_CHECK(self.count(member), "Variable not bound in model: %1%", member);
+            BUG_CHECK(self.count(member), "Variable not bound in model: {0}", member);
             prune();
             return self.at(StateVariable(member))->checkedTo<IR::Literal>();
         }
@@ -113,7 +113,7 @@ const Value *Model::evaluate(const IR::Expression *expr, ExpressionMap *resolved
 
         const IR::Literal *preorder(IR::ConcolicVariable *var) override {
             auto stateVar = StateVariable(var->concolicMember);
-            BUG_CHECK(self.count(stateVar), "Variable not bound in model: %1%",
+            BUG_CHECK(self.count(stateVar), "Variable not bound in model: {0}",
                       stateVar->toString());
             return self.at(stateVar)->checkedTo<IR::Literal>();
         }

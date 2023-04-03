@@ -49,7 +49,7 @@ EBPFType *EBPFTypeFactory::create(const IR::Type *type) {
         // Implement error type as scalar of width 8 bits
         result = new EBPFScalarType(new IR::Type_Bits(8, false));
     } else {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type %1% not supported", type);
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type {0} not supported", type);
     }
 
     return result;
@@ -168,7 +168,7 @@ EBPFStructType::EBPFStructType(const IR::Type_StructLike *strct) : EBPFType(strc
     else if (strct->is<IR::Type_HeaderUnion>())
         kind = "union";
     else
-        BUG("Unexpected struct type %1%", strct);
+        BUG("Unexpected struct type {0}", strct);
     name = strct->name.name;
     width = 0;
     implWidth = 0;
@@ -212,7 +212,7 @@ void EBPFStructType::emitInitializer(CodeBuilder *builder) {
         builder->emitIndent();
         builder->appendLine(".ebpf_valid = 0");
     } else {
-        BUG("Unexpected type %1%", type);
+        BUG("Unexpected type {0}", type);
     }
     builder->blockEnd(false);
 }
@@ -275,7 +275,7 @@ void EBPFTypeName::emitInitializer(CodeBuilder *builder) {
 unsigned EBPFTypeName::widthInBits() {
     auto wt = dynamic_cast<IHasWidth *>(canonical);
     if (wt == nullptr) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type %1% does not have a fixed witdh", type);
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type {0} does not have a fixed witdh", type);
         return 0;
     }
     return wt->widthInBits();
@@ -284,7 +284,7 @@ unsigned EBPFTypeName::widthInBits() {
 unsigned EBPFTypeName::implementationWidthInBits() {
     auto wt = dynamic_cast<IHasWidth *>(canonical);
     if (wt == nullptr) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type %1% does not have a fixed witdh", type);
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type {0} does not have a fixed witdh", type);
         return 0;
     }
     return wt->implementationWidthInBits();

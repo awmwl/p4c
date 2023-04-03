@@ -82,8 +82,8 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
             return std::nullopt;
 
         auto call = function->expr;
-        BUG_CHECK(call->typeArguments->size() == 1, "%1%: Expected one type argument", call);
-        BUG_CHECK(call->arguments->size() == 2, "%1%: Expected 2 arguments", call);
+        BUG_CHECK(call->typeArguments->size() == 1, "{0}: Expected one type argument", call);
+        BUG_CHECK(call->arguments->size() == 2, "{0}: Expected 2 arguments", call);
 
         // An invocation of digest() looks like this:
         //   digest<T>(receiver, { fields });
@@ -106,8 +106,8 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
             if (it == autoNames.end()) {
                 controlPlaneName = "digest_" + cstring::to_cstring(autoNames.size());
                 ::warning(ErrorType::WARN_MISMATCH,
-                          "Cannot find a good name for %1% method call, using "
-                          "auto-generated name '%2%'",
+                          "Cannot find a good name for {0} method call, using "
+                          "auto-generated name '{1}'",
                           call, controlPlaneName);
                 autoNames.emplace(call, controlPlaneName);
             } else {
@@ -118,7 +118,7 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
         // Convert the generic type for the digest method call to a P4DataTypeSpec
         auto *typeSpec = TypeSpecConverter::convert(refMap, typeMap, typeArg, p4RtTypeInfo);
         BUG_CHECK(typeSpec != nullptr,
-                  "P4 type %1% could not "
+                  "P4 type {0} could not "
                   "be converted to P4Info P4DataTypeSpec");
         return Digest{controlPlaneName, typeSpec, nullptr};
     }
@@ -131,15 +131,15 @@ class P4RuntimeArchHandlerV1Model final : public P4RuntimeArchHandlerCommon<Arch
         if (timeout == nullptr) return false;
         if (!timeout->value->is<IR::ExpressionValue>()) {
             ::error(ErrorType::ERR_UNEXPECTED,
-                    "Unexpected value %1% for supports_timeout on table %2%", timeout, table);
+                    "Unexpected value {0} for supports_timeout on table {1}", timeout, table);
             return false;
         }
 
         auto expr = timeout->value->to<IR::ExpressionValue>()->expression;
         if (!expr->is<IR::BoolLiteral>()) {
             ::error(ErrorType::ERR_UNEXPECTED,
-                    "Unexpected non-boolean value %1% for supports_timeout "
-                    "property on table %2%",
+                    "Unexpected non-boolean value {0} for supports_timeout "
+                    "property on table {1}",
                     timeout, table);
             return false;
         }

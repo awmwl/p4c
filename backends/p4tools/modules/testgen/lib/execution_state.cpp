@@ -202,7 +202,7 @@ const TestObject *ExecutionState::getTestObject(cstring category, cstring object
         return it->second;
     }
     if (checked) {
-        BUG("Unable to find test object with the label %1% in the category %2%. ", objectLabel,
+        BUG("Unable to find test object with the label {0} in the category {1}. ", objectLabel,
             category);
     }
     return nullptr;
@@ -251,7 +251,7 @@ const IR::Type *ExecutionState::resolveType(const IR::Type *type) const {
     }
     const auto *path = typeName->path;
     const auto *decl = findDecl(path)->to<IR::Type_Declaration>();
-    BUG_CHECK(decl, "Not a type: %1%", path);
+    BUG_CHECK(decl, "Not a type: {0}", path);
     return decl;
 }
 
@@ -388,7 +388,7 @@ int ExecutionState::getPacketBufferSize() const {
 }
 
 const IR::Expression *ExecutionState::peekPacketBuffer(int amount) {
-    BUG_CHECK(amount > 0, "Peeked amount \"%1%\" should be larger than 0.", amount);
+    BUG_CHECK(amount > 0, "Peeked amount \"{0}\" should be larger than 0.", amount);
 
     const auto *buffer = getPacketBuffer();
     auto bufferSize = buffer->type->width_bits();
@@ -422,7 +422,7 @@ const IR::Expression *ExecutionState::peekPacketBuffer(int amount) {
 }
 
 const IR::Expression *ExecutionState::slicePacketBuffer(int amount) {
-    BUG_CHECK(amount > 0, "Sliced amount \"%1%\" should be larger than 0.", amount);
+    BUG_CHECK(amount > 0, "Sliced amount \"{0}\" should be larger than 0.", amount);
 
     const auto *buffer = getPacketBuffer();
     auto bufferSize = buffer->type->width_bits();
@@ -536,7 +536,7 @@ const StateVariable &ExecutionState::createZombieConst(const IR::Type *type, cst
     // The zombie already existed, check its type.
     if (!result.second) {
         BUG_CHECK((*result.first)->type->equiv(*type),
-                  "Inconsistent types for zombie variable %1%: previously %2%, but now %3%",
+                  "Inconsistent types for zombie variable {0}: previously {1}, but now {2}",
                   zombie->toString(), (*result.first)->type, type);
     }
     return zombie;
@@ -562,7 +562,7 @@ std::vector<const IR::Member *> ExecutionState::getFlatFields(
                 const auto *newMember = HSIndexToMember::produceStackIndex(
                     stackElementsType, new IR::Member(typeStack, parent, field->name), arrayIndex);
                 BUG_CHECK(stackElementsType->is<IR::Type_StructLike>(),
-                          "Try to make the flat fields for non Type_StructLike element : %1%",
+                          "Try to make the flat fields for non Type_StructLike element : {0}",
                           stackElementsType);
                 auto subFields = getFlatFields(
                     newMember, stackElementsType->to<IR::Type_StructLike>(), validVector);
@@ -602,7 +602,7 @@ const IR::P4Table *ExecutionState::getTableType(const IR::Expression *expression
 const IR::P4Action *ExecutionState::getActionDecl(const IR::Expression *expression) const {
     if (const auto *path = expression->to<IR::PathExpression>()) {
         const auto *declaration = findDecl(path);
-        BUG_CHECK(declaration, "Can't find declaration %1%", path);
+        BUG_CHECK(declaration, "Can't find declaration {0}", path);
         return declaration->to<IR::P4Action>();
     }
     return expression->to<IR::P4Action>();
@@ -620,7 +620,7 @@ const StateVariable &ExecutionState::convertPathExpr(const IR::PathExpression *p
     if (const auto *param = decl->to<IR::Parameter>()) {
         return Utils::getZombieVar(path->type, 0, param->name.name);
     }
-    BUG("Unsupported declaration %1% of type %2%.", decl, decl->node_type_name());
+    BUG("Unsupported declaration {0} of type {1}.", decl, decl->node_type_name());
 }
 
 ExecutionState &ExecutionState::create(const IR::P4Program *program) {

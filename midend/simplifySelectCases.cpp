@@ -46,7 +46,7 @@ void DoSimplifySelectCases::checkSimpleConstant(const IR::Expression *expr) cons
             return;
         }
     }
-    ::error(ErrorType::ERR_INVALID, "%1%: must be a compile-time constant", expr);
+    ::error(ErrorType::ERR_INVALID, "{0}: must be a compile-time constant", expr);
 }
 
 const IR::Node *DoSimplifySelectCases::preorder(IR::SelectExpression *expression) {
@@ -56,7 +56,7 @@ const IR::Node *DoSimplifySelectCases::preorder(IR::SelectExpression *expression
     bool changes = false;
     for (auto c : expression->selectCases) {
         if (seenDefault) {
-            warn(ErrorType::WARN_PARSER_TRANSITION, "%1%: unreachable", c);
+            warn(ErrorType::WARN_PARSER_TRANSITION, "{0}: unreachable", c);
             changes = true;
             continue;
         }
@@ -68,7 +68,7 @@ const IR::Node *DoSimplifySelectCases::preorder(IR::SelectExpression *expression
         if (cases.size() == 1) {
             // just one default label
             warn(ErrorType::WARN_PARSER_TRANSITION,
-                 "'%1%': transition does not depend on select argument", expression->select);
+                 "'{0}': transition does not depend on select argument", expression->select);
             return cases.at(0)->state;
         }
         expression->selectCases = std::move(cases);

@@ -46,7 +46,7 @@ std::optional<ExternInstance> getExternInstanceFromProperty(const IR::P4Table *t
     if (property == nullptr) return std::nullopt;
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
+                "Expected {0} property value for table {1} to be an expression: {2}", propertyName,
                 table->controlPlaneName(), property);
         return std::nullopt;
     }
@@ -56,7 +56,7 @@ std::optional<ExternInstance> getExternInstanceFromProperty(const IR::P4Table *t
     if (expr->is<IR::ConstructorCallExpression>() &&
         property->getAnnotation(IR::Annotation::nameAnnotation) == nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED,
-                "Table '%1%' has an anonymous table property '%2%' with no name annotation, "
+                "Table '{0}' has an anonymous table property '{1}' with no name annotation, "
                 "which is not supported by P4Runtime",
                 table->controlPlaneName(), propertyName);
         return std::nullopt;
@@ -65,8 +65,8 @@ std::optional<ExternInstance> getExternInstanceFromProperty(const IR::P4Table *t
     auto externInstance = ExternInstance::resolve(expr, refMap, typeMap, name);
     if (!externInstance) {
         ::error(ErrorType::ERR_INVALID,
-                "Expected %1% property value for table %2% to resolve to an "
-                "extern instance: %3%",
+                "Expected {0} property value for table {1} to resolve to an "
+                "extern instance: {2}",
                 propertyName, table->controlPlaneName(), property);
         return std::nullopt;
     }
@@ -79,7 +79,7 @@ bool isExternPropertyConstructedInPlace(const IR::P4Table *table, const cstring 
     if (property == nullptr) return false;
     if (!property->value->is<IR::ExpressionValue>()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Expected %1% property value for table %2% to be an expression: %3%", propertyName,
+                "Expected {0} property value for table {1} to be an expression: {2}", propertyName,
                 table->controlPlaneName(), property);
         return false;
     }
@@ -100,14 +100,14 @@ int64_t getTableSize(const IR::P4Table *table) {
     }
 
     if (!sizeProperty->value->is<IR::ExpressionValue>()) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected an expression for table size property: %1%",
+        ::error(ErrorType::ERR_EXPECTED, "Expected an expression for table size property: {0}",
                 sizeProperty);
         return defaultTableSize;
     }
 
     auto expression = sizeProperty->value->to<IR::ExpressionValue>()->expression;
     if (!expression->is<IR::Constant>()) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected a constant for table size property: %1%",
+        ::error(ErrorType::ERR_EXPECTED, "Expected a constant for table size property: {0}",
                 sizeProperty);
         return defaultTableSize;
     }
@@ -127,13 +127,13 @@ std::string serializeOneAnnotation(const IR::Annotation *annotation) {
 }
 
 void serializeStructuredExpression(const IR::Expression *expr, p4configv1::Expression *sExpr) {
-    BUG_CHECK(expr->is<IR::Literal>(), "%1%: structured annotation expression should be a literal",
+    BUG_CHECK(expr->is<IR::Literal>(), "{0}: structured annotation expression should be a literal",
               expr);
     if (expr->is<IR::Constant>()) {
         auto *constant = expr->to<IR::Constant>();
         if (!constant->fitsInt64()) {
             ::error(ErrorType::ERR_OVERLIMIT,
-                    "%1%: integer literal in structured annotation must fit in int64, "
+                    "{0}: integer literal in structured annotation must fit in int64, "
                     "consider using a string literal for larger values",
                     expr);
             return;
@@ -145,7 +145,7 @@ void serializeStructuredExpression(const IR::Expression *expr, p4configv1::Expre
         sExpr->set_string_value(expr->to<IR::StringLiteral>()->value);
     } else {
         // guaranteed by the type checker.
-        BUG("%1%: structured annotation expression must be a compile-time value", expr);
+        BUG("{0}: structured annotation expression must be a compile-time value", expr);
     }
 }
 
@@ -174,7 +174,7 @@ void serializeOneStructuredAnnotation(const IR::Annotation *annotation,
             }
             return;
         default:
-            BUG("%1%: not a structured annotation", annotation);
+            BUG("{0}: not a structured annotation", annotation);
     }
 }
 

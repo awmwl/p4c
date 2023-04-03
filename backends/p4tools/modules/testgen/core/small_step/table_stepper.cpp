@@ -103,7 +103,7 @@ bool TableStepper::compareLPMEntries(const IR::Entry *leftIn, const IR::Entry *r
         return (leftMaskVal->value) >= (rightMaskVal->value);
     }
 
-    BUG("Unhandled sort elements type: left: %1% - %2% \n right: %3% - %4% ", left,
+    BUG("Unhandled sort elements type: left: {0} - {1} \n right: {2} - {3} ", left,
         left->node_type_name(), right, right->node_type_name());
 }
 
@@ -186,7 +186,7 @@ void TableStepper::setTableAction(ExecutionState &nextState,
         // Expect the expression within the ActionListElement to be a MethodCallExpression.
         const auto *expr = actionList.at(actionIdx)->expression;
         const auto *curCall = expr->to<IR::MethodCallExpression>();
-        BUG_CHECK(curCall, "Action at index %1% for table %2% is not a MethodCallExpression: %3%",
+        BUG_CHECK(curCall, "Action at index {0} for table {1} is not a MethodCallExpression: {2}",
                   actionIdx, table, expr);
 
         // Stop looping if the current action matches the selected action.
@@ -195,7 +195,7 @@ void TableStepper::setTableAction(ExecutionState &nextState,
         }
     }
 
-    BUG_CHECK(actionIdx < actionList.size(), "%1%: not a valid action for table %2%", actionCall,
+    BUG_CHECK(actionIdx < actionList.size(), "{0}: not a valid action for table {1}", actionCall,
               table);
     // Store the selected action.
     const auto &tableActionVar = getTableActionVar(table);
@@ -231,10 +231,10 @@ const IR::Expression *TableStepper::evalTableConstEntries() {
     for (const auto &entry : entryVector) {
         const auto *action = entry->getAction();
         BUG_CHECK(action && action->is<IR::MethodCallExpression>(),
-                  "Unknown format of an action '%1%' in the table '%2%'", action, table);
+                  "Unknown format of an action '{0}' in the table '{1}'", action, table);
         auto &nextState = stepper->state.clone();
         const auto *tableAction = action->to<IR::MethodCallExpression>();
-        BUG_CHECK(tableAction, "Invalid action '%1%' in the table '%2%'", action, table);
+        BUG_CHECK(tableAction, "Invalid action '{0}' in the table '{1}'", action, table);
         // We need to set the table action in the state for eventual switch action_run hits.
         // We also will need it for control plane table entries.
         setTableAction(nextState, tableAction);
@@ -245,7 +245,7 @@ const IR::Expression *TableStepper::evalTableConstEntries() {
         for (size_t idx = 0; idx < keys->keyElements.size(); ++idx) {
             const auto *key = keys->keyElements.at(idx);
             const auto *entryKey = entry->keys->components.at(idx);
-            BUG_CHECK(key->expression, "Null expression %1% for matching in the table %2%", entry,
+            BUG_CHECK(key->expression, "Null expression {0} for matching in the table {1}", entry,
                       table);
             // These always match, so do not even consider them in the equation.
             if (entryKey->is<IR::DefaultExpression>()) {
@@ -507,9 +507,9 @@ void TableStepper::evalTaintedTable() {
     for (const auto &entry : entryVector) {
         const auto *action = entry->getAction();
         BUG_CHECK(action && action->is<IR::MethodCallExpression>(),
-                  "Unknown format of an action '%1%' in the table '%2%'", action, table);
+                  "Unknown format of an action '{0}' in the table '{1}'", action, table);
         const auto *tableAction = action->to<IR::MethodCallExpression>();
-        BUG_CHECK(tableAction, "Invalid action '%1%' in the table '%2%'", action, table);
+        BUG_CHECK(tableAction, "Invalid action '{0}' in the table '{1}'", action, table);
         replacements.emplace_back(new IR::MethodCallStatement(Util::SourceInfo(), tableAction));
     }
     // Since we do not know which table action was selected because of the tainted key, we also
@@ -633,15 +633,15 @@ void TableStepper::addDefaultAction(std::optional<const IR::Expression *> tableM
     const auto *defaultAction = table->getDefaultAction();
     CHECK_NULL(defaultAction);
     BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(),
-              "Unknown format of default action in the table '%1%'", table);
+              "Unknown format of default action in the table '{0}'", table);
     const auto *tableAction = defaultAction->to<IR::MethodCallExpression>();
-    BUG_CHECK(tableAction, "Invalid action default action in the table '%1%'", table);
+    BUG_CHECK(tableAction, "Invalid action default action in the table '{0}'", table);
     auto &nextState = stepper->state.clone();
     // We need to set the table action in the state for eventual switch action_run hits.
     // We also will need it for control plane table entries.
     setTableAction(nextState, tableAction);
     const auto *actionPath = tableAction->method->to<IR::PathExpression>();
-    BUG_CHECK(actionPath, "Unknown formation of action '%1%' in table %2%", tableAction, table);
+    BUG_CHECK(actionPath, "Unknown formation of action '{0}' in table {1}", tableAction, table);
 
     std::vector<Continuation::Command> replacements;
     std::stringstream tableStream;

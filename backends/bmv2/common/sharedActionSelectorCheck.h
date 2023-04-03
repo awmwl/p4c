@@ -71,7 +71,7 @@ class SharedActionSelectorCheck : public Inspector {
         auto implementation = table->properties->getProperty("implementation");
         if (implementation == nullptr) return false;
         if (!implementation->value->is<IR::ExpressionValue>()) {
-            ::error(ErrorType::ERR_EXPECTED, "%1%: expected expression for property",
+            ::error(ErrorType::ERR_EXPECTED, "{0}: expected expression for property",
                     implementation);
             return false;
         }
@@ -80,12 +80,12 @@ class SharedActionSelectorCheck : public Inspector {
         auto pathe = propv->expression->to<IR::PathExpression>();
         auto decl = refMap->getDeclaration(pathe->path, true);
         if (!decl->is<IR::Declaration_Instance>()) {
-            ::error(ErrorType::ERR_EXPECTED, "%1%: expected a reference to an instance", pathe);
+            ::error(ErrorType::ERR_EXPECTED, "{0}: expected a reference to an instance", pathe);
             return false;
         }
         auto dcltype = typeMap->getType(pathe, true);
         if (!dcltype->is<IR::Type_Extern>()) {
-            ::error(ErrorType::ERR_UNEXPECTED, "%1%: unexpected type for implementation", dcltype);
+            ::error(ErrorType::ERR_UNEXPECTED, "{0}: unexpected type for implementation", dcltype);
             return false;
         }
         auto type_extern_name = dcltype->to<IR::Type_Extern>()->name;
@@ -96,7 +96,7 @@ class SharedActionSelectorCheck : public Inspector {
         SelectorInput input;
         for (auto ke : key->keyElements) {
             auto mt = refMap->getDeclaration(ke->matchType->path, true)->to<IR::Declaration_ID>();
-            BUG_CHECK(mt != nullptr, "%1%: could not find declaration", ke->matchType);
+            BUG_CHECK(mt != nullptr, "{0}: could not find declaration", ke->matchType);
             if (mt->name.name != BMV2::MatchImplementation::selectorMatchTypeName) continue;
             input.push_back(ke->expression);
         }
@@ -114,7 +114,7 @@ class SharedActionSelectorCheck : public Inspector {
 
         if (!cmp_inputs(it->second, input)) {
             ::error(ErrorType::ERR_INVALID,
-                    "Action selector %1% is used by multiple tables with different selector inputs",
+                    "Action selector {0} is used by multiple tables with different selector inputs",
                     decl);
         }
 

@@ -63,7 +63,7 @@ const IR::IDeclaration *NamespaceContext::findNestedDecl(
 }
 
 const IR::IDeclaration *NamespaceContext::findDecl(const IR::Path *path) const {
-    BUG_CHECK(this != Empty, "Variable %1% not found in the available namespaces.", path);
+    BUG_CHECK(this != Empty, "Variable {0} not found in the available namespaces.", path);
 
     // Handle absolute paths by ensuring they are looked up in the outermost non-empty namespace
     // context.

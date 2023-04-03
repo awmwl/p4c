@@ -167,7 +167,7 @@ class ToP4 : public Inspector {
         return false;
     }
     bool preorder(const IR::Type_SpecializedCanonical *t) override {
-        BUG("%1%: specialized canonical type in IR tree", t);
+        BUG("{0}: specialized canonical type in IR tree", t);
         return false;
     }
 

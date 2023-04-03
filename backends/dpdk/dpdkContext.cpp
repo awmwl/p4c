@@ -62,7 +62,7 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
                         auto expr = add_on_miss->value->to<IR::ExpressionValue>()->expression;
                         if (!expr->is<IR::BoolLiteral>()) {
                             ::error(ErrorType::ERR_UNEXPECTED,
-                                    "%1%: expected boolean for 'add_on_miss' property",
+                                    "{0}: expected boolean for 'add_on_miss' property",
                                     add_on_miss);
                             return;
                         } else {
@@ -78,7 +78,7 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
                                         ->expression;
                         if (!expr->is<IR::BoolLiteral>()) {
                             ::error(ErrorType::ERR_UNEXPECTED,
-                                    "%1%: expected boolean for 'idle_timeout_with_auto_delete' "
+                                    "{0}: expected boolean for 'idle_timeout_with_auto_delete' "
                                     "property",
                                     idle_timeout_with_auto_delete);
                             return;
@@ -127,7 +127,7 @@ void DpdkContextGenerator::CollectTablesAndSetAttributes() {
                 int typeArgNum = maxArgNum - 1;
                 if (ed->arguments->size() != maxArgNum) {
                     ::error(ErrorType::ERR_UNEXPECTED,
-                            "%1%: expected %2% arguments, number of counters and type"
+                            "{0}: expected {1} arguments, number of counters and type"
                             "of counter",
                             ed, maxArgNum);
                 }
@@ -227,7 +227,7 @@ void DpdkContextGenerator::collectHandleId() {
 size_t DpdkContextGenerator::getHandleId(cstring name) {
     size_t id = 0;
     if (context_handle_map.count(name)) id = context_handle_map[name];
-    BUG_CHECK(id != 0, "unable to find id for %1%", name);
+    BUG_CHECK(id != 0, "unable to find id for {0}", name);
     return id;
 }
 
@@ -350,7 +350,7 @@ Util::JsonObject *DpdkContextGenerator::addMatchAttributes(const IR::P4Table *ta
                 if (param->type->is<IR::Type_Bits>()) {
                     param_width = param->type->width_bits();
                 } else if (!param->type->is<IR::Type_Boolean>()) {
-                    BUG("Unsupported parameter type %1%", param->type);
+                    BUG("Unsupported parameter type {0}", param->type);
                 }
                 addImmediateField(immFldArray, param->name.originalName, index / 8, param_width);
                 index += param_width;
@@ -412,7 +412,7 @@ Util::JsonArray *DpdkContextGenerator::addActions(const IR::P4Table *table,
                     if (param->type->is<IR::Type_Bits>()) {
                         param_width = param->type->width_bits();
                     } else if (!param->type->is<IR::Type_Boolean>()) {
-                        BUG("Unsupported parameter type %1%", param->type);
+                        BUG("Unsupported parameter type {0}", param->type);
                     }
                     addActionParam(paramJson, param->name.originalName, param_width, position,
                                    index / 8);

@@ -54,7 +54,7 @@ class ICastable {
     template <typename T>
     const T *checkedTo() const {
         auto *result = to<T>();
-        BUG_CHECK(result, "Cast failed: %1% is not a %2%", this, typeid(T).name());
+        BUG_CHECK(result, "Cast failed: {0} is not a {1}", this, typeid(T).name());
         return result;
     }
 };

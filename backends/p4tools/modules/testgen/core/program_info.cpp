@@ -45,7 +45,7 @@ const IR::IDeclaration *ProgramInfo::findProgramDecl(const IR::PathExpression *p
 const IR::Type_Declaration *ProgramInfo::resolveProgramType(const IR::Type_Name *type) const {
     const auto *path = type->path;
     const auto *decl = findProgramDecl(path)->to<IR::Type_Declaration>();
-    BUG_CHECK(decl, "Not a type: %1%", path);
+    BUG_CHECK(decl, "Not a type: {0}", path);
     return decl;
 }
 

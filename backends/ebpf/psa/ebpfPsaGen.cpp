@@ -51,7 +51,7 @@ class PSAErrorCodesGen : public Inspector {
 
             // type ParserError_t is u8, which can have values from 0 to 255
             if (id > 255) {
-                ::error(ErrorType::ERR_OVERLIMIT, "%1%: Reached maximum number of possible errors",
+                ::error(ErrorType::ERR_OVERLIMIT, "{0}: Reached maximum number of possible errors",
                         decl);
             }
         }
@@ -783,7 +783,7 @@ bool ConvertToEBPFParserPSA::preorder(const IR::ParserBlock *prsr) {
     }
 
     if (pl->size() != numOfParams) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected parser to have exactly %1% parameters",
+        ::error(ErrorType::ERR_EXPECTED, "Expected parser to have exactly {0} parameters",
                 numOfParams);
         return false;
     }

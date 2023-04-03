@@ -123,7 +123,7 @@ class Vector : public VectorBase {
             append(*itemAsVector);
             return;
         }
-        BUG_CHECK(item->is<T>(), "Unexpected vector element: %1%", item);
+        BUG_CHECK(item->is<T>(), "Unexpected vector element: {0}", item);
         push_back(item->to<T>());
     }
 

@@ -296,7 +296,7 @@ bool SharedPnaTableStepper::checkForActionProfile() {
         implExtern = implDeclType->checkedTo<IR::Type_Extern>();
         implDecl = declInst;
     } else {
-        TESTGEN_UNIMPLEMENTED("Unimplemented action profile type %1%.",
+        TESTGEN_UNIMPLEMENTED("Unimplemented action profile type {0}.",
                               implExpr->expression->node_type_name());
     }
 
@@ -338,7 +338,7 @@ bool SharedPnaTableStepper::checkForActionSelector() {
         selectorExtern = selectorDeclType->checkedTo<IR::Type_Extern>();
         selectorDecl = declInst;
     } else {
-        TESTGEN_UNIMPLEMENTED("Unimplemented action profile type %1%.",
+        TESTGEN_UNIMPLEMENTED("Unimplemented action profile type {0}.",
                               selectorExpr->expression->node_type_name());
     }
 
@@ -372,7 +372,7 @@ void SharedPnaTableStepper::checkTargetProperties(
         properties.tableIsTainted = properties.tableIsTainted || keyIsTainted;
         // If the key expression is tainted, do not bother resolving the remaining keys.
         if (properties.tableIsTainted) {
-            ::warning("Key %1% of table %2% is tainted.", keyElement->expression, table);
+            ::warning("Key {0} of table {1} is tainted.", keyElement->expression, table);
             return;
         }
     }
@@ -404,7 +404,7 @@ void SharedPnaTableStepper::evalTargetTable(
         }
         if (!properties.defaultIsImmutable) {
             ::warning(
-                "Table %1%: Overriding default actions not supported for test back end %2%. "
+                "Table {0}: Overriding default actions not supported for test back end {1}. "
                 "Choosing default action",
                 properties.tableName, testBackend);
         }

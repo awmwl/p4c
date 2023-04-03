@@ -9,7 +9,7 @@ namespace P4 {
 
 StackVariable::StackVariable(const IR::Expression *expr) : variable(expr) {
     CHECK_NULL(expr);
-    BUG_CHECK(repOk(expr), "Invalid stack variable %1%", expr);
+    BUG_CHECK(repOk(expr), "Invalid stack variable {0}", expr);
     variable = expr;
 }
 
@@ -176,7 +176,7 @@ class ParserStateRewriter : public Transform {
         newExpression->right = res;
         if (!res->fitsInt64()) {
             // we need to leave expression as is.
-            ::warning(ErrorType::ERR_EXPRESSION, "Index can't be concretized : %1%", expression);
+            ::warning(ErrorType::ERR_EXPRESSION, "Index can't be concretized : {0}", expression);
             return expression;
         }
         const auto *arrayType = basetype->to<IR::Type_Stack>();
@@ -194,7 +194,7 @@ class ParserStateRewriter : public Transform {
         auto basetype = getTypeArray(getOriginal<IR::Member>()->expr);
         if (basetype->is<IR::Type_Stack>()) {
             auto l = afterExec->get(expression->expr);
-            BUG_CHECK(l->is<SymbolicArray>(), "%1%: expected an array", l);
+            BUG_CHECK(l->is<SymbolicArray>(), "{0}: expected an array", l);
             auto array = l->to<SymbolicArray>();
             unsigned idx = 0;
             unsigned offset = 0;
@@ -383,7 +383,7 @@ class ParserSymbolicInterpreter {
 
             if (value == nullptr) value = factory->create(type, true);
             if (value->is<SymbolicError>()) {
-                ::warning(ErrorType::ERR_EXPRESSION, "%1%: %2%", d,
+                ::warning(ErrorType::ERR_EXPRESSION, "{0}: {1}", d,
                           value->to<SymbolicError>()->message());
                 return nullptr;
             }
@@ -437,7 +437,7 @@ class ParserSymbolicInterpreter {
 
             if (!stateClone)
                 // errors in the original state are signalled
-                ::warning(ErrorType::ERR_EXPRESSION, "%1%: error %2% will be triggered\n%3%",
+                ::warning(ErrorType::ERR_EXPRESSION, "{0}: error {1} will be triggered\n{2}",
                           exc->errorPosition, exc->message(), stateChain(state));
             // else this error will occur in a clone of the state produced
             // by unrolling - if the state is reached.  So we don't give an error.
@@ -485,7 +485,7 @@ class ParserSymbolicInterpreter {
             }
             sord = new IR::BlockStatement(newComponents);
         } else {
-            BUG("%1%: unexpected declaration or statement", sord);
+            BUG("{0}: unexpected declaration or statement", sord);
         }
         if (!success) {
             if (errorValue->is<SymbolicException>()) {
@@ -496,7 +496,7 @@ class ParserSymbolicInterpreter {
             }
             std::stringstream errorStr;
             errorStr << errorValue;
-            ::warning(ErrorType::WARN_IGNORE_PROPERTY, "Result of %1% is not defined: %2%", sord,
+            ::warning(ErrorType::WARN_IGNORE_PROPERTY, "Result of {0} is not defined: {1}", sord,
                       errorStr.str());
         }
         ParserStateRewriter rewriter(structure, state, valueMap, refMap, typeMap, &ev,
@@ -522,7 +522,7 @@ class ParserSymbolicInterpreter {
         if (select->is<IR::PathExpression>()) {
             auto path = select->to<IR::PathExpression>()->path;
             auto next = refMap->getDeclaration(path);
-            BUG_CHECK(next->is<IR::ParserState>(), "%1%: expected a state", path);
+            BUG_CHECK(next->is<IR::ParserState>(), "{0}: expected a state", path);
             // update call indexes
             ParserStateRewriter rewriter(structure, state, valueMap, refMap, typeMap, nullptr,
                                          visitedStates);
@@ -562,7 +562,7 @@ class ParserSymbolicInterpreter {
                 auto currentStateIndexes = etalonStateIndexes;
                 auto path = c->state->path;
                 auto next = refMap->getDeclaration(path);
-                BUG_CHECK(next->is<IR::ParserState>(), "%1%: expected a state", path);
+                BUG_CHECK(next->is<IR::ParserState>(), "{0}: expected a state", path);
 
                 // update call indexes
                 ParserStateRewriter rewriter(structure, state, valueMap, refMap, typeMap, nullptr,
@@ -586,7 +586,7 @@ class ParserSymbolicInterpreter {
             }
             newSelect = new IR::SelectExpression(newListSelect, newSelectCases);
         } else {
-            BUG("%1%: unexpected expression", select);
+            BUG("{0}: unexpected expression", select);
         }
         return EvaluationSelectResult(result, newSelect);
     }
@@ -670,7 +670,7 @@ class ParserSymbolicInterpreter {
                     if (equStackVariableMap(crt->statesIndexes, state->statesIndexes)) {
                         ::warning(ErrorType::ERR_INVALID,
                                   "Parser cycle can't be unrolled, because ParserUnroll can't "
-                                  "detect the number of loop iterations:\n%1%",
+                                  "detect the number of loop iterations:\n{0}",
                                   stateChain(state));
                         wasError = true;
                     }
@@ -682,7 +682,7 @@ class ParserSymbolicInterpreter {
                     if (equStackVariableMap(crt->statesIndexes, state->statesIndexes)) {
                         ::warning(ErrorType::ERR_INVALID,
                                   "Parser cycle can't be unrolled, because ParserUnroll can't "
-                                  "detect the number of loop iterations:\n%1%",
+                                  "detect the number of loop iterations:\n{0}",
                                   stateChain(state));
                         wasError = true;
                     }
@@ -865,7 +865,7 @@ bool ParserStructure::reachableHSUsage(IR::ID id, const ParserStateInfo *state) 
     if (!state->scenarioHS.size()) return false;
     CHECK_NULL(callGraph);
     const IR::IDeclaration *declaration = parser->states.getDeclaration(id.name);
-    BUG_CHECK(declaration && declaration->is<IR::ParserState>(), "Invalid declaration %1%", id);
+    BUG_CHECK(declaration && declaration->is<IR::ParserState>(), "Invalid declaration {0}", id);
     std::set<const IR::ParserState *> reachableStates;
     callGraph->reachable(declaration->to<IR::ParserState>(), reachableStates);
     std::set<cstring> reachebleHSoperators;

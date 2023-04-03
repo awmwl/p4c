@@ -28,7 +28,7 @@ int Packet::getPort() const { return port; }
 const IR::Constant *Packet::getEvaluatedPayloadMask() const {
     const auto *constant = payloadIgnoreMask->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               payloadIgnoreMask->type->node_type_name(), getObjectName());
     return constant;
@@ -37,7 +37,7 @@ const IR::Constant *Packet::getEvaluatedPayloadMask() const {
 const IR::Constant *Packet::getEvaluatedPayload() const {
     const auto *constant = payload->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               payload->type->node_type_name(), getObjectName());
     return constant;
@@ -66,7 +66,7 @@ const IR::Constant *ActionArg::getEvaluatedValue() const {
     }
     const auto *constant = value->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               value->type->node_type_name(), getObjectName());
     return constant;
@@ -112,7 +112,7 @@ Ternary::Ternary(const IR::KeyElement *key, const IR::Expression *value, const I
 const IR::Constant *Ternary::getEvaluatedValue() const {
     const auto *constant = value->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               value->type->node_type_name(), getObjectName());
     return constant;
@@ -121,7 +121,7 @@ const IR::Constant *Ternary::getEvaluatedValue() const {
 const IR::Constant *Ternary::getEvaluatedMask() const {
     const auto *constant = mask->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               mask->type->node_type_name(), getObjectName());
     return constant;
@@ -141,7 +141,7 @@ LPM::LPM(const IR::KeyElement *key, const IR::Expression *value, const IR::Expre
 const IR::Constant *LPM::getEvaluatedValue() const {
     const auto *constant = value->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               value->type->node_type_name(), getObjectName());
     return constant;
@@ -150,7 +150,7 @@ const IR::Constant *LPM::getEvaluatedValue() const {
 const IR::Constant *LPM::getEvaluatedPrefixLength() const {
     const auto *constant = prefixLength->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               prefixLength->type->node_type_name(), getObjectName());
     return constant;
@@ -169,7 +169,7 @@ Exact::Exact(const IR::KeyElement *key, const IR::Expression *val) : TableMatch(
 const IR::Constant *Exact::getEvaluatedValue() const {
     const auto *constant = value->to<IR::Constant>();
     BUG_CHECK(constant,
-              "Variable is not a constant. It has type %1% instead. Has the test object %2% "
+              "Variable is not a constant. It has type {0} instead. Has the test object {1} "
               "been evaluated?",
               value->type->node_type_name(), getObjectName());
     return constant;
@@ -231,7 +231,7 @@ const TestObject *TableConfig::getProperty(cstring propertyName, bool checked) c
         return it->second;
     }
     if (checked) {
-        BUG("Unable to find test object with the label %1%. ", propertyName);
+        BUG("Unable to find test object with the label {0}. ", propertyName);
     }
     return nullptr;
 }
@@ -292,7 +292,7 @@ const TestObject *TestSpec::getTestObject(cstring category, cstring objectLabel,
         return it->second;
     }
     if (checked) {
-        BUG("Unable to find test object with the label %1% in the category %2%. ", objectLabel,
+        BUG("Unable to find test object with the label {0} in the category {1}. ", objectLabel,
             category);
     }
     return nullptr;

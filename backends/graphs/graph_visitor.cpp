@@ -26,7 +26,7 @@ void Graph_visitor::writeGraphToFile(const Graph &g, const cstring &name) {
     auto path = Util::PathName(graphsDir).join(name + ".dot");
     auto out = openFile(path.toString(), false);
     if (out == nullptr) {
-        ::error(ErrorType::ERR_IO, "Failed to open file %1%", path.toString());
+        ::error(ErrorType::ERR_IO, "Failed to open file {0}", path.toString());
         return;
     }
     // custom label writers not supported with subgraphs, so we populate

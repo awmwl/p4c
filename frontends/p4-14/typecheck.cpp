@@ -325,7 +325,7 @@ class TypeCheck::InferExpressionsBottomUp : public Modifier {
         if (type->is<IR::Type::Unknown>() || type->is<IR::Type::Bits>() ||
             type->is<IR::Type_InfInt>())
             return true;
-        ::error(ErrorType::ERR_TYPE_ERROR, "%1%: not defined on operands of type %2%", node, type);
+        ::error(ErrorType::ERR_TYPE_ERROR, "{0}: not defined on operands of type {1}", node, type);
         return false;
     }
 
@@ -548,7 +548,7 @@ class TypeCheck::AssignActionArgTypes : public Modifier {
 
         // Assign the type we computed in the previous passes.
         BUG_CHECK(self.actionArgUseTypes.count(getOriginal()) > 0,
-                  "Didn't compute a type for action arg %1%", getOriginal());
+                  "Didn't compute a type for action arg {0}", getOriginal());
         auto type = self.actionArgUseTypes[getOriginal()];
         if (type != getOriginal<IR::ActionArg>()->type) {
             arg->type = type;

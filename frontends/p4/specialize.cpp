@@ -52,7 +52,7 @@ const IR::Type_Declaration *SpecializationInfo::synthesize(ReferenceMap *refMap)
             new IR::P4Control(name, newtype, new IR::ParameterList(), *declarations, control->body);
 
     } else {
-        BUG("%1%: unexpected type", specialized);
+        BUG("{0}: unexpected type", specialized);
     }
     LOG2("Created " << result);
     return result;
@@ -237,7 +237,7 @@ void FindSpecializations::postorder(const IR::Declaration_Instance *decl) {
     if (decl->type->is<IR::Type_Name>()) {
         contDecl = decl->type->to<IR::Type_Name>();
     } else {
-        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "%1%: unexpected type", decl->type);
+        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "{0}: unexpected type", decl->type);
         contDecl = decl->type->to<IR::Type_Specialized>()->baseType;
     }
     auto cont = specMap->refMap->getDeclaration(contDecl->path, true);

@@ -133,7 +133,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
             if (extmeth->method->name.name == corelib.packetIn.extract.name) {
                 int argCount = mce->arguments->size();
                 if (argCount < 1 || argCount > 2) {
-                    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: unknown extract method",
+                    ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: unknown extract method",
                             mce);
                     return result;
                 }
@@ -144,7 +144,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                 auto argtype = ctxt->typeMap->getType(arg->expression, true);
                 if (!argtype->is<IR::Type_Header>()) {
                     ::error(ErrorType::ERR_INVALID,
-                            "%1%: extract only accepts arguments with header types, not %2%", arg,
+                            "{0}: extract only accepts arguments with header types, not {1}", arg,
                             argtype);
                     return result;
                 }
@@ -161,7 +161,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                             type = "stack";
                             j = ctxt->conv->convert(mem->expr);
                         } else {
-                            BUG("%1%: unsupported", mem);
+                            BUG("{0}: unsupported", mem);
                         }
                     } else if (baseType->is<IR::Type_HeaderUnion>()) {
                         auto parent = mem->expr->to<IR::Member>();
@@ -185,7 +185,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                                     auto j0 = new Util::JsonObject();
                                     j = j0->emplace("value", a);
                                 } else {
-                                    BUG("%1%: unsupported", mem);
+                                    BUG("{0}: unsupported", mem);
                                 }
                             }
                         }
@@ -217,7 +217,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                 return nullptr;
             } else if (extmeth->method->name.name == corelib.packetIn.advance.name) {
                 if (mce->arguments->size() != 1) {
-                    ::error(ErrorType::ERR_UNSUPPORTED, "%1%: expected 1 argument", mce);
+                    ::error(ErrorType::ERR_UNSUPPORTED, "{0}: expected 1 argument", mce);
                     return result;
                 }
                 auto arg = mce->arguments->at(0);
@@ -250,7 +250,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
             auto extFuncName = extfn->method->name.name;
             if (extFuncName == IR::ParserState::verify) {
                 result->emplace("op", "verify");
-                BUG_CHECK(mce->arguments->size() == 2, "%1%: Expected 2 arguments", mce);
+                BUG_CHECK(mce->arguments->size() == 2, "{0}: Expected 2 arguments", mce);
                 {
                     auto cond = mce->arguments->at(0);
                     // false means don't wrap in an outer expression object, which is not needed
@@ -267,7 +267,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                 }
                 return result;
             } else if (extFuncName == "assert" || extFuncName == "assume") {
-                BUG_CHECK(mce->arguments->size() == 1, "%1%: Expected 1 argument ", mce);
+                BUG_CHECK(mce->arguments->size() == 1, "{0}: Expected 1 argument ", mce);
                 result->emplace("op", "primitive");
                 auto paramValue = new Util::JsonObject();
                 params->append(paramValue);
@@ -279,7 +279,7 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                 paramValue->emplace_non_null("source_info", mce->sourceInfoJsonObj());
             } else if (extFuncName == P4V1::V1Model::instance.log_msg.name) {
                 BUG_CHECK(mce->arguments->size() == 2 || mce->arguments->size() == 1,
-                          "%1%: Expected 1 or 2 arguments", mce);
+                          "{0}: Expected 1 or 2 arguments", mce);
                 result->emplace("op", "primitive");
                 auto ef = minst->to<P4::ExternFunction>();
                 auto ijson = ExternConverter::cvtExternFunction(ctxt, ef, mce, stat, false);
@@ -319,18 +319,18 @@ Util::IJson *ParserConverter::convertParserStatement(const IR::StatOrDecl *stat)
                 else
                     primitive = "pop";
 
-                BUG_CHECK(mce->arguments->size() == 1, "Expected 1 argument for %1%", mce);
+                BUG_CHECK(mce->arguments->size() == 1, "Expected 1 argument for {0}", mce);
                 auto arg = ctxt->conv->convert(mce->arguments->at(0)->expression);
                 pp->append(arg);
             } else {
-                BUG("%1%: Unexpected built-in method", bi->name);
+                BUG("{0}: Unexpected built-in method", bi->name);
             }
 
             paramsValue->emplace("op", primitive);
             return result;
         }
     }
-    ::error(ErrorType::ERR_UNSUPPORTED, "%1%: not supported in parser on this target", stat);
+    ::error(ErrorType::ERR_UNSUPPORTED, "{0}: not supported in parser on this target", stat);
     return result;
 }
 
@@ -340,12 +340,12 @@ void ParserConverter::convertSimpleKey(const IR::Expression *keySet, big_int &va
     if (keySet->is<IR::Mask>()) {
         auto mk = keySet->to<IR::Mask>();
         if (!mk->left->is<IR::Constant>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must evaluate to a compile-time constant",
+            ::error(ErrorType::ERR_INVALID, "{0}: must evaluate to a compile-time constant",
                     mk->left);
             return;
         }
         if (!mk->right->is<IR::Constant>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must evaluate to a compile-time constant",
+            ::error(ErrorType::ERR_INVALID, "{0}: must evaluate to a compile-time constant",
                     mk->right);
             return;
         }
@@ -361,7 +361,7 @@ void ParserConverter::convertSimpleKey(const IR::Expression *keySet, big_int &va
         value = 0;
         mask = 0;
     } else {
-        ::error(ErrorType::ERR_INVALID, "%1%: must evaluate to a compile-time constant", keySet);
+        ::error(ErrorType::ERR_INVALID, "{0}: must evaluate to a compile-time constant", keySet);
         value = 0;
         mask = 0;
     }
@@ -387,7 +387,7 @@ unsigned ParserConverter::combine(const IR::Expression *keySet, const IR::ListEx
         return totalWidth;
     } else if (keySet->is<IR::ListExpression>()) {
         auto le = keySet->to<IR::ListExpression>();
-        BUG_CHECK(le->components.size() == select->components.size(), "%1%: mismatched select",
+        BUG_CHECK(le->components.size() == select->components.size(), "{0}: mismatched select",
                   select);
         unsigned index = 0;
 
@@ -398,7 +398,7 @@ unsigned ParserConverter::combine(const IR::Expression *keySet, const IR::ListEx
 
             auto type = ctxt->typeMap->getType(e, true);
             int width = type->width_bits();
-            BUG_CHECK(width > 0, "%1%: unknown width", e);
+            BUG_CHECK(width > 0, "{0}: unknown width", e);
 
             big_int key_value, mask_value;
             convertSimpleKey(keyElement, key_value, mask_value);
@@ -435,7 +435,7 @@ unsigned ParserConverter::combine(const IR::Expression *keySet, const IR::ListEx
         auto type = ctxt->typeMap->getTypeType(vset->elementType, true);
         return ROUNDUP(type->width_bits(), 8);
     } else {
-        BUG_CHECK(select->components.size() == 1, "%1%: mismatched select/label", select);
+        BUG_CHECK(select->components.size() == 1, "{0}: mismatched select/label", select);
         convertSimpleKey(keySet, value, mask);
         auto type = ctxt->typeMap->getType(select->components.at(0), true);
         return ROUNDUP(type->width_bits(), 8);
@@ -447,7 +447,7 @@ Util::IJson *ParserConverter::stateName(IR::ID state) {
         return Util::JsonValue::null;
     } else if (state.name == IR::ParserState::reject) {
         ::warning(ErrorType::WARN_UNSUPPORTED,
-                  "Explicit transition to %1% not supported on this target", state);
+                  "Explicit transition to {0} not supported on this target", state);
         return Util::JsonValue::null;
     } else {
         return new Util::JsonValue(state.name);
@@ -523,7 +523,7 @@ void ParserConverter::addValueSets(const IR::P4Parser *parser) {
         CHECK_NULL(matchPathExpr);
         auto matchTypeDecl =
             ctxt->refMap->getDeclaration(matchPathExpr->path, true)->to<IR::Declaration_ID>();
-        BUG_CHECK(matchTypeDecl != nullptr, "No declaration for match type '%1%'", matchPathExpr);
+        BUG_CHECK(matchTypeDecl != nullptr, "No declaration for match type '{0}'", matchPathExpr);
         return (matchTypeDecl->name.name == P4::P4CoreLibrary::instance.exactMatch.name);
     };
 
@@ -538,7 +538,7 @@ void ParserConverter::addValueSets(const IR::P4Parser *parser) {
                 if (isExactMatch(f)) continue;
                 ::warning(ErrorType::WARN_UNSUPPORTED,
                           "This backend only supports exact matches in value_sets but the match "
-                          "on '%1%' is not exact; the annotation will be ignored",
+                          "on '{0}' is not exact; the annotation will be ignored",
                           f);
             }
         }
@@ -582,7 +582,7 @@ bool ParserConverter::preorder(const IR::P4Parser *parser) {
                 auto transition = convertPathExpression(expr);
                 ctxt->json->add_parser_transition(state_id, transition);
             } else {
-                BUG("%1%: unexpected selectExpression", state->selectExpression);
+                BUG("{0}: unexpected selectExpression", state->selectExpression);
             }
         } else {
             auto transition = createDefaultTransition();
@@ -602,7 +602,7 @@ bool ParserConverter::preorder(const IR::P4Parser *parser) {
                 continue;
             }
         }
-        // P4C_UNIMPLEMENTED("%1%: not yet handled", c);
+        // P4C_UNIMPLEMENTED("{0}: not yet handled", c);
     }
     return false;
 }

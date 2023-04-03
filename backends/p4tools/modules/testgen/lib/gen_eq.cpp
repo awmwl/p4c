@@ -32,7 +32,7 @@ const IR::Expression *GenEq::equate(const IR::Expression *target, const IR::Expr
     // If the target is a list expression, it had better be a singleton. In this case, recurse into
     // the singleton element.
     if (const auto *listTarget = target->to<IR::ListExpression>()) {
-        BUG_CHECK(listTarget->size() == 1, "Cannot match %1% with %2%", target, keyset);
+        BUG_CHECK(listTarget->size() == 1, "Cannot match {0} with {1}", target, keyset);
         return equate(listTarget->components.at(0), keyset);
     }
 
@@ -52,7 +52,7 @@ const IR::Expression *GenEq::equate(const IR::Expression *target,
     }
 
     const auto *listTarget = target->to<IR::ListExpression>();
-    BUG_CHECK(listTarget, "Cannot match %1% with %2%", target, keyset);
+    BUG_CHECK(listTarget, "Cannot match {0} with {1}", target, keyset);
     return equate(listTarget, keyset);
 }
 
@@ -60,7 +60,7 @@ const IR::Expression *GenEq::equate(const IR::Expression *target, const IR::Mask
     // If the target is a list expression, it had better be a singleton. In this case, recurse into
     // the singleton element.
     if (const auto *listTarget = target->to<IR::ListExpression>()) {
-        BUG_CHECK(listTarget->size() == 1, "Cannot match %1% with %2%", target, keyset);
+        BUG_CHECK(listTarget->size() == 1, "Cannot match {0} with {1}", target, keyset);
         return equate(listTarget->components.at(0), keyset);
     }
 
@@ -74,7 +74,7 @@ const IR::Expression *GenEq::equate(const IR::Expression *target, const IR::Rang
     // If the target is a list expression, it had better be a singleton. In this case, recurse into
     // the singleton element.
     if (const auto *listTarget = target->to<IR::ListExpression>()) {
-        BUG_CHECK(listTarget->size() == 1, "Cannot match %1% with %2%", target, keyset);
+        BUG_CHECK(listTarget->size() == 1, "Cannot match {0} with {1}", target, keyset);
         return equate(listTarget->components.at(0), keyset);
     }
 
@@ -94,7 +94,7 @@ const IR::Expression *GenEq::equate(const IR::ListExpression *target,
         return equate(target->components.at(0), keyset);
     }
 
-    BUG_CHECK(target->size() == keyset->size(), "Cannot match %1% with %2%", target, keyset);
+    BUG_CHECK(target->size() == keyset->size(), "Cannot match {0} with {1}", target, keyset);
 
     const IR::Expression *result = new IR::BoolLiteral(IR::Type::Boolean::get(), true);
     bool firstLoop = true;

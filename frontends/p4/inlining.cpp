@@ -37,7 +37,7 @@ class FindLocationSets : public Inspector {
 
     const LocationSet *get(const IR::Expression *expression) const {
         auto result = ::get(loc, expression);
-        BUG_CHECK(result != nullptr, "No location set known for %1%", expression);
+        BUG_CHECK(result != nullptr, "No location set known for {0}", expression);
         return result;
     }
     void set(const IR::Expression *expression, const LocationSet *ls) {
@@ -195,7 +195,7 @@ class ComputeNewNames : public Inspector {
     }
 
     void rename(const IR::Declaration *decl) {
-        BUG_CHECK(decl->is<IR::IAnnotated>(), "%1%: no annotations", decl);
+        BUG_CHECK(decl->is<IR::IAnnotated>(), "{0}: no annotations", decl);
         cstring name = decl->externalName();
         cstring extName;
         if (name.startsWith(".")) {
@@ -342,7 +342,7 @@ void InlineList::analyze() {
             auto second = *it;
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
                     "Multiple invocations of the same object "
-                    "not supported on this target: %1%, %2%",
+                    "not supported on this target: {0}, {1}",
                     first, second);
             continue;
         }
@@ -390,7 +390,7 @@ void DiscoverInlining::postorder(const IR::MethodCallStatement *statement) {
     if (instantiation != nullptr)
         inlineList->addInvocation(instantiation, statement);
     else
-        BUG_CHECK(am->object->is<IR::Parameter>(), "%1% expected a constructor parameter",
+        BUG_CHECK(am->object->is<IR::Parameter>(), "{0} expected a constructor parameter",
                   am->object);
 }
 
@@ -407,7 +407,7 @@ void DiscoverInlining::visit_all(const IR::Block *block) {
 bool DiscoverInlining::preorder(const IR::ControlBlock *block) {
     LOG4("Visiting " << block);
     if (getContext()->node->is<IR::ParserBlock>()) {
-        ::error(ErrorType::ERR_INVALID, "%1%: instantiation of control in parser", block->node);
+        ::error(ErrorType::ERR_INVALID, "{0}: instantiation of control in parser", block->node);
         return false;
     } else if (getContext()->node->is<IR::ControlBlock>() && allowControls) {
         auto parent = getContext()->node->to<IR::ControlBlock>();
@@ -426,7 +426,7 @@ bool DiscoverInlining::preorder(const IR::ControlBlock *block) {
 bool DiscoverInlining::preorder(const IR::ParserBlock *block) {
     LOG4("Visiting " << block);
     if (getContext()->node->is<IR::ControlBlock>()) {
-        ::error(ErrorType::ERR_INVALID, "%1%: instantiation of parser in control", block->node);
+        ::error(ErrorType::ERR_INVALID, "{0}: instantiation of parser in control", block->node);
         return false;
     } else if (getContext()->node->is<IR::ParserBlock>()) {
         auto parent = getContext()->node->to<IR::ParserBlock>();
@@ -650,9 +650,9 @@ const IR::Node *GeneralInliner::preorder(IR::MethodCallStatement *statement) {
                 // This is a compile-time constant, since this is a non-directional
                 // parameter, so the value should be independent on the context.
                 ::error(ErrorType::ERR_INVALID,
-                        "%1%: non-directional parameters must be substitued with the "
+                        "{0}: non-directional parameters must be substitued with the "
                         "same value in all invocations; two different substitutions are "
-                        "%2% and %3%",
+                        "{1} and {2}",
                         param, initializer, prev);
             continue;
         }
@@ -816,9 +816,9 @@ const IR::Node *GeneralInliner::preorder(IR::ParserState *state) {
                     // This is a compile-time constant, since this is a non-directional
                     // parameter, so the value should be independent on the context.
                     ::error(ErrorType::ERR_INVALID,
-                            "%1%: non-directional parameters must be substitued with the "
+                            "{0}: non-directional parameters must be substitued with the "
                             "same value in all invocations; two different substitutions are "
-                            "%2% and %3%",
+                            "{1} and {2}",
                             param, initializer, prev);
                 continue;
             }
@@ -880,7 +880,7 @@ const IR::Node *GeneralInliner::preorder(IR::ParserState *state) {
                                                << call << ") and transition: "
                                                << dbp(state->selectExpression));
             BUG_CHECK(ret.second == true || newStartName == ret.first->second,
-                      "State: %1% already saved, can not save: %2%!", ret.first->second,
+                      "State: {0} already saved, can not save: {1}!", ret.first->second,
                       newStartName);
         }
 

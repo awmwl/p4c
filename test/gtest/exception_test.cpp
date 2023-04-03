@@ -37,7 +37,7 @@ TEST(UtilException, Messages) {
     }
 
     try {
-        throw CompilationError("Testing error %1%", 1);
+        throw CompilationError("Testing error {0}", 1);
     } catch (std::exception &ex) {
         cstring err(ex.what());
         EXPECT_EQ(err, "Testing error 1\n");

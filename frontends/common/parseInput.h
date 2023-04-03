@@ -48,7 +48,7 @@ static const IR::P4Program *parseV1Program(Input &stream, const char *sourceFile
     if (Log::verbose()) std::cerr << "Converting to P4-16" << std::endl;
     v1 = v1->apply(converter);
     if (::errorCount() > 0 || v1 == nullptr) return nullptr;
-    BUG_CHECK(v1->is<IR::P4Program>(), "Conversion returned %1%", v1);
+    BUG_CHECK(v1->is<IR::P4Program>(), "Conversion returned {0}", v1);
     return v1->to<IR::P4Program>();
 }
 
@@ -69,7 +69,7 @@ const IR::P4Program *parseP4File(ParserOptions &options) {
     if (options.doNotPreprocess) {
         in = fopen(options.file, "r");
         if (in == nullptr) {
-            ::error(ErrorType::ERR_NOT_FOUND, "%1%: No such file or directory.", options.file);
+            ::error(ErrorType::ERR_NOT_FOUND, "{0}: No such file or directory.", options.file);
             return nullptr;
         }
     } else {
@@ -83,7 +83,7 @@ const IR::P4Program *parseP4File(ParserOptions &options) {
     options.closeInput(in);
 
     if (::errorCount() > 0) {
-        ::error(ErrorType::ERR_OVERLIMIT, "%1% errors encountered, aborting compilation",
+        ::error(ErrorType::ERR_OVERLIMIT, "{0} errors encountered, aborting compilation",
                 ::errorCount());
         return nullptr;
     }

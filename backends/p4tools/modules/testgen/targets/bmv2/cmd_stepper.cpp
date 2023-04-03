@@ -148,7 +148,7 @@ std::map<Continuation::Exception, Continuation> BMv2_V1ModelCmdStepper::getExcep
             result.emplace(Continuation::Exception::NoMatch, Continuation::Body({}));
             break;
         default:
-            BUG("Unimplemented thread: %1%", gress);
+            BUG("Unimplemented thread: {0}", gress);
     }
 
     return result;

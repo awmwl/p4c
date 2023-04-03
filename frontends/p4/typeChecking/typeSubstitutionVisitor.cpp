@@ -38,7 +38,7 @@ const IR::Node *TypeVariableSubstitutionVisitor::preorder(IR::TypeParameters *tp
         } else {
             if (type != nullptr)
                 BUG_CHECK(type->is<IR::Type_Var>(),
-                          "cannot replace a type parameter %1% with %2%:", *it, type);
+                          "cannot replace a type parameter {0} with {1}:", *it, type);
             ++it;
         }
     }

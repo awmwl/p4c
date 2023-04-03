@@ -48,7 +48,7 @@ class IndexedVector : public Vector<T> {
         auto previous = declarations.find(name);
         if (previous != declarations.end()) {
             invalid = true;
-            ::error(ErrorType::ERR_DUPLICATE, "%1%: Duplicates declaration %2%", a,
+            ::error(ErrorType::ERR_DUPLICATE, "{0}: Duplicates declaration {1}", a,
                     previous->second);
         } else {
             declarations[name] = decl;
@@ -60,7 +60,7 @@ class IndexedVector : public Vector<T> {
         if (decl == nullptr) return;
         cstring name = decl->getName().name;
         auto it = declarations.find(name);
-        if (it == declarations.end()) BUG("%1% does not exist", a);
+        if (it == declarations.end()) BUG("{0} does not exist", a);
         declarations.erase(it);
     }
 
@@ -209,7 +209,7 @@ class IndexedVector : public Vector<T> {
             if (!decl) continue;
             auto it = declarations.find(decl->getName());
             BUG_CHECK(it != declarations.end() && it->second->getNode() == el->getNode(),
-                      "invalid element %1%", el);
+                      "invalid element {0}", el);
         }
     }
 };

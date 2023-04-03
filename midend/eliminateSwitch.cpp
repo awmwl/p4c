@@ -41,7 +41,7 @@ const IR::Node *DoEliminateSwitch::postorder(IR::P4Control *control) {
 
 const IR::Node *DoEliminateSwitch::postorder(IR::SwitchStatement *statement) {
     if (findContext<IR::P4Action>()) {
-        ::error("%1%: switch statements not supported in actions on this target", statement);
+        ::error("{0}: switch statements not supported in actions on this target", statement);
         return statement;
     }
     auto type = typeMap->getType(statement->expression);

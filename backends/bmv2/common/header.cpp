@@ -47,7 +47,7 @@ void HeaderConverter::addTypesAndInstances(const IR::Type_StructLike *type, bool
             // The headers struct can not contain nested structures.
             if (!meta && ft->is<IR::Type_Struct>()) {
                 ::error(ErrorType::ERR_INVALID,
-                        "%1%: type should only contain headers, header stacks, or header unions",
+                        "{0}: type should only contain headers, header stacks, or header unions",
                         type);
                 return;
             }
@@ -80,7 +80,7 @@ void HeaderConverter::addTypesAndInstances(const IR::Type_StructLike *type, bool
                     }
                     ctxt->json->add_union(header_type, fields, header_name);
                 } else {
-                    BUG("Unexpected type %1%", ft);
+                    BUG("Unexpected type {0}", ft);
                 }
             }
         } else if (ft->is<IR::Type_Stack>()) {
@@ -120,7 +120,7 @@ void HeaderConverter::addTypesAndInstances(const IR::Type_StructLike *type, bool
                 visitedHeaders.emplace(headerName);
                 addHeaderType(hdrType);
             } else {
-                BUG("%1%: Unhandled type for %2%", ft, f);
+                BUG("{0}: Unhandled type for {1}", ft, f);
             }
         }
     }
@@ -173,7 +173,7 @@ void HeaderConverter::addHeaderStacks(const IR::Type_Struct *headersStruct) {
             else
                 ctxt->json->add_header_stack(stack_type, stack_name, stack_size, ids);
         } else {
-            BUG("%1%: unexpected type in stack", type);
+            BUG("{0}: unexpected type in stack", type);
         }
     }
 }
@@ -220,7 +220,7 @@ void HeaderConverter::addHeaderType(const IR::Type_StructLike *st) {
     for (auto f : st->fields) {
         auto ftype = ctxt->typeMap->getType(f, true);
         if (ftype->to<IR::Type_StructLike>()) {
-            BUG("%1%: nested ctxt->structure", st);
+            BUG("{0}: nested ctxt->structure", st);
         } else if (ftype->is<IR::Type_Boolean>()) {
             auto field = pushNewArray(fields);
             field->append(f->name.name);
@@ -240,7 +240,7 @@ void HeaderConverter::addHeaderType(const IR::Type_StructLike *st) {
             field->append("*");
             if (varbitFound)
                 ::error(ErrorType::ERR_UNSUPPORTED,
-                        "%1%: headers with multiple varbit fields not supported", st);
+                        "{0}: headers with multiple varbit fields not supported", st);
             varbitFound = true;
         } else if (ftype->is<IR::Type_Error>()) {
             // treat as bit<32>
@@ -250,9 +250,9 @@ void HeaderConverter::addHeaderType(const IR::Type_StructLike *st) {
             field->append(false);
             max_length += 32;
         } else if (ftype->to<IR::Type_Stack>()) {
-            BUG("%1%: nested stack", st);
+            BUG("{0}: nested stack", st);
         } else {
-            BUG("%1%: unexpected type for %2%.%3%", ftype, st, f->name);
+            BUG("{0}: unexpected type for {1}.{2}", ftype, st, f->name);
         }
     }
 
@@ -261,7 +261,7 @@ void HeaderConverter::addHeaderType(const IR::Type_StructLike *st) {
     if (padding != 0) {
         if (st->is<IR::Type_Header>()) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "%1%: Found header with fields totaling %2% bits."
+                    "{0}: Found header with fields totaling {1} bits."
                     "  BMv2 target only supports headers with fields"
                     " totaling a multiple of 8 bits.",
                     st, max_length);
@@ -272,7 +272,7 @@ void HeaderConverter::addHeaderType(const IR::Type_StructLike *st) {
             field->append(8 - padding);
             field->append(false);
         } else {
-            BUG("%1%: Found struct-like object with fields totaling %2% bits."
+            BUG("{0}: Found struct-like object with fields totaling {1} bits."
                 "  This type is not expected here.  Add a case to handle it."
                 "  BMv2 target only supports headers with fields"
                 " totaling a multiple of 8 bits.",
@@ -398,7 +398,7 @@ Visitor::profile_t HeaderConverter::init_apply(const IR::Node *node) {
         } else if (type->is<IR::Type_Set>()) {
             continue;  // ignore: this is probably a value_set
         } else {
-            P4C_UNIMPLEMENTED("%1%: type not yet handled on this target", type);
+            P4C_UNIMPLEMENTED("{0}: type not yet handled on this target", type);
         }
     }
 

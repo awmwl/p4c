@@ -26,7 +26,7 @@ limitations under the License.
 namespace IR {
 
 cstring Annotation::getName() const {
-    BUG_CHECK(name == IR::Annotation::nameAnnotation, "%1%: Only works on name annotations", this);
+    BUG_CHECK(name == IR::Annotation::nameAnnotation, "{0}: Only works on name annotations", this);
     if (needsParsing)
         // This can happen if this method is invoked before we have parsed
         // annotation bodies.
@@ -36,12 +36,12 @@ cstring Annotation::getName() const {
 
 cstring Annotation::getSingleString() const {
     if (expr.size() != 1) {
-        ::error(ErrorType::ERR_INVALID, "%1%: should contain a string", this);
+        ::error(ErrorType::ERR_INVALID, "{0}: should contain a string", this);
         return "";
     }
     auto str = expr[0]->to<IR::StringLiteral>();
     if (str == nullptr) {
-        ::error(ErrorType::ERR_INVALID, "%1%: should contain a string", this);
+        ::error(ErrorType::ERR_INVALID, "{0}: should contain a string", this);
         return "";
     }
     return str->value;

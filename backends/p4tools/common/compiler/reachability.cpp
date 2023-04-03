@@ -203,7 +203,7 @@ bool P4ProgramDCGCreator::preorder(const IR::P4Program *program) {
     const auto mainCount = program->getDeclsByName(IR::P4Program::main)->count();
     BUG_CHECK(mainCount > 0, "Program doesn't have a main declaration.");
     const auto *mainIDecl = program->getDeclsByName(IR::P4Program::main)->single();
-    BUG_CHECK(mainIDecl, "Program's main declaration not found: %1%", program->main);
+    BUG_CHECK(mainIDecl, "Program's main declaration not found: {0}", program->main);
     const auto *declInstance = mainIDecl->to<IR::Declaration_Instance>();
     std::vector<const IR::ConstructorCallExpression *> v;
     for (const auto *arg : *declInstance->arguments) {
@@ -226,7 +226,7 @@ bool P4ProgramDCGCreator::preorder(const IR::P4Program *program) {
                     return pathExpr->path->name == decl->name;
                 };
             const auto *declVector = program->getDeclarations()->where(filter)->toVector();
-            BUG_CHECK(!declVector->empty(), "Not a declaration instance: %1%", pathExpr);
+            BUG_CHECK(!declVector->empty(), "Not a declaration instance: {0}", pathExpr);
 
             // Convert the declaration instance into a constructor-call expression.
             const auto *decl = declVector->at(0)->to<IR::Declaration_Instance>();
@@ -458,7 +458,7 @@ std::unordered_set<const DCGVertexType *> ReachabilityEngine::getName(std::strin
     std::string params;
     if ((name.length() != 0U) && name[name.length() - 1] == ')') {
         size_t n = name.find('(');
-        BUG_CHECK(n != std::string::npos, "Invalid format : %1%", name);
+        BUG_CHECK(n != std::string::npos, "Invalid format : {0}", name);
         params = name.substr(n + 1, name.length() - n - 2);
         name = name.substr(0, n);
     }
@@ -471,7 +471,7 @@ std::unordered_set<const DCGVertexType *> ReachabilityEngine::getName(std::strin
         name += "_table";
         i = hash.find(name);
     }
-    BUG_CHECK(i != hash.end(), "Can't find name %1% in hash of the program", name);
+    BUG_CHECK(i != hash.end(), "Can't find name {0} in hash of the program", name);
     if (params.length() != 0U) {
         // Add condition to a point.
         const auto *expr = stringToNode(params);

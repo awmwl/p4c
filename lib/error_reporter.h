@@ -31,7 +31,7 @@ enum class DiagnosticAction {
 // Keeps track of compilation errors.
 // Errors are specified using the error() and warning() methods,
 // that use FmtFormatter format strings, i.e.,
-// %1%, %2%, etc (starting at 1, not at 0).
+// {0}, {1}, etc (starting at 1, not at 0).
 // Some compatibility for printf-style arguments is also supported.
 class ErrorReporter {
  protected:
@@ -156,7 +156,7 @@ class ErrorReporter {
         emit_message(msg);
 
         if (errorCount > maxErrorCount)
-            FATAL_ERROR("Number of errors exceeded set maximum of %1%", maxErrorCount);
+            FATAL_ERROR("Number of errors exceeded set maximum of {0}", maxErrorCount);
     }
 
     unsigned getErrorCount() const { return errorCount; }

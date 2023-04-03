@@ -179,7 +179,7 @@ void JsonObjects::add_header_field(const cstring &name, Util::JsonArray *&field)
     CHECK_NULL(field);
     Util::JsonObject *headerType = find_object_by_name(header_types, name);
     Util::JsonArray *fields = headerType->get("fields")->to<Util::JsonArray>();
-    BUG_CHECK(fields != nullptr, "header '%1%' not found", name);
+    BUG_CHECK(fields != nullptr, "header '{0}' not found", name);
     fields->append(field);
 }
 
@@ -307,7 +307,7 @@ unsigned JsonObjects::add_parser(const cstring &name) {
 /// insert parser state into a parser identified by parser_id
 /// return the id of the parser state
 unsigned JsonObjects::add_parser_state(const unsigned parser_id, const cstring &state_name) {
-    if (map_parser.find(parser_id) == map_parser.end()) BUG("parser %1% not found.", parser_id);
+    if (map_parser.find(parser_id) == map_parser.end()) BUG("parser {0} not found.", parser_id);
     auto parser = map_parser[parser_id];
     auto states = parser->get("parse_states")->to<Util::JsonArray>();
     auto state = new Util::JsonObject();
@@ -328,7 +328,7 @@ unsigned JsonObjects::add_parser_state(const unsigned parser_id, const cstring &
 
 void JsonObjects::add_parser_transition(const unsigned state_id, Util::IJson *transition) {
     if (map_parser_state.find(state_id) == map_parser_state.end())
-        BUG("parser state %1% not found.", state_id);
+        BUG("parser state {0} not found.", state_id);
     auto state = map_parser_state[state_id];
     auto transitions = state->get("transitions")->to<Util::JsonArray>();
     CHECK_NULL(transitions);
@@ -339,7 +339,7 @@ void JsonObjects::add_parser_transition(const unsigned state_id, Util::IJson *tr
 
 void JsonObjects::add_parser_op(const unsigned state_id, Util::IJson *op) {
     if (map_parser_state.find(state_id) == map_parser_state.end())
-        BUG("parser state %1% not found.", state_id);
+        BUG("parser state {0} not found.", state_id);
     auto state = map_parser_state[state_id];
     auto statements = state->get("parser_ops")->to<Util::JsonArray>();
     CHECK_NULL(statements);

@@ -148,7 +148,7 @@ ParserOptions::ParserOptions() : Util::Options(defaultMessage) {
             } else if (!strcmp(arg, "1.2") || !strcmp(arg, "16")) {
                 langVersion = ParserOptions::FrontendVersion::P4_16;
             } else {
-                ::error(ErrorType::ERR_INVALID, "Illegal language version %1%", arg);
+                ::error(ErrorType::ERR_INVALID, "Illegal language version {0}", arg);
                 return false;
             }
             return true;
@@ -162,7 +162,7 @@ ParserOptions::ParserOptions() : Util::Options(defaultMessage) {
             } else if (!strcmp(arg, "16") || !strcmp(arg, "p4-16")) {
                 langVersion = ParserOptions::FrontendVersion::P4_16;
             } else {
-                ::error(ErrorType::ERR_INVALID, "Illegal language version %1%", arg);
+                ::error(ErrorType::ERR_INVALID, "Illegal language version {0}", arg);
                 return false;
             }
             return true;
@@ -331,7 +331,7 @@ bool ParserOptions::searchForIncludePath(const char *&includePathOut,
     bool found = false;
     char buffer[PATH_MAX];
 
-    BUG_CHECK(strlen(exename) < PATH_MAX, "executable path %1% is too long.", exename);
+    BUG_CHECK(strlen(exename) < PATH_MAX, "executable path {0} is too long.", exename);
 
     snprintf(buffer, sizeof(buffer), "%s", exename);
     if (char *p = strrchr(buffer, '/')) {
@@ -483,7 +483,7 @@ void ParserOptions::dumpPass(const char *manager, unsigned seq, const char *pass
 
 bool ParserOptions::isAnnotationDisabled(const IR::Annotation *a) const {
     if (disabledAnnotations.count(a->name.name) > 0) {
-        ::warning(ErrorType::WARN_IGNORE, "%1% is ignored because it was explicitly disabled", a);
+        ::warning(ErrorType::WARN_IGNORE, "{0} is ignored because it was explicitly disabled", a);
         return true;
     }
     return false;

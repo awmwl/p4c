@@ -91,20 +91,20 @@ big_int getBigIntFromLiteral(const Literal *l) {
     if (const auto *b = l->to<BoolLiteral>()) {
         return b->value ? 1 : 0;
     }
-    P4C_UNIMPLEMENTED("Literal %1% of type %2% not supported.", l, l->node_type_name());
+    P4C_UNIMPLEMENTED("Literal {0} of type {1} not supported.", l, l->node_type_name());
 }
 
 int getIntFromLiteral(const Literal *l) {
     if (const auto *c = l->to<Constant>()) {
         if (!c->fitsInt()) {
-            BUG("Value %1% too large for Int.", l);
+            BUG("Value {0} too large for Int.", l);
         }
         return c->asInt();
     }
     if (const auto *b = l->to<BoolLiteral>()) {
         return b->value ? 1 : 0;
     }
-    P4C_UNIMPLEMENTED("Literal %1% of type %2% not supported.", l, l->node_type_name());
+    P4C_UNIMPLEMENTED("Literal {0} of type {1} not supported.", l, l->node_type_name());
 }
 
 big_int getMaxBvVal(int bitWidth) { return pow(big_int(2), bitWidth) - 1; }
@@ -116,7 +116,7 @@ big_int getMaxBvVal(const Type *t) {
     if (t->is<Type_Boolean>()) {
         return 1;
     }
-    P4C_UNIMPLEMENTED("Maximum value calculation for type %1% not implemented.", t);
+    P4C_UNIMPLEMENTED("Maximum value calculation for type {0} not implemented.", t);
 }
 
 big_int getMinBvVal(const Type *t) {
@@ -126,7 +126,7 @@ big_int getMinBvVal(const Type *t) {
     if (t->is<Type_Boolean>()) {
         return 0;
     }
-    P4C_UNIMPLEMENTED("Maximum value calculation for type %1% not implemented.", t);
+    P4C_UNIMPLEMENTED("Maximum value calculation for type {0} not implemented.", t);
 }
 
 std::vector<const Expression *> flattenStructExpression(const StructExpression *structExpr) {

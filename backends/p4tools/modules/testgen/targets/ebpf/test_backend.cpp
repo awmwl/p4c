@@ -48,7 +48,7 @@ EBPFTestBackend::EBPFTestBackend(const ProgramInfo &programInfo, SymbolicExecuto
             supportedBackendString << backend;
         }
         P4C_UNIMPLEMENTED(
-            "Test back end %1% not implemented for this target. Supported back ends are %2%.",
+            "Test back end {0} not implemented for this target. Supported back ends are {1}.",
             testBackendString, supportedBackendString.str());
     }
 }

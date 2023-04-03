@@ -203,11 +203,11 @@ bool ControlGraphs::preorder(const IR::MethodCallStatement *statement) {
         } else if (am->applyObject->is<IR::Type_Control>()) {
             if (am->object->is<IR::Parameter>()) {
                 ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                        "%1%: control parameters are not supported by this target", am->object);
+                        "{0}: control parameters are not supported by this target", am->object);
                 return false;
             }
             BUG_CHECK(am->object->is<IR::Declaration_Instance>(),
-                      "Unsupported control invocation: %1%", am->object);
+                      "Unsupported control invocation: {0}", am->object);
             auto instantiation = am->object->to<IR::Declaration_Instance>();
             instanceName = instantiation->controlPlaneName();
             auto type = instantiation->type;
@@ -217,7 +217,7 @@ bool ControlGraphs::preorder(const IR::MethodCallStatement *statement) {
                 visit(decl->to<IR::P4Control>());
             }
         } else {
-            BUG("Unsupported apply method: %1%", instance->expr);
+            BUG("Unsupported apply method: {0}", instance->expr);
         }
     } else {
         statementsStack.push_back(statement);

@@ -80,7 +80,7 @@ class StatementConverter : public ExpressionConverter {
     const IR::Statement *convert(const IR::Node *node) {
         auto conv = node->apply(*this);
         auto result = conv->to<IR::Statement>();
-        BUG_CHECK(result != nullptr, "Conversion of %1% did not produce a statement", node);
+        BUG_CHECK(result != nullptr, "Conversion of {0} did not produce a statement", node);
         return result;
     }
 };
@@ -185,7 +185,7 @@ class DiscoverStructure : public Inspector {
         auto it = reserved_names.find(nodeName);
         if (it == reserved_names.end()) return;
         if (it->second != kind)
-            ::error(ErrorType::ERR_INVALID, "%1%: invalid name; it can only be used for %2%", node,
+            ::error(ErrorType::ERR_INVALID, "{0}: invalid name; it can only be used for {1}", node,
                     it->second);
     }
     void checkReserved(const IR::Node *node, cstring nodeName) const {
@@ -199,7 +199,7 @@ class DiscoverStructure : public Inspector {
     }
 
     void postorder(const IR::ParserException *ex) override {
-        warn(ErrorType::WARN_UNSUPPORTED, "%1%: parser exception is not translated to P4-16", ex);
+        warn(ErrorType::WARN_UNSUPPORTED, "{0}: parser exception is not translated to P4-16", ex);
     }
     void postorder(const IR::Metadata *md) override {
         structure->metadata.emplace(md);
@@ -298,7 +298,7 @@ class ComputeCallGraph : public Inspector {
             if (expr->is<IR::Primitive>()) {
                 auto primitive = expr->to<IR::Primitive>();
                 if (primitive->name == "extract") {
-                    BUG_CHECK(primitive->operands.size() == 1, "Expected 1 operand for %1%",
+                    BUG_CHECK(primitive->operands.size() == 1, "Expected 1 operand for {0}",
                               primitive);
                     auto dest = primitive->operands.at(0);
                     LOG3("Parser " << parser->name << " extracts into " << dest);
@@ -316,7 +316,7 @@ class ComputeCallGraph : public Inspector {
 
         if (extrn) {
             auto parent = findContext<IR::ActionFunction>();
-            BUG_CHECK(parent != nullptr, "%1%: Extern call not within action", primitive);
+            BUG_CHECK(parent != nullptr, "{0}: Extern call not within action", primitive);
             structure->calledExterns.calls(parent->name, extrn->name.name);
             return;
         } else if (primitive->name == "count") {
@@ -328,9 +328,9 @@ class ComputeCallGraph : public Inspector {
             else if (auto nr = ctrref->to<IR::PathExpression>())
                 ctr = structure->counters.get(nr->path->name);
             if (ctr == nullptr)
-                ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find counter", ctrref);
+                ::error(ErrorType::ERR_NOT_FOUND, "{0}: Cannot find counter", ctrref);
             auto parent = findContext<IR::ActionFunction>();
-            BUG_CHECK(parent != nullptr, "%1%: Counter call not within action", primitive);
+            BUG_CHECK(parent != nullptr, "{0}: Counter call not within action", primitive);
             structure->calledCounters.calls(parent->name, ctr->name.name);
             return;
         } else if (primitive->name == "execute_meter") {
@@ -340,9 +340,9 @@ class ComputeCallGraph : public Inspector {
                 mtr = gr->obj->to<IR::Meter>();
             else if (auto nr = mtrref->to<IR::PathExpression>())
                 mtr = structure->meters.get(nr->path->name);
-            if (mtr == nullptr) ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find meter", mtrref);
+            if (mtr == nullptr) ::error(ErrorType::ERR_NOT_FOUND, "{0}: Cannot find meter", mtrref);
             auto parent = findContext<IR::ActionFunction>();
-            BUG_CHECK(parent != nullptr, "%1%: not within action", primitive);
+            BUG_CHECK(parent != nullptr, "{0}: not within action", primitive);
             structure->calledMeters.calls(parent->name, mtr->name.name);
             return;
         } else if (primitive->name == "register_read" || primitive->name == "register_write") {
@@ -357,18 +357,18 @@ class ComputeCallGraph : public Inspector {
             else if (auto nr = regref->to<IR::PathExpression>())
                 reg = structure->registers.get(nr->path->name);
             if (reg == nullptr)
-                ::error(ErrorType::ERR_NOT_FOUND, "%1%: Cannot find register", regref);
+                ::error(ErrorType::ERR_NOT_FOUND, "{0}: Cannot find register", regref);
             auto parent = findContext<IR::ActionFunction>();
-            BUG_CHECK(parent != nullptr, "%1%: not within action", primitive);
+            BUG_CHECK(parent != nullptr, "{0}: not within action", primitive);
             structure->calledRegisters.calls(parent->name, reg->name.name);
             return;
         } else if (structure->actions.contains(name)) {
             auto parent = findContext<IR::ActionFunction>();
-            BUG_CHECK(parent != nullptr, "%1%: Action call not within action", primitive);
+            BUG_CHECK(parent != nullptr, "{0}: Action call not within action", primitive);
             structure->calledActions.calls(parent->name, name);
         } else if (structure->controls.contains(name)) {
             auto parent = findContext<IR::V1Control>();
-            BUG_CHECK(parent != nullptr, "%1%: Control call not within control", primitive);
+            BUG_CHECK(parent != nullptr, "{0}: Control call not within control", primitive);
             structure->calledControls.calls(parent->name, name);
         }
     }
@@ -379,7 +379,7 @@ class ComputeCallGraph : public Inspector {
         } else if (auto di = findContext<IR::Declaration_Instance>()) {
             caller = di->name;
         } else {
-            BUG("%1%: GlobalRef not within action or extern", gref);
+            BUG("{0}: GlobalRef not within action or extern", gref);
         }
         if (auto ctr = gref->obj->to<IR::Counter>())
             structure->calledCounters.calls(caller, ctr->name.name);
@@ -408,10 +408,10 @@ class ComputeTableCallGraph : public Inspector {
         LOG3("Scanning " << apply->name);
         auto tbl = structure->tables.get(apply->name.name);
         if (tbl == nullptr)
-            ::error(ErrorType::ERR_NOT_FOUND, "%1%: Could not find table", apply->name);
+            ::error(ErrorType::ERR_NOT_FOUND, "{0}: Could not find table", apply->name);
         auto parent = findContext<IR::V1Control>();
         if (!parent)
-            ::error(ErrorType::ERR_UNEXPECTED, "%1%: Apply not within a control block?", apply);
+            ::error(ErrorType::ERR_UNEXPECTED, "{0}: Apply not within a control block?", apply);
 
         auto ctrl = get(structure->tableMapping, tbl);
 
@@ -424,7 +424,7 @@ class ComputeTableCallGraph : public Inspector {
         if (ctrl != nullptr && ctrl != parent) {
             auto previous = get(structure->tableInvocation, tbl);
             ::error(ErrorType::ERR_INVALID,
-                    "%1%: Table invoked from two different controls: %2% and %3%", tbl, apply,
+                    "{0}: Table invoked from two different controls: {1} and {2}", tbl, apply,
                     previous);
         }
         LOG3("Invoking " << tbl << " in " << parent->name);
@@ -529,7 +529,7 @@ class FixExtracts final : public Transform {
                 cstring hname = structure->makeUniqueName(type->name);
                 if (fixedHeaderType != nullptr) {
                     ::error(ErrorType::ERR_INVALID,
-                            "%1%: header types with multiple varbit fields are not supported",
+                            "{0}: header types with multiple varbit fields are not supported",
                             type);
                     return nullptr;
                 }
@@ -617,7 +617,7 @@ class FixExtracts final : public Transform {
             return statement;
 
         // This is an extract method invocation
-        BUG_CHECK(mce->arguments->size() == 1, "%1%: expected 1 argument", mce);
+        BUG_CHECK(mce->arguments->size() == 1, "{0}: expected 1 argument", mce);
         auto arg = mce->arguments->at(0);
 
         auto fixed = splitHeaderType(ht);
@@ -734,10 +734,10 @@ class DetectDuplicates : public Inspector {
                     auto e2 = n->second;
                     if (e1->node_type_name() == e2->node_type_name()) {
                         if (e1->srcInfo.getStart().isValid())
-                            ::error(ErrorType::ERR_DUPLICATE, "%1%: same name as %2%", e1, e2);
+                            ::error(ErrorType::ERR_DUPLICATE, "{0}: same name as {1}", e1, e2);
                         else
                             // This name is probably standard_metadata_t, a built-in declaration
-                            ::error(ErrorType::ERR_INVALID, "%1% is invalid; name %2% is reserved",
+                            ::error(ErrorType::ERR_INVALID, "{0} is invalid; name {1} is reserved",
                                     e2, key);
                     }
                 }
@@ -914,10 +914,10 @@ class MoveIntrinsicMetadata : public Transform {
         if (intrField != nullptr) {
             auto intrTypeName = intrField->type;
             auto tn = intrTypeName->to<IR::Type_Name>();
-            BUG_CHECK(tn, "%1%: expected a Type_Name", intrTypeName);
+            BUG_CHECK(tn, "{0}: expected a Type_Name", intrTypeName);
             auto nt = program->getDeclsByName(tn->path->name)->nextOrDefault();
             if (nt == nullptr || !nt->is<IR::Type_Struct>()) {
-                ::error(ErrorType::ERR_INVALID, "%1%: expected a structure", tn);
+                ::error(ErrorType::ERR_INVALID, "{0}: expected a structure", tn);
                 return program;
             }
             intrType = nt->to<IR::Type_Struct>();
@@ -928,10 +928,10 @@ class MoveIntrinsicMetadata : public Transform {
         if (queueField != nullptr) {
             auto queueTypeName = queueField->type;
             auto tn = queueTypeName->to<IR::Type_Name>();
-            BUG_CHECK(tn, "%1%: expected a Type_Name", queueTypeName);
+            BUG_CHECK(tn, "{0}: expected a Type_Name", queueTypeName);
             auto nt = program->getDeclsByName(tn->path->name)->nextOrDefault();
             if (nt == nullptr || !nt->is<IR::Type_Struct>()) {
-                ::error(ErrorType::ERR_INVALID, "%1%: expected a structure", tn);
+                ::error(ErrorType::ERR_INVALID, "{0}: expected a structure", tn);
                 return program;
             }
             queueType = nt->to<IR::Type_Struct>();
@@ -945,7 +945,7 @@ class MoveIntrinsicMetadata : public Transform {
             if (intrType != nullptr) {
                 for (auto f : intrType->fields) {
                     if (type->fields.getDeclaration(f->name) == nullptr) {
-                        ::error(ErrorType::ERR_NOT_FOUND, "%1%: no such field in standard_metadata",
+                        ::error(ErrorType::ERR_NOT_FOUND, "{0}: no such field in standard_metadata",
                                 f->name);
                         LOG2("standard_metadata: " << type);
                     }
@@ -954,7 +954,7 @@ class MoveIntrinsicMetadata : public Transform {
             if (queueType != nullptr) {
                 for (auto f : queueType->fields) {
                     if (type->fields.getDeclaration(f->name) == nullptr) {
-                        ::error(ErrorType::ERR_NOT_FOUND, "%1%: no such field in standard_metadata",
+                        ::error(ErrorType::ERR_NOT_FOUND, "{0}: no such field in standard_metadata",
                                 f->name);
                         LOG2("standard_metadata: " << type);
                     }
@@ -1003,13 +1003,13 @@ class FindRecirculated : public Inspector {
         }
         auto expression = primitive->operands.at(operand);
         if (!expression->is<IR::PathExpression>()) {
-            ::error(ErrorType::ERR_EXPECTED, "%1%: expected a field list", expression);
+            ::error(ErrorType::ERR_EXPECTED, "{0}: expected a field list", expression);
             return;
         }
         auto nr = expression->to<IR::PathExpression>();
         auto fl = structure->field_lists.get(nr->path->name);
         if (fl == nullptr) {
-            ::error(ErrorType::ERR_EXPECTED, "%1%: Expected a field list", expression);
+            ::error(ErrorType::ERR_EXPECTED, "{0}: Expected a field list", expression);
             return;
         }
         LOG3("Recirculated " << nr->path->name);

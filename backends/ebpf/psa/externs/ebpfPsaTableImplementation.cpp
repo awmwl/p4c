@@ -82,8 +82,8 @@ void EBPFTableImplementationPSA::verifyTableActionList(const EBPFTablePSA *insta
 
     if (printError) {
         ::error(ErrorType::ERR_EXPECTED,
-                "%1%: Action list differs from previous %2% "
-                "(tables use the same implementation %3%)",
+                "{0}: Action list differs from previous {1} "
+                "(tables use the same implementation {2})",
                 instance->table->container->getActionList(), table->container->getActionList(),
                 declaration);
     }
@@ -91,17 +91,17 @@ void EBPFTableImplementationPSA::verifyTableActionList(const EBPFTablePSA *insta
 
 void EBPFTableImplementationPSA::verifyTableNoDefaultAction(const EBPFTablePSA *instance) {
     auto defaultAction = instance->table->container->getDefaultAction();
-    BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(), "%1%: expected an action call",
+    BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(), "{0}: expected an action call",
               defaultAction);
 
     auto mi = P4::MethodInstance::resolve(defaultAction->to<IR::MethodCallExpression>(),
                                           program->refMap, program->typeMap);
     auto ac = mi->to<P4::ActionCall>();
-    BUG_CHECK(ac != nullptr, "%1%: expected an action call", mi->expr);
+    BUG_CHECK(ac != nullptr, "{0}: expected an action call", mi->expr);
 
     if (ac->action->name.originalName != P4::P4CoreLibrary::instance.noAction.name) {
         ::error(ErrorType::ERR_UNSUPPORTED,
-                "%1%: Default action cannot be defined for table %2% with implementation %3%",
+                "{0}: Default action cannot be defined for table {1} with implementation {2}",
                 defaultAction, instance->table->container->name, declaration);
     }
 }
@@ -109,8 +109,8 @@ void EBPFTableImplementationPSA::verifyTableNoDefaultAction(const EBPFTablePSA *
 void EBPFTableImplementationPSA::verifyTableNoDirectObjects(const EBPFTablePSA *instance) {
     if (!instance->counters.empty() || !instance->meters.empty()) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%: DirectCounter and DirectMeter externs are not supported "
-                "with table implementation %2%",
+                "{0}: DirectCounter and DirectMeter externs are not supported "
+                "with table implementation {1}",
                 instance->table->container->name, declaration->type->toString());
     }
 }
@@ -122,8 +122,8 @@ void EBPFTableImplementationPSA::verifyTableNoEntries(const EBPFTablePSA *instan
     auto entries = instance->table->container->getEntries();
     if (entries != nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED,
-                "%1%: entries directly specified in a table %2% "
-                "with implementation %3% are not supported",
+                "{0}: entries directly specified in a table {1} "
+                "with implementation {2} are not supported",
                 entries, instance->table->container->name, declaration);
     }
 }
@@ -131,12 +131,12 @@ void EBPFTableImplementationPSA::verifyTableNoEntries(const EBPFTablePSA *instan
 unsigned EBPFTableImplementationPSA::getUintFromExpression(const IR::Expression *expr,
                                                            unsigned defaultValue) {
     if (!expr->is<IR::Constant>()) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Must be constant value: %1%", expr);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Must be constant value: {0}", expr);
         return defaultValue;
     }
     auto c = expr->to<IR::Constant>();
     if (!c->fitsUint()) {
-        ::error(ErrorType::ERR_OVERLIMIT, "%1%: size too large", c);
+        ::error(ErrorType::ERR_OVERLIMIT, "{0}: size too large", c);
         return defaultValue;
     }
     return c->asUnsigned();
@@ -215,7 +215,7 @@ EBPFActionSelectorPSA::EBPFActionSelectorPSA(const EBPFProgram *program, CodeGen
     if (hashEngine != nullptr) {
         hashEngine->setVisitor(codeGen);
     } else {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Algorithm not yet implemented: %1%",
+        ::error(ErrorType::ERR_UNSUPPORTED, "Algorithm not yet implemented: {0}",
                 decl->arguments->at(0));
     }
 
@@ -223,16 +223,16 @@ EBPFActionSelectorPSA::EBPFActionSelectorPSA(const EBPFProgram *program, CodeGen
 
     unsigned outputHashWidth = getUintFromExpression(decl->arguments->at(2)->expression, 0);
     if (hashEngine != nullptr && outputHashWidth > hashEngine->getOutputWidth()) {
-        ::error(ErrorType::ERR_INVALID, "%1%: more bits requested than hash provides (%2%)",
+        ::error(ErrorType::ERR_INVALID, "{0}: more bits requested than hash provides ({1})",
                 decl->arguments->at(2)->expression, hashEngine->getOutputWidth());
     }
     if (outputHashWidth > 64) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: supported up to 64 bits",
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: supported up to 64 bits",
                 decl->arguments->at(2)->expression);
     }
     if (outputHashWidth < 1) {
         ::error(ErrorType::ERR_INVALID,
-                "%1%: invalid output width used for checksum "
+                "{0}: invalid output width used for checksum "
                 "value truncation, must be at least 1 bit",
                 decl->arguments->at(2)->expression);
     }
@@ -264,10 +264,10 @@ void EBPFActionSelectorPSA::emitInitializer(CodeBuilder *builder) {
     if (auto pe = ev->to<IR::PathExpression>()) {
         auto decl = program->refMap->getDeclaration(pe->path, true);
         auto action = decl->to<IR::P4Action>();
-        BUG_CHECK(action != nullptr, "%1%: not an action", ev);
+        BUG_CHECK(action != nullptr, "{0}: not an action", ev);
 
         if (!action->getParameters()->empty()) {
-            ::error(ErrorType::ERR_UNINITIALIZED, "%1%: missing value for action parameters: %2%",
+            ::error(ErrorType::ERR_UNINITIALIZED, "{0}: missing value for action parameters: {1}",
                     ev, action->getParameters());
             return;
         }
@@ -580,8 +580,8 @@ void EBPFActionSelectorPSA::verifyTableSelectorKeySet(const EBPFTablePSA *instan
 
     if (printError) {
         ::error(ErrorType::ERR_EXPECTED,
-                "%1%: selector type keys list differs from previous %2% "
-                "(tables use the same implementation %3%)",
+                "{0}: selector type keys list differs from previous {1} "
+                "(tables use the same implementation {2})",
                 instance->table->container, table->container, declaration);
     }
 }
@@ -592,15 +592,15 @@ void EBPFActionSelectorPSA::verifyTableEmptyGroupAction(const EBPFTablePSA *inst
     if (emptyGroupAction == nullptr && iega == nullptr) return;  // nothing to do here
     if (emptyGroupAction == nullptr && iega != nullptr) {
         ::error(ErrorType::ERR_UNEXPECTED,
-                "%1%: property not specified in previous table %2% "
-                "(tables use the same implementation %3%)",
+                "{0}: property not specified in previous table {1} "
+                "(tables use the same implementation {2})",
                 iega, table->container, declaration);
         return;
     }
     if (emptyGroupAction != nullptr && iega == nullptr) {
         ::error(ErrorType::ERR_EXPECTED,
-                "%1%: missing property %2%, defined in previous table %3% "
-                "(tables use the same implementation %4%)",
+                "{0}: missing property {1}, defined in previous table {2} "
+                "(tables use the same implementation {3})",
                 instance->table->container, emptyGroupAction, table->container->toString(),
                 declaration);
         return;
@@ -648,8 +648,8 @@ void EBPFActionSelectorPSA::verifyTableEmptyGroupAction(const EBPFTablePSA *inst
 
     if (!same) {
         ::error(ErrorType::ERR_EXPECTED,
-                "%1%: defined property value is different from %2%, defined in "
-                "previous table %3% (tables use the same implementation %4%)%5%",
+                "{0}: defined property value is different from {1}, defined in "
+                "previous table {2} (tables use the same implementation {3}){4}",
                 rev, lev, table->container->toString(), declaration, additionalNote);
     }
 }

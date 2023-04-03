@@ -43,7 +43,7 @@ void DoExpandLookahead::expand(
         }
     } else if (type->is<IR::Type_Bits>() || type->is<IR::Type_Boolean>()) {
         unsigned size = type->width_bits();
-        BUG_CHECK(size > 0, "%1%: unexpected size %2%", type, size);
+        BUG_CHECK(size > 0, "{0}: unexpected size {1}", type, size);
         const IR::Expression *expression =
             new IR::Slice(bitvector->clone(), *offset - 1, *offset - size);
         auto tb = type->to<IR::Type_Bits>();
@@ -59,7 +59,7 @@ void DoExpandLookahead::expand(
             expand(bitvector, etype, offset, member, output);
         }
     } else {
-        ::error(ErrorType::ERR_UNEXPECTED, "%1%: unexpected type in lookahead argument", type);
+        ::error(ErrorType::ERR_UNEXPECTED, "{0}: unexpected type in lookahead argument", type);
     }
 }
 
@@ -74,7 +74,7 @@ DoExpandLookahead::ExpansionInfo *DoExpandLookahead::convertLookahead(
         return nullptr;
 
     // this is a call to packet_in.lookahead.
-    BUG_CHECK(expression->typeArguments->size() == 1, "Expected 1 type parameter for %1%",
+    BUG_CHECK(expression->typeArguments->size() == 1, "Expected 1 type parameter for {0}",
               em->method);
     auto targ = expression->typeArguments->at(0);
     auto typearg = typeMap->getTypeType(targ, true);

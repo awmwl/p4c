@@ -73,9 +73,9 @@ class BaseLocation : public StorageLocation {
  public:
     BaseLocation(const IR::Type *type, cstring name) : StorageLocation(type, name) {
         if (auto tt = type->to<IR::Type_Tuple>())
-            BUG_CHECK(tt->getSize() == 0, "%1%: tuples with fields are not base locations", tt);
+            BUG_CHECK(tt->getSize() == 0, "{0}: tuples with fields are not base locations", tt);
         else if (auto ts = type->to<IR::Type_StructLike>())
-            BUG_CHECK(ts->fields.size() == 0, "%1%: structs with fields are not base locations",
+            BUG_CHECK(ts->fields.size() == 0, "{0}: structs with fields are not base locations",
                       tt);
         else
             BUG_CHECK(type->is<IR::Type_Bits>() || type->is<IR::Type_Enum>() ||
@@ -83,7 +83,7 @@ class BaseLocation : public StorageLocation {
                           type->is<IR::Type_Error>() || type->is<IR::Type_Varbits>() ||
                           type->is<IR::Type_Newtype>() || type->is<IR::Type_SerEnum>() ||
                           type->is<IR::Type_List>(),
-                      "%1%: unexpected type", type);
+                      "{0}: unexpected type", type);
     }
     void addValidBits(LocationSet *) const override {}
     void addLastIndexField(LocationSet *) const override {}
@@ -117,7 +117,7 @@ class WithFieldsLocation : public StorageLocation {
 class StructLocation : public WithFieldsLocation {
  public:
     StructLocation(const IR::Type *type, cstring name) : WithFieldsLocation(type, name) {
-        BUG_CHECK(type->is<IR::Type_StructLike>(), "%1%: unexpected type", type);
+        BUG_CHECK(type->is<IR::Type_StructLike>(), "{0}: unexpected type", type);
     }
     void addField(cstring field, LocationSet *addTo) const;
     void addValidBits(LocationSet *result) const override;
@@ -143,7 +143,7 @@ class IndexedLocation : public StorageLocation {
     IndexedLocation(const IR::Type *type, cstring name) : StorageLocation(type, name) {
         CHECK_NULL(type);
         auto it = type->to<IR::Type_Indexed>();
-        BUG_CHECK(it != nullptr, "%1%: unexpected type", type);
+        BUG_CHECK(it != nullptr, "{0}: unexpected type", type);
         elements.resize(it->getSize());
     }
     void addElement(unsigned index, LocationSet *result) const;
@@ -391,7 +391,7 @@ class Definitions : public IHasDbPrint {
     }
     const ProgramPoints *getPoints(const BaseLocation *location) const {
         auto r = ::get(definitions, location);
-        BUG_CHECK(r != nullptr, "no definitions found for %1%", location);
+        BUG_CHECK(r != nullptr, "no definitions found for {0}", location);
         return r;
     }
     const ProgramPoints *getPoints(const LocationSet *locations) const;
@@ -432,7 +432,7 @@ class AllDefinitions : public IHasDbPrint {
                 setDefinitionsAt(point, defs, false);
                 return defs;
             }
-            BUG("Unknown point %1% for definitions", &point);
+            BUG("Unknown point {0} for definitions", &point);
         }
         return it->second;
     }
@@ -442,7 +442,7 @@ class AllDefinitions : public IHasDbPrint {
             if (it != atPoint.end()) {
                 LOG2("Overwriting definitions at " << point << ": " << it->second << " with "
                                                    << defs);
-                BUG_CHECK(false, "Overwriting definitions at %1%", point);
+                BUG_CHECK(false, "Overwriting definitions at {0}", point);
             }
         }
         atPoint[point] = defs;
@@ -501,7 +501,7 @@ class ComputeWriteSet : public Inspector, public IHasDbPrint {
     ProgramPoint getProgramPoint(const IR::Node *node = nullptr) const;
     const LocationSet *getWrites(const IR::Expression *expression) const {
         auto result = ::get(writes, expression);
-        BUG_CHECK(result != nullptr, "No location set known for %1%", expression);
+        BUG_CHECK(result != nullptr, "No location set known for {0}", expression);
         return result;
     }
     void expressionWrites(const IR::Expression *expression, const LocationSet *loc) {
@@ -509,7 +509,7 @@ class ComputeWriteSet : public Inspector, public IHasDbPrint {
         CHECK_NULL(loc);
         LOG3(expression << dbp(expression) << " writes " << loc);
         BUG_CHECK(writes.find(expression) == writes.end() || expression->is<IR::Literal>(),
-                  "Expression %1% write set already set", expression);
+                  "Expression {0} write set already set", expression);
         writes.emplace(expression, loc);
     }
     void dbprint(std::ostream &out) const override {

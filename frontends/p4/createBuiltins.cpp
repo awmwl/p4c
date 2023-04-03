@@ -27,7 +27,7 @@ const IR::Node *CreateBuiltins::preorder(IR::P4Program *program) {
     auto vec = decls->toVector();
     if (vec->empty()) return program;
     if (vec->size() > 1) {
-        ::error(ErrorType::ERR_MODEL, "Multiple declarations of %1%: %2% %3%",
+        ::error(ErrorType::ERR_MODEL, "Multiple declarations of {0}: {1} {2}",
                 P4::P4CoreLibrary::instance.noAction.str(), vec->at(0), vec->at(1));
     }
     globalNoAction = vec->at(0);
@@ -45,25 +45,25 @@ void CreateBuiltins::checkGlobalAction() {
     checked = true;
     if (globalNoAction == nullptr) {
         ::error(ErrorType::ERR_MODEL,
-                "Declaration of the action %1% not found; did you include core.p4?",
+                "Declaration of the action {0} not found; did you include core.p4?",
                 P4::P4CoreLibrary::instance.noAction.str());
         return;
     }
     if (auto action = globalNoAction->to<IR::P4Action>()) {
         if (!action->parameters->empty()) {
             ::error(ErrorType::ERR_MODEL,
-                    "%1%: Expected an action with no parameters; did you include core.p4?",
+                    "{0}: Expected an action with no parameters; did you include core.p4?",
                     globalNoAction);
             return;
         }
         if (!action->body->empty()) {
             ::error(ErrorType::ERR_MODEL,
-                    "%1%: Expected an action with no body; did you include core.p4?",
+                    "{0}: Expected an action with no body; did you include core.p4?",
                     globalNoAction);
             return;
         }
     } else {
-        ::error(ErrorType::ERR_MODEL, "%1%: expected to be an action; did you include core.p4?",
+        ::error(ErrorType::ERR_MODEL, "{0}: expected to be an action; did you include core.p4?",
                 globalNoAction);
         return;
     }
@@ -110,7 +110,7 @@ const IR::Node *CreateBuiltins::postorder(IR::Entry *entry) {
 
 const IR::Node *CreateBuiltins::postorder(IR::ParserState *state) {
     if (state->selectExpression == nullptr) {
-        warn(ErrorType::WARN_PARSER_TRANSITION, "%1%: implicit transition to `reject'", state);
+        warn(ErrorType::WARN_PARSER_TRANSITION, "{0}: implicit transition to `reject'", state);
         state->selectExpression = new IR::PathExpression(IR::ParserState::reject);
     }
     return state;
@@ -142,7 +142,7 @@ const IR::Node *CreateBuiltins::postorder(IR::Property *property) {
     if (auto key = property->value->to<IR::Key>()) {
         if (key->keyElements.size() == 0) return nullptr;
     } else {
-        ::error(ErrorType::ERR_INVALID, "%1%: must be a key", property->value);
+        ::error(ErrorType::ERR_INVALID, "{0}: must be a key", property->value);
         return nullptr;
     }
     return property;

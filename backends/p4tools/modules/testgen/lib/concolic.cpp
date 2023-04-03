@@ -60,7 +60,7 @@ bool ConcolicMethodImpls::exec(cstring qualifiedMethodName, const IR::ConcolicVa
         const auto &methodImpl = pair.second;
 
         if (matches(paramNames, args)) {
-            BUG_CHECK(!matchingImpl, "Ambiguous extern method call: %1%", qualifiedMethodName);
+            BUG_CHECK(!matchingImpl, "Ambiguous extern method call: {0}", qualifiedMethodName);
             matchingImpl = methodImpl;
         }
     }
@@ -85,7 +85,7 @@ void ConcolicMethodImpls::add(const ImplList &inputImplList) {
         // This is a quadratic-time algorithm, but should be fine, since we expect the number of
         // overloads to be small in practice.
         for (auto &pair : tmpImplList) {
-            BUG_CHECK(pair.first != paramNames, "Multiple implementations of %1%(%2%)", name,
+            BUG_CHECK(pair.first != paramNames, "Multiple implementations of {0}({1})", name,
                       Utils::containerToString(paramNames));
         }
 
@@ -103,7 +103,7 @@ bool ConcolicResolver::preorder(const IR::ConcolicVariable *var) {
     if (concolicReplacment == resolvedConcolicVariables.end()) {
         bool found = concolicMethodImpls.exec(concolicMethodName, var, state, completedModel,
                                               &resolvedConcolicVariables);
-        BUG_CHECK(found, "Unknown or unimplemented concolic method: %1%", concolicMethodName);
+        BUG_CHECK(found, "Unknown or unimplemented concolic method: {0}", concolicMethodName);
     }
     return false;
 }

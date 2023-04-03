@@ -82,7 +82,7 @@ const IR::Node *RemoveUnusedDeclarations::preorder(IR::P4Parser *parser) {
 const IR::Node *RemoveUnusedDeclarations::preorder(IR::P4Table *table) {
     if (!refMap->isUsed(getOriginal<IR::IDeclaration>())) {
         if (giveWarning(getOriginal()))
-            warn(ErrorType::WARN_UNUSED, "Table %1% is not used; removing", table);
+            warn(ErrorType::WARN_UNUSED, "Table {0} is not used; removing", table);
         LOG3("Removing " << table);
         table = nullptr;
     }
@@ -121,7 +121,7 @@ const IR::Node *RemoveUnusedDeclarations::preorder(IR::Parameter *param) {
 
 const IR::Node *RemoveUnusedDeclarations::warnIfUnused(const IR::Node *node) {
     if (!refMap->isUsed(getOriginal<IR::IDeclaration>()))
-        if (giveWarning(getOriginal())) warn(ErrorType::WARN_UNUSED, "'%1%' is unused", node);
+        if (giveWarning(getOriginal())) warn(ErrorType::WARN_UNUSED, "'{0}' is unused", node);
     return node;
 }
 
@@ -129,7 +129,7 @@ const IR::Node *RemoveUnusedDeclarations::preorder(IR::Declaration_Instance *dec
     // Don't delete instances; they may have consequences on the control-plane API
     if (decl->getName().name == IR::P4Program::main && getParent<IR::P4Program>()) return decl;
     if (!refMap->isUsed(getOriginal<IR::Declaration_Instance>())) {
-        if (giveWarning(getOriginal())) warn(ErrorType::WARN_UNUSED, "%1%: unused instance", decl);
+        if (giveWarning(getOriginal())) warn(ErrorType::WARN_UNUSED, "{0}: unused instance", decl);
         // We won't delete extern instances; these may be useful even if not references.
         auto type = decl->type;
         if (type->is<IR::Type_Specialized>()) type = type->to<IR::Type_Specialized>()->baseType;

@@ -79,7 +79,7 @@ void InspectPsaProgram::addTypesAndInstances(const IR::Type_StructLike *type, bo
             // The headers struct can not contain nested structures.
             if (isHeader && ft->is<IR::Type_Struct>()) {
                 ::error(ErrorType::ERR_INVALID,
-                        "Type %1% should only contain headers, header stacks, or header unions",
+                        "Type {0} should only contain headers, header stacks, or header unions",
                         type);
                 return;
             }
@@ -101,7 +101,7 @@ void InspectPsaProgram::addTypesAndInstances(const IR::Type_StructLike *type, bo
                     if (auto h_type = uft->to<IR::Type_Header>()) {
                         addHeaderInstance(h_type, uf->controlPlaneName());
                     } else {
-                        ::error(ErrorType::ERR_INVALID, "Type %1% cannot contain type %2%", ft,
+                        ::error(ErrorType::ERR_INVALID, "Type {0} cannot contain type {1}", ft,
                                 uft);
                         return;
                     }
@@ -120,7 +120,7 @@ void InspectPsaProgram::addTypesAndInstances(const IR::Type_StructLike *type, bo
             // auto stack_name = f->controlPlaneName();
             auto stack_size = stack->getSize();
             auto type = typeMap->getTypeType(stack->elementType, true);
-            BUG_CHECK(type->is<IR::Type_Header>(), "%1% not a header type", stack->elementType);
+            BUG_CHECK(type->is<IR::Type_Header>(), "{0} not a header type", stack->elementType);
             auto ht = type->to<IR::Type_Header>();
             addHeaderType(ht);
             auto stack_type = stack->elementType->to<IR::Type_Header>();
@@ -151,7 +151,7 @@ void InspectPsaProgram::addTypesAndInstances(const IR::Type_StructLike *type, bo
                 pinfo->scalars_width += 32;
                 pinfo->scalarMetadataFields.emplace(f, newName);
             } else {
-                BUG("%1%: Unhandled type for %2%", ft, f);
+                BUG("{0}: Unhandled type for {1}", ft, f);
             }
         }
     }
@@ -240,38 +240,38 @@ bool ParsePsaArchitecture::preorder(const IR::ExternBlock *block) {
 bool ParsePsaArchitecture::preorder(const IR::PackageBlock *block) {
     auto pkg = block->findParameterValue("ingress");
     if (pkg == nullptr) {
-        modelError("Package %1% has no parameter named 'ingress'", block);
+        modelError("Package {0} has no parameter named 'ingress'", block);
         return false;
     }
     if (auto ingress = pkg->to<IR::PackageBlock>()) {
         auto p = ingress->findParameterValue("ip");
         if (p == nullptr) {
-            modelError("'ingress' package %1% has no parameter named 'ip'", block);
+            modelError("'ingress' package {0} has no parameter named 'ip'", block);
             return false;
         }
         auto parser = p->to<IR::ParserBlock>();
         if (parser == nullptr) {
-            modelError("%1%: 'ip' argument of 'ingress' should be bound to a parser", block);
+            modelError("{0}: 'ip' argument of 'ingress' should be bound to a parser", block);
             return false;
         }
         p = ingress->findParameterValue("ig");
         if (p == nullptr) {
-            modelError("'ingress' package %1% has no parameter named 'ig'", block);
+            modelError("'ingress' package {0} has no parameter named 'ig'", block);
             return false;
         }
         auto pipeline = p->to<IR::ControlBlock>();
         if (pipeline == nullptr) {
-            modelError("%1%: 'ig' argument of 'ingress' should be bound to a control", block);
+            modelError("{0}: 'ig' argument of 'ingress' should be bound to a control", block);
             return false;
         }
         p = ingress->findParameterValue("id");
         if (p == nullptr) {
-            modelError("'ingress' package %1% has no parameter named 'id'", block);
+            modelError("'ingress' package {0} has no parameter named 'id'", block);
             return false;
         }
         auto deparser = p->to<IR::ControlBlock>();
         if (deparser == nullptr) {
-            modelError("'%1%: id' argument of 'ingress' should be bound to a control", block);
+            modelError("'{0}: id' argument of 'ingress' should be bound to a control", block);
             return false;
         }
         structure->block_type.emplace(parser->container, std::make_pair(INGRESS, PARSER));
@@ -280,43 +280,43 @@ bool ParsePsaArchitecture::preorder(const IR::PackageBlock *block) {
         structure->pipeline_controls.emplace(pipeline->container->name);
         structure->non_pipeline_controls.emplace(deparser->container->name);
     } else {
-        modelError("'ingress' %1% is not bound to a package", pkg);
+        modelError("'ingress' {0} is not bound to a package", pkg);
         return false;
     }
     pkg = block->findParameterValue("egress");
     if (pkg == nullptr) {
-        modelError("Package %1% has no parameter named 'egress'", block);
+        modelError("Package {0} has no parameter named 'egress'", block);
         return false;
     }
     if (auto egress = pkg->to<IR::PackageBlock>()) {
         auto p = egress->findParameterValue("ep");
         if (p == nullptr) {
-            modelError("'egress' package %1% has no parameter named 'ep'", block);
+            modelError("'egress' package {0} has no parameter named 'ep'", block);
             return false;
         }
         auto parser = p->to<IR::ParserBlock>();
         if (parser == nullptr) {
-            modelError("%1%: 'ep' argument of 'egress' should be bound to a parser", block);
+            modelError("{0}: 'ep' argument of 'egress' should be bound to a parser", block);
             return false;
         }
         p = egress->findParameterValue("eg");
         if (p == nullptr) {
-            modelError("'egress' package %1% has no parameter named 'eg'", block);
+            modelError("'egress' package {0} has no parameter named 'eg'", block);
             return false;
         }
         auto pipeline = p->to<IR::ControlBlock>();
         if (pipeline == nullptr) {
-            modelError("%1%: 'ig' argument of 'egress' should be bound to a control", block);
+            modelError("{0}: 'ig' argument of 'egress' should be bound to a control", block);
             return false;
         }
         p = egress->findParameterValue("ed");
         if (p == nullptr) {
-            modelError("'egress' package %1% has no parameter named 'ed'", block);
+            modelError("'egress' package {0} has no parameter named 'ed'", block);
             return false;
         }
         auto deparser = p->to<IR::ControlBlock>();
         if (deparser == nullptr) {
-            modelError("%1%: 'ed' argument of 'egress' should be bound to a control", block);
+            modelError("{0}: 'ed' argument of 'egress' should be bound to a control", block);
             return false;
         }
         structure->block_type.emplace(parser->container, std::make_pair(EGRESS, PARSER));

@@ -373,7 +373,7 @@ void callTestgen(const char *inputFile, const char *behavior, const char *path, 
     fullPath += inputFile;
     mkDir << "mkdir -p " << buildPath << path << " && rm -f " << buildPath << path << "/*.stf";
     if (system(mkDir.str().c_str()) != 0) {
-        BUG("Can't create folder - %1%", mkDir.str());
+        BUG("Can't create folder - {0}", mkDir.str());
     }
     std::ostringstream cmdTestgen;
     cmdTestgen << buildPath << "p4testgen ";
@@ -383,7 +383,7 @@ void callTestgen(const char *inputFile, const char *behavior, const char *path, 
     cmdTestgen << "--out-dir \"" << buildPath << path << "\" \"" << sourcePath << prefix;
     cmdTestgen << inputFile << "\"";
     if (system(cmdTestgen.str().c_str()) != 0) {
-        BUG("p4testgen failed to run - %1%", cmdTestgen.str());
+        BUG("p4testgen failed to run - {0}", cmdTestgen.str());
     }
 }
 

@@ -144,7 +144,7 @@ struct ConvertLookahead : public PassManager {
         void insertStatements(const IR::AssignmentStatement *as,
                               IR::IndexedVector<IR::StatOrDecl> *vec) {
             BUG_CHECK(newStatMap.count(as) == 0,
-                      "Unexpectedly converting statement %1% multiple times!", as);
+                      "Unexpectedly converting statement {0} multiple times!", as);
             newStatMap.emplace(as, *vec);
             LOG5("AssignmentStatement: " << dbp(as));
             LOG2("Adding new statements:");
@@ -459,7 +459,7 @@ class CollectLocalVariables : public Transform {
                 localsMap.emplace(dv, name);
             } else if (!d->is<IR::P4Action>() && !d->is<IR::P4Table>() &&
                        !d->is<IR::Declaration_Instance>()) {
-                BUG("%1%: Unhandled declaration type", d);
+                BUG("{0}: Unhandled declaration type", d);
             }
         }
     }
@@ -637,12 +637,12 @@ class CollectExternDeclaration : public Inspector {
             if (externTypeName == "DirectMeter") {
                 if (d->arguments->size() != 1) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "%1%: expected type of meter as the only argument", d);
+                            "{0}: expected type of meter as the only argument", d);
                 } else {
                     /* Check if the Direct meter is of PACKETS (0) type */
                     if (d->arguments->at(0)->expression->to<IR::Constant>()->asUnsigned() == 0)
                         warn(ErrorType::WARN_UNSUPPORTED,
-                             "%1%: Packet metering is not supported."
+                             "{0}: Packet metering is not supported."
                              " Falling back to byte metering.",
                              d);
                 }
@@ -656,34 +656,34 @@ class CollectExternDeclaration : public Inspector {
             if (externTypeName == "Meter") {
                 if (d->arguments->size() != 2) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "%1%: expected number of meters and type of meter as arguments", d);
+                            "{0}: expected number of meters and type of meter as arguments", d);
                 } else {
                     /* Check if the meter is of PACKETS (0) type */
                     if (d->arguments->at(1)->expression->to<IR::Constant>()->asUnsigned() == 0)
                         warn(ErrorType::WARN_UNSUPPORTED,
-                             "%1%: Packet metering is not supported."
+                             "{0}: Packet metering is not supported."
                              " Falling back to byte metering.",
                              d);
                 }
             } else if (externTypeName == "Counter") {
                 if (d->arguments->size() != 2) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "%1%: expected number of counters and type of counter as arguments", d);
+                            "{0}: expected number of counters and type of counter as arguments", d);
                 }
             } else if (externTypeName == "DirectCounter") {
                 if (d->arguments->size() != 1) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "%1%: expected type of counter as the only argument", d);
+                            "{0}: expected type of counter as the only argument", d);
                 }
             } else if (externTypeName == "Register") {
                 if (d->arguments->size() != 1 && d->arguments->size() != 2) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "%1%: expected size and optionally init_val as arguments", d);
+                            "{0}: expected size and optionally init_val as arguments", d);
                 }
             } else if (externTypeName == "Hash") {
                 if (d->arguments->size() != 1) {
                     ::error(ErrorType::ERR_EXPECTED,
-                            "%1%: expected hash algorithm as the only argument", d);
+                            "{0}: expected hash algorithm as the only argument", d);
                 }
             } else {
                 // unsupported extern type
@@ -1072,7 +1072,7 @@ class ValidateAddOnMissExterns : public Inspector {
     void postorder(const IR::MethodCallStatement *) override;
     cstring getDefActionName(const IR::P4Table *t) {
         auto act = t->getDefaultAction();
-        BUG_CHECK(act != nullptr, "%1%: default action does not exist", t);
+        BUG_CHECK(act != nullptr, "{0}: default action does not exist", t);
         if (auto mc = act->to<IR::MethodCallExpression>()) {
             auto method = mc->method->to<IR::PathExpression>();
             return method->path->name;
@@ -1343,7 +1343,7 @@ class CollectProgramStructure : public PassManager {
             auto main = toplevel->getMain();
             if (main == nullptr) {
                 ::error(ErrorType::ERR_NOT_FOUND,
-                        "Could not locate top-level block; is there a %1% module?",
+                        "Could not locate top-level block; is there a {0} module?",
                         IR::P4Program::main);
                 return;
             }
@@ -1420,7 +1420,7 @@ class CollectIPSecInfo : public Inspector {
         if (auto a = mi->to<P4::ExternMethod>()) {
             if (a->originalExternType->getName().name == "ipsec_accelerator") {
                 if (structure->isPSA()) {
-                    ::error(ErrorType::ERR_MODEL, "%1% is not available for PSA programs",
+                    ::error(ErrorType::ERR_MODEL, "{0} is not available for PSA programs",
                             a->originalExternType->getName().name);
                     return false;
                 }
@@ -1429,13 +1429,13 @@ class CollectIPSecInfo : public Inspector {
                 } else if (a->method->getName().name == "set_sa_index") {
                     auto typeArgs = a->expr->typeArguments;
                     if (typeArgs->size() != 1) {
-                        ::error(ErrorType::ERR_MODEL, "Unexpected number of type arguments for %1%",
+                        ::error(ErrorType::ERR_MODEL, "Unexpected number of type arguments for {0}",
                                 a->method->name);
                         return false;
                     }
                     auto width = typeArgs->at(0);
                     if (!width->is<IR::Type_Bits>()) {
-                        ::error(ErrorType::ERR_MODEL, "Unexpected width type %1% for sa_index",
+                        ::error(ErrorType::ERR_MODEL, "Unexpected width type {0} for sa_index",
                                 width);
                         return false;
                     }

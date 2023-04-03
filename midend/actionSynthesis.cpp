@@ -41,7 +41,7 @@ const IR::Node *DoMoveActionsToTables::postorder(IR::MethodCallStatement *statem
     }
 
     // Action invocation
-    BUG_CHECK(ac->expr->method->is<IR::PathExpression>(), "%1%: Expected a PathExpression",
+    BUG_CHECK(ac->expr->method->is<IR::PathExpression>(), "{0}: Expected a PathExpression",
               ac->expr->method);
     auto actionPath = new IR::PathExpression(IR::ID(mc->srcInfo, ac->action->name));
     auto call = new IR::MethodCallExpression(mc->srcInfo, actionPath, new IR::Vector<IR::Type>(),
@@ -57,7 +57,7 @@ const IR::Node *DoMoveActionsToTables::postorder(IR::MethodCallStatement *statem
         otherArgs->push_back(*arg);
         ++arg;
     }
-    BUG_CHECK(arg == mc->arguments->end(), "%1%: mismatched arguments", mc);
+    BUG_CHECK(arg == mc->arguments->end(), "{0}: mismatched arguments", mc);
     auto amce = new IR::MethodCallExpression(mc->srcInfo, mc->method, mc->typeArguments, otherArgs);
     auto defactval = new IR::ExpressionValue(amce);
     auto defprop = new IR::Property(IR::ID(IR::TableProperties::defaultActionPropertyName, nullptr),

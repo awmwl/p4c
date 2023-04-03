@@ -121,7 +121,7 @@ const IR::Expression *RemoveComplexComparisons::explode(Util::SourceInfo srcInfo
     } else if (auto at = leftType->to<IR::Type_Stack>()) {
         auto size = at->getSize();
         const IR::Expression *result = new IR::BoolLiteral(true);
-        BUG_CHECK(rightType->is<IR::Type_Stack>(), "%1%: comparing stack with %1%", left,
+        BUG_CHECK(rightType->is<IR::Type_Stack>(), "{0}: comparing stack with {0}", left,
                   rightType);
         for (unsigned i = 0; i < size; i++) {
             auto index = new IR::Constant(i);
@@ -132,7 +132,7 @@ const IR::Expression *RemoveComplexComparisons::explode(Util::SourceInfo srcInfo
         }
         return result;
     } else if (leftTuple) {
-        BUG_CHECK(rightTuple, "%1% vs %2%: unexpected comparison", left, right);
+        BUG_CHECK(rightTuple, "{0} vs {1}: unexpected comparison", left, right);
         const IR::Expression *result = new IR::BoolLiteral(true);
         auto leftList = left->to<IR::ListExpression>();
         for (size_t index = 0; index < leftList->components.size(); index++) {

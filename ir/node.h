@@ -67,7 +67,7 @@ class INode : public Util::IHasSourceInfo, public IHasDbPrint, public ICastable 
     template <typename T>
     const T *checkedTo() const {
         const auto *result = to<T>();
-        BUG_CHECK(result, "Cast failed: %1% with type %2% is not a %3%.", this, node_type_name(),
+        BUG_CHECK(result, "Cast failed: {0} with type {1} is not a {2}.", this, node_type_name(),
                   T::static_type_name());
         return result;
     }

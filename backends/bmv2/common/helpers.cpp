@@ -68,7 +68,7 @@ cstring stringRepr(big_int value, unsigned bytes) {
 
     if (bytes > 0) {
         int digits = bytes * 2 - r.str().size();
-        BUG_CHECK(digits >= 0, "Cannot represent %1% on %2% bytes", value, bytes);
+        BUG_CHECK(digits >= 0, "Cannot represent {0} on {1} bytes", value, bytes);
         filler = std::string(digits, '0');
     }
     return sign + "0x" + filler + r.str();
@@ -160,7 +160,7 @@ cstring ConversionContext::createCalculation(cstring algo, const IR::Expression 
     calc->emplace("algo", algo);
     auto listFields = convertToList(fields, typeMap);
     if (!listFields) {
-        modelError("%1%: expected a struct", fields);
+        modelError("{0}: expected a struct", fields);
         return calcName;
     }
     auto jright = conv->convertWithConstantWidths(listFields);

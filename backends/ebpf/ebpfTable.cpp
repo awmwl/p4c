@@ -92,7 +92,7 @@ void EBPFTable::initKey() {
             auto type = program->typeMap->getType(c->expression);
             auto ebpfType = EBPFTypeFactory::instance->create(type);
             if (!ebpfType->is<IHasWidth>()) {
-                ::error(ErrorType::ERR_TYPE_ERROR, "%1%: illegal type %2% for key field", c, type);
+                ::error(ErrorType::ERR_TYPE_ERROR, "{0}: illegal type {1} for key field", c, type);
                 return;
             }
 
@@ -123,7 +123,7 @@ void EBPFTable::validateKeys() const {
             unsigned width = ebpfType->to<IHasWidth>()->widthInBits();
             if (width > last_key_size) {
                 ::error(ErrorType::WARN_ORDERING,
-                        "%1%: key field larger than previous key, move it before previous key "
+                        "{0}: key field larger than previous key, move it before previous key "
                         "to avoid padding between these keys",
                         it->expression);
                 return;
@@ -143,7 +143,7 @@ void EBPFTable::validateKeys() const {
             if (matchType->name.name == P4::P4CoreLibrary::instance.lpmMatch.name) {
                 if (it != *lastKey) {
                     ::error(ErrorType::ERR_UNSUPPORTED,
-                            "%1% field key must be at the end of whole key", it->matchType);
+                            "{0} field key must be at the end of whole key", it->matchType);
                 }
             }
         }
@@ -173,7 +173,7 @@ void EBPFTable::emitKeyType(CodeBuilder *builder) {
             auto matchType = mtdecl->getNode()->to<IR::Declaration_ID>();
 
             if (!isMatchTypeSupported(matchType)) {
-                ::error(ErrorType::ERR_UNSUPPORTED, "Match of type %1% not supported",
+                ::error(ErrorType::ERR_UNSUPPORTED, "Match of type {0} not supported",
                         c->matchType);
             }
 
@@ -366,28 +366,28 @@ void EBPFTable::emitInstance(CodeBuilder *builder) {
             auto impl =
                 table->container->properties->getProperty(program->model.tableImplProperty.name);
             if (impl == nullptr) {
-                ::error(ErrorType::ERR_EXPECTED, "Table %1% does not have an %2% property",
+                ::error(ErrorType::ERR_EXPECTED, "Table {0} does not have an {1} property",
                         table->container, program->model.tableImplProperty.name);
                 return;
             }
 
             // Some type checking...
             if (!impl->value->is<IR::ExpressionValue>()) {
-                ::error(ErrorType::ERR_EXPECTED, "%1%: Expected property to be an `extern` block",
+                ::error(ErrorType::ERR_EXPECTED, "{0}: Expected property to be an `extern` block",
                         impl);
                 return;
             }
 
             auto expr = impl->value->to<IR::ExpressionValue>()->expression;
             if (!expr->is<IR::ConstructorCallExpression>()) {
-                ::error(ErrorType::ERR_EXPECTED, "%1%: Expected property to be an `extern` block",
+                ::error(ErrorType::ERR_EXPECTED, "{0}: Expected property to be an `extern` block",
                         impl);
                 return;
             }
 
             auto block = table->getValue(expr);
             if (block == nullptr || !block->is<IR::ExternBlock>()) {
-                ::error(ErrorType::ERR_EXPECTED, "%1%: Expected property to be an `extern` block",
+                ::error(ErrorType::ERR_EXPECTED, "{0}: Expected property to be an `extern` block",
                         impl);
                 return;
             }
@@ -399,7 +399,7 @@ void EBPFTable::emitInstance(CodeBuilder *builder) {
             } else if (extBlock->type->name.name == program->model.hash_table.name) {
                 tableKind = TableHash;
             } else {
-                ::error(ErrorType::ERR_EXPECTED, "%1%: implementation must be one of %2% or %3%",
+                ::error(ErrorType::ERR_EXPECTED, "{0}: implementation must be one of {1} or {2}",
                         impl, program->model.array_table.name, program->model.hash_table.name);
                 return;
             }
@@ -410,7 +410,7 @@ void EBPFTable::emitInstance(CodeBuilder *builder) {
                 auto matchType = mtdecl->getNode()->to<IR::Declaration_ID>();
                 if (matchType->name.name == P4::P4CoreLibrary::instance.lpmMatch.name) {
                     if (tableKind == TableLPMTrie) {
-                        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: only one LPM field allowed",
+                        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: only one LPM field allowed",
                                 it->matchType);
                         return;
                     }
@@ -421,17 +421,17 @@ void EBPFTable::emitInstance(CodeBuilder *builder) {
             auto sz = extBlock->getParameterValue(program->model.array_table.size.name);
             if (sz == nullptr || !sz->is<IR::Constant>()) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
-                        "%1%: Expected an integer argument; is the model corrupted?", expr);
+                        "{0}: Expected an integer argument; is the model corrupted?", expr);
                 return;
             }
             auto cst = sz->to<IR::Constant>();
             if (!cst->fitsInt()) {
-                ::error(ErrorType::ERR_UNSUPPORTED, "%1%: size too large", cst);
+                ::error(ErrorType::ERR_UNSUPPORTED, "{0}: size too large", cst);
                 return;
             }
             int size = cst->asInt();
             if (size <= 0) {
-                ::error(ErrorType::ERR_INVALID, "%1%: negative size", cst);
+                ::error(ErrorType::ERR_INVALID, "{0}: negative size", cst);
                 return;
             }
 
@@ -484,7 +484,7 @@ void EBPFTable::emitKey(CodeBuilder *builder, cstring keyName) {
                 // TODO: handle width > 64 bits for filter model
                 if (program->options.arch.isNullOrEmpty() || program->options.arch == "filter") {
                     ::error(ErrorType::ERR_UNSUPPORTED,
-                            "%1%: fields wider than 64 bits are not supported yet", fieldName);
+                            "{0}: fields wider than 64 bits are not supported yet", fieldName);
                 }
             }
         }
@@ -593,13 +593,13 @@ void EBPFTable::emitInitializer(CodeBuilder *builder) {
     // emit code to initialize the default action
     const IR::P4Table *t = table->container;
     const IR::Expression *defaultAction = t->getDefaultAction();
-    BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(), "%1%: expected an action call",
+    BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(), "{0}: expected an action call",
               defaultAction);
     auto mce = defaultAction->to<IR::MethodCallExpression>();
     auto mi = P4::MethodInstance::resolve(mce, program->refMap, program->typeMap);
 
     auto ac = mi->to<P4::ActionCall>();
-    BUG_CHECK(ac != nullptr, "%1%: expected an action call", mce);
+    BUG_CHECK(ac != nullptr, "{0}: expected an action call", mce);
     auto action = ac->action;
     cstring name = EBPFObject::externalName(action);
     cstring fd = "tableFileDescriptor";
@@ -680,13 +680,13 @@ void EBPFTable::emitInitializer(CodeBuilder *builder) {
         builder->append("}");
         builder->endOfStatement(true);
 
-        BUG_CHECK(entryAction->is<IR::MethodCallExpression>(), "%1%: expected an action call",
+        BUG_CHECK(entryAction->is<IR::MethodCallExpression>(), "{0}: expected an action call",
                   defaultAction);
         auto mce = entryAction->to<IR::MethodCallExpression>();
         auto mi = P4::MethodInstance::resolve(mce, program->refMap, program->typeMap);
 
         auto ac = mi->to<P4::ActionCall>();
-        BUG_CHECK(ac != nullptr, "%1%: expected an action call", mce);
+        BUG_CHECK(ac != nullptr, "{0}: expected an action call", mce);
         auto action = ac->action;
         cstring name = EBPFObject::externalName(action);
 
@@ -906,25 +906,25 @@ EBPFCounterTable::EBPFCounterTable(const EBPFProgram *program, const IR::ExternB
     auto sz = block->getParameterValue(program->model.counterArray.max_index.name);
     if (sz == nullptr || !sz->is<IR::Constant>()) {
         ::error(ErrorType::ERR_INVALID,
-                "%1% (%2%): expected an integer argument; is the model corrupted?",
+                "{0} ({1}): expected an integer argument; is the model corrupted?",
                 program->model.counterArray.max_index, name);
         return;
     }
     auto cst = sz->to<IR::Constant>();
     if (!cst->fitsInt()) {
-        ::error(ErrorType::ERR_OVERLIMIT, "%1%: size too large", cst);
+        ::error(ErrorType::ERR_OVERLIMIT, "{0}: size too large", cst);
         return;
     }
     size = cst->asInt();
     if (size <= 0) {
-        ::error(ErrorType::ERR_OVERLIMIT, "%1%: negative size", cst);
+        ::error(ErrorType::ERR_OVERLIMIT, "{0}: negative size", cst);
         return;
     }
 
     auto sprs = block->getParameterValue(program->model.counterArray.sparse.name);
     if (sprs == nullptr || !sprs->is<IR::BoolLiteral>()) {
         ::error(ErrorType::ERR_INVALID,
-                "%1% (%2%): Expected an integer argument; is the model corrupted?",
+                "{0} ({1}): Expected an integer argument; is the model corrupted?",
                 program->model.counterArray.sparse, name);
         return;
     }
@@ -960,7 +960,7 @@ void EBPFCounterTable::emitCounterIncrement(CodeBuilder *builder,
     builder->append(keyName);
     builder->append(" = ");
 
-    BUG_CHECK(expression->arguments->size() == 1, "Expected just 1 argument for %1%", expression);
+    BUG_CHECK(expression->arguments->size() == 1, "Expected just 1 argument for {0}", expression);
     auto arg = expression->arguments->at(0);
 
     codeGen->visit(arg);
@@ -1012,7 +1012,7 @@ void EBPFCounterTable::emitCounterAdd(CodeBuilder *builder,
     builder->append(keyName);
     builder->append(" = ");
 
-    BUG_CHECK(expression->arguments->size() == 2, "Expected just 2 arguments for %1%", expression);
+    BUG_CHECK(expression->arguments->size() == 2, "Expected just 2 arguments for {0}", expression);
     auto index = expression->arguments->at(0);
 
     codeGen->visit(index);
@@ -1060,7 +1060,7 @@ void EBPFCounterTable::emitMethodInvocation(CodeBuilder *builder, const P4::Exte
         emitCounterAdd(builder, method->expr);
         return;
     }
-    ::error(ErrorType::ERR_UNSUPPORTED, "Unexpected method %1% for %2%", method->expr,
+    ::error(ErrorType::ERR_UNSUPPORTED, "Unexpected method {0} for {1}", method->expr,
             program->model.counterArray.name);
 }
 
@@ -1089,10 +1089,10 @@ EBPFValueSet::EBPFValueSet(const EBPFProgram *program, const IR::P4ValueSet *p4v
         if (sc->fitsUint()) size = sc->asUnsigned();
         if (size == 0)
             ::error(ErrorType::ERR_OVERLIMIT,
-                    "Size must be a positive value less than 2^32, got %1% entries", pvs->size);
+                    "Size must be a positive value less than 2^32, got {0} entries", pvs->size);
     } else {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "Size of value_set must be know at compilation time: %1%", pvs->size);
+                "Size of value_set must be know at compilation time: {0}", pvs->size);
     }
 
     // validate type
@@ -1104,10 +1104,10 @@ EBPFValueSet::EBPFValueSet(const EBPFProgram *program, const IR::P4ValueSet *p4v
     } else if (auto h = elemType->to<IR::Type_Header>()) {
         keyTypeName = h->name.name;
 
-        ::warning("Header type may contain additional shadow data: %1%", pvs->elementType);
-        ::warning("Header defined here: %1%", h);
+        ::warning("Header type may contain additional shadow data: {0}", pvs->elementType);
+        ::warning("Header defined here: {0}", h);
     } else {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported type with value_set: %1%",
+        ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported type with value_set: {0}",
                 pvs->elementType);
     }
 
@@ -1148,7 +1148,7 @@ void EBPFValueSet::emitTypes(CodeBuilder *builder) {
             fieldNames.emplace_back(std::make_pair(name, field));
         }
     } else {
-        BUG("Type for value_set not implemented %1%", pvs->elementType);
+        BUG("Type for value_set not implemented {0}", pvs->elementType);
     }
 
     builder->blockEnd(false);
@@ -1164,7 +1164,7 @@ void EBPFValueSet::emitKeyInitializer(CodeBuilder *builder, const IR::SelectExpr
                                       cstring varName) {
     if (fieldNames.size() != expression->select->components.size()) {
         ::error(ErrorType::ERR_EXPECTED,
-                "Fields number of value_set do not match number of arguments: %1%", expression);
+                "Fields number of value_set do not match number of arguments: {0}", expression);
         return;
     }
     keyVarName = varName;
@@ -1183,7 +1183,7 @@ void EBPFValueSet::emitKeyInitializer(CodeBuilder *builder, const IR::SelectExpr
         if (useMemcpy) {
             if (keyExpr->is<IR::Mask>()) {
                 ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                        "%1%: mask not supported for fields larger than 64 bits within value_set",
+                        "{0}: mask not supported for fields larger than 64 bits within value_set",
                         keyExpr);
                 continue;
             }

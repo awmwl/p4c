@@ -38,7 +38,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
             auto typeEnum = enums.find(e);
             if (typeEnum == enums.end()) {
                 ::error(ErrorType::ERR_NOT_FOUND,
-                        "Enum type '%1%' not found in typeInfo for '%2%' '%3%'", e, instanceType,
+                        "Enum type '{0}' not found in typeInfo for '{1}' '{2}'", e, instanceType,
                         instanceName);
                 return;
             }
@@ -58,7 +58,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
             auto newType = newtypes.find(typeName);
             if (newType == newtypes.end()) {
                 ::error(ErrorType::ERR_NOT_FOUND,
-                        "New type '%1%' not found in typeInfo for '%2%' '%3%'", typeName,
+                        "New type '{0}' not found in typeInfo for '{1}' '{2}'", typeName,
                         instanceType, instanceName);
                 return;
             }
@@ -67,7 +67,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
 
         if (!type) {
             ::error(ErrorType::ERR_UNSUPPORTED,
-                    "Error when generating BF-RT info for '%1%' '%2%': "
+                    "Error when generating BF-RT info for '{0}' '{1}': "
                     "packed type is too complex",
                     instanceType, instanceName);
             return;
@@ -79,7 +79,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
     if (typeSpec.has_struct_()) {
         auto structName = typeSpec.struct_().name();
         auto p_it = typeInfo.structs().find(structName);
-        BUG_CHECK(p_it != typeInfo.structs().end(), "Struct name '%1%' not found in P4Info map",
+        BUG_CHECK(p_it != typeInfo.structs().end(), "Struct name '{0}' not found in P4Info map",
                   structName);
         P4Id id = idOffset;
         for (const auto &member : p_it->second.members())
@@ -115,7 +115,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
     } else if (typeSpec.has_header()) {
         auto headerName = typeSpec.header().name();
         auto p_it = typeInfo.headers().find(headerName);
-        BUG_CHECK(p_it != typeInfo.headers().end(), "Header name '%1%' not found in P4Info map",
+        BUG_CHECK(p_it != typeInfo.headers().end(), "Header name '{0}' not found in P4Info map",
                   headerName);
         P4Id id = idOffset;
         for (const auto &member : p_it->second.members()) {
@@ -126,7 +126,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
         auto enumName = typeSpec.serializable_enum().name();
         auto p_it = typeInfo.serializable_enums().find(enumName);
         BUG_CHECK(p_it != typeInfo.serializable_enums().end(),
-                  "Serializable name '%1%' not found in P4Info map", enumName);
+                  "Serializable name '{0}' not found in P4Info map", enumName);
         P4Id id = idOffset;
         for (const auto &member : p_it->second.members()) {
             auto *type = makeTypeBytes(p_it->second.underlying_type().bitwidth());
@@ -134,7 +134,7 @@ TypeSpecParser TypeSpecParser::make(const p4configv1::P4Info &p4info,
         }
     } else {
         ::error(ErrorType::ERR_UNSUPPORTED,
-                "Error when generating BF-RT info for '%1%' '%2%': "
+                "Error when generating BF-RT info for '{0}' '{1}': "
                 "only structs, headers, tuples, bitstrings and "
                 "serializable enums are currently supported types",
                 instanceType, instanceName);
@@ -409,7 +409,7 @@ void BFRuntimeGenerator::addRegisterDataFields(Util::JsonArray *dataJson,
     auto parser = TypeSpecParser::make(p4info, register_.typeSpec, "Register", register_.name,
                                        nullptr, "", "", idOffset);
 
-    BUG_CHECK(parser.size() == 1, "Expected only one data field for Register extern %1%",
+    BUG_CHECK(parser.size() == 1, "Expected only one data field for Register extern {0}",
               register_.name);
     for (const auto &f : parser) {
         auto *fJson =
@@ -502,7 +502,7 @@ void BFRuntimeGenerator::addActionProfCommon(
     tableJson->emplace("key", keyJson);
 
     if (actionProf.tableIds.empty()) {
-        ::warning("Action profile '%1%' is not used by any table, skipping it", actionProf.name);
+        ::warning("Action profile '{0}' is not used by any table, skipping it", actionProf.name);
         return;
     }
     auto oneTableId = actionProf.tableIds.at(0);
@@ -539,7 +539,7 @@ Util::JsonArray *BFRuntimeGenerator::makeActionSpecs(const p4configv1::Table &ta
     for (const auto &action_ref : table.action_refs()) {
         auto *action = Standard::findAction(p4info, action_ref.id());
         if (action == nullptr) {
-            ::error(ErrorType::ERR_INVALID, "Invalid action id '%1%'", action_ref.id());
+            ::error(ErrorType::ERR_INVALID, "Invalid action id '{0}'", action_ref.id());
             continue;
         }
         auto *spec = new Util::JsonObject();
@@ -557,7 +557,7 @@ Util::JsonArray *BFRuntimeGenerator::makeActionSpecs(const p4configv1::Table &ta
                 spec->emplace("action_scope", "DefaultOnly");
                 break;
             default:
-                ::error(ErrorType::ERR_INVALID, "Invalid action ref scope '%1%' in P4Info",
+                ::error(ErrorType::ERR_INVALID, "Invalid action ref scope '{0}' in P4Info",
                         int(action_ref.scope()));
                 break;
         }
@@ -622,7 +622,7 @@ void BFRuntimeGenerator::addDirectResources(const p4configv1::Table &table,
             addMeterDataFields(dataJson, *meter);
             attributesJson->append("MeterByteCountAdjust");
         } else {
-            ::error(ErrorType::ERR_UNKNOWN, "Unknown direct resource id '%1%'", directResId);
+            ::error(ErrorType::ERR_UNKNOWN, "Unknown direct resource id '{0}'", directResId);
             continue;
         }
     }
@@ -678,11 +678,11 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
                     matchType = transformOtherMatchType(mf.other_match_type());
                     break;
                 default:
-                    BUG("Invalid oneof case for the match type of table '%1%'", pre.name());
+                    BUG("Invalid oneof case for the match type of table '{0}'", pre.name());
                     break;
             }
             if (matchType == std::nullopt) {
-                ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported match type for BF-RT: %1%",
+                ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported match type for BF-RT: {0}",
                         int(mf.match_type()));
                 continue;
             }
@@ -765,7 +765,7 @@ void BFRuntimeGenerator::addMatchTables(Util::JsonArray *tablesJson) const {
                                                         false /* repeated */));
             addOneOf(dataJson, choicesDataJson, true /* mandatory */, false /* read-only */);
         } else {
-            BUG("Invalid table type '%1%'", tableType);
+            BUG("Invalid table type '{0}'", tableType);
         }
         maxActionParamId++;
 

@@ -71,7 +71,7 @@ Util::IJson *ExternConverter::convertExternObject(ConversionContext *ctxt,
         }
         return primitive;
     } else {
-        ::error(ErrorType::ERR_UNKNOWN, "Unknown extern method %1% from type %2%", em->method->name,
+        ::error(ErrorType::ERR_UNKNOWN, "Unknown extern method {0} from type {1}", em->method->name,
                 em->originalExternType->name);
         return nullptr;
     }
@@ -82,7 +82,7 @@ Util::IJson *ExternConverter::convertExternObject(ConversionContext *ctxt,
 void ExternConverter::convertExternInstance(ConversionContext *ctxt, const IR::Declaration *decl,
                                             const IR::ExternBlock *eb, const bool &emitExterns) {
     if (!emitExterns) {
-        ::error(ErrorType::ERR_UNKNOWN, "%1%: unknown extern instance", eb->type->name);
+        ::error(ErrorType::ERR_UNKNOWN, "{0}: unknown extern instance", eb->type->name);
         return;
     }
     auto attrs = new Util::JsonArray();
@@ -98,7 +98,7 @@ void ExternConverter::convertExternInstance(ConversionContext *ctxt, const IR::D
             type = "string";
             value = str->value;
         } else {
-            modelError("%1%: parameter type not unsupported", param->type);
+            modelError("{0}: parameter type not unsupported", param->type);
             continue;
         }
         ctxt->json->add_extern_attribute(param->name, type, value, attrs);
@@ -112,7 +112,7 @@ Util::IJson *ExternConverter::convertExternFunction(ConversionContext *ctxt,
                                                     const IR::StatOrDecl *s,
                                                     const bool emitExterns) {
     if (!emitExterns) {
-        ::error(ErrorType::ERR_UNKNOWN, "%1%: unknown extern function", ef->method->name);
+        ::error(ErrorType::ERR_UNKNOWN, "{0}: unknown extern function", ef->method->name);
         return nullptr;
     }
     auto primitive = mkPrimitive(ef->method->name);
@@ -203,7 +203,7 @@ cstring ExternConverter::createCalculation(ConversionContext *ctxt, cstring algo
     calc->emplace("algo", algo);
     fields = convertToList(fields, ctxt->typeMap);
     if (!fields) {
-        modelError("%1%: expected a struct", fields);
+        modelError("{0}: expected a struct", fields);
         return calcName;
     }
     auto jright = ctxt->conv->convertWithConstantWidths(fields);
@@ -239,7 +239,7 @@ cstring ExternConverter::convertHashAlgorithm(cstring algorithm) {
     else if (algorithm == P4V1::V1Model::instance.algorithm.xor16.name)
         result = "xor16";
     else
-        ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported algorithm %1%", algorithm);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported algorithm {0}", algorithm);
     return result;
 }
 
@@ -250,7 +250,7 @@ Util::IJson *ExternConverter::convertAssertAssume(ConversionContext *ctxt,
                                                   const IR::MethodCallExpression *methodCall,
                                                   const P4::ExternFunction *ef) {
     if (methodCall->arguments->size() != 1) {
-        ::error(ErrorType::ERR_EXPECTED, "Expected 1 arguments for %1%", methodCall);
+        ::error(ErrorType::ERR_EXPECTED, "Expected 1 arguments for {0}", methodCall);
         return nullptr;
     }
     auto primitive = mkPrimitive(ef->method->name.name);

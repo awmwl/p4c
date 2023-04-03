@@ -194,7 +194,7 @@ int main(int argc, char *const argv[]) {
                     t2 << ss2.str() << std::flush;
                     auto rv = system("json_diff t1.json t2.json");
                     if (rv != 0)
-                        ::warning(ErrorType::WARN_FAILED, "json_diff failed with code %1%", rv);
+                        ::warning(ErrorType::WARN_FAILED, "json_diff failed with code {0}", rv);
                 }
             }
         }

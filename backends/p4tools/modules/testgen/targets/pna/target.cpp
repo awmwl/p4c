@@ -44,7 +44,7 @@ const PnaDpdkProgramInfo *PnaDpdkTestgenTarget::initProgram_impl(
     argumentsToTypeDeclarations(ns, mainDecl->arguments, blocks);
 
     // We should have six arguments.
-    BUG_CHECK(blocks.size() == 4, "%1%: The PNA architecture requires 4 pipes. Received %2%.",
+    BUG_CHECK(blocks.size() == 4, "{0}: The PNA architecture requires 4 pipes. Received {1}.",
               mainDecl, blocks.size());
 
     ordered_map<cstring, const IR::Type_Declaration *> programmableBlocks;

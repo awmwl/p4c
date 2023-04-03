@@ -15,7 +15,7 @@ void ParseDpdkArchitecture::parse_pna_block(const IR::PackageBlock *block) {
     structure->p4arch = "pna";
     auto p = block->findParameterValue("main_parser");
     if (p == nullptr) {
-        ::error(ErrorType::ERR_MODEL, "Package %1% has no parameter named 'main_parser'", block);
+        ::error(ErrorType::ERR_MODEL, "Package {0} has no parameter named 'main_parser'", block);
         return;
     }
     auto parser = p->to<IR::ParserBlock>();
@@ -37,13 +37,13 @@ void ParseDpdkArchitecture::parse_psa_block(const IR::PackageBlock *block) {
     structure->p4arch = "psa";
     auto pkg = block->findParameterValue("ingress");
     if (pkg == nullptr) {
-        ::error(ErrorType::ERR_MODEL, "Package %1% has no parameter named 'ingress'", block);
+        ::error(ErrorType::ERR_MODEL, "Package {0} has no parameter named 'ingress'", block);
         return;
     }
     if (auto ingress = pkg->to<IR::PackageBlock>()) {
         auto p = ingress->findParameterValue("ip");
         if (!p) {
-            ::error(ErrorType::ERR_MODEL, "'ingress' package %1% has no parameter named 'ip'",
+            ::error(ErrorType::ERR_MODEL, "'ingress' package {0} has no parameter named 'ip'",
                     block);
             return;
         }
@@ -51,7 +51,7 @@ void ParseDpdkArchitecture::parse_psa_block(const IR::PackageBlock *block) {
         structure->parsers.emplace("IngressParser", parser->container);
         p = ingress->findParameterValue("ig");
         if (!p) {
-            ::error(ErrorType::ERR_MODEL, "'ingress' package %1% has no parameter named 'ig'",
+            ::error(ErrorType::ERR_MODEL, "'ingress' package {0} has no parameter named 'ig'",
                     block);
             return;
         }
@@ -60,7 +60,7 @@ void ParseDpdkArchitecture::parse_psa_block(const IR::PackageBlock *block) {
         structure->pipeline_controls.emplace(pipeline->container->name);
         p = ingress->findParameterValue("id");
         if (!p) {
-            ::error(ErrorType::ERR_MODEL, "'ingress' package %1% has no parameter named 'id'",
+            ::error(ErrorType::ERR_MODEL, "'ingress' package {0} has no parameter named 'id'",
                     block);
             return;
         }
@@ -72,7 +72,7 @@ void ParseDpdkArchitecture::parse_psa_block(const IR::PackageBlock *block) {
     if (auto egress = pkg->to<IR::PackageBlock>()) {
         auto p = egress->findParameterValue("ep");
         if (!p) {
-            ::error(ErrorType::ERR_MODEL, "'egress' package %1% has no parameter named 'ep'",
+            ::error(ErrorType::ERR_MODEL, "'egress' package {0} has no parameter named 'ep'",
                     block);
             return;
         }
@@ -80,7 +80,7 @@ void ParseDpdkArchitecture::parse_psa_block(const IR::PackageBlock *block) {
         structure->parsers.emplace("EgressParser", parser->container);
         p = egress->findParameterValue("eg");
         if (!p) {
-            ::error(ErrorType::ERR_MODEL, "'egress' package %1% has no parameter named 'eg'",
+            ::error(ErrorType::ERR_MODEL, "'egress' package {0} has no parameter named 'eg'",
                     block);
             return;
         }
@@ -89,7 +89,7 @@ void ParseDpdkArchitecture::parse_psa_block(const IR::PackageBlock *block) {
         structure->pipeline_controls.emplace(pipeline->container->name);
         p = egress->findParameterValue("ed");
         if (!p) {
-            ::error(ErrorType::ERR_MODEL, "'egress' package %1% has no parameter named 'ed'",
+            ::error(ErrorType::ERR_MODEL, "'egress' package {0} has no parameter named 'ed'",
                     block);
             return;
         }
@@ -108,7 +108,7 @@ bool ParseDpdkArchitecture::preorder(const IR::PackageBlock *block) {
                block->instanceType->to<IR::Type_Package>()->name == "PNA_NIC") {
         parse_pna_block(block);
     } else {
-        ::error(ErrorType::ERR_MODEL, "Unknown architecture %1%", options.arch);
+        ::error(ErrorType::ERR_MODEL, "Unknown architecture {0}", options.arch);
     }
     return false;
 }
@@ -163,7 +163,7 @@ void InspectDpdkProgram::addTypesAndInstances(const IR::Type_StructLike *type, b
             // The headers struct can not contain nested structures.
             if (isHeader && ft->is<IR::Type_Struct>()) {
                 ::error(ErrorType::ERR_INVALID,
-                        "Type %1% should only contain headers, header stacks, or header unions",
+                        "Type {0} should only contain headers, header stacks, or header unions",
                         type);
                 return;
             }
@@ -185,7 +185,7 @@ void InspectDpdkProgram::addTypesAndInstances(const IR::Type_StructLike *type, b
                     if (auto h_type = uft->to<IR::Type_Header>()) {
                         addHeaderInstance(h_type, uf->controlPlaneName());
                     } else {
-                        ::error(ErrorType::ERR_INVALID, "Type %1% cannot contain type %2%", ft,
+                        ::error(ErrorType::ERR_INVALID, "Type {0} cannot contain type {1}", ft,
                                 uft);
                         return;
                     }
@@ -203,7 +203,7 @@ void InspectDpdkProgram::addTypesAndInstances(const IR::Type_StructLike *type, b
             auto stack = ft->to<IR::Type_Stack>();
             auto stack_size = stack->getSize();
             auto type = typeMap->getTypeType(stack->elementType, true);
-            BUG_CHECK(type->is<IR::Type_Header>(), "%1% not a header type", stack->elementType);
+            BUG_CHECK(type->is<IR::Type_Header>(), "{0} not a header type", stack->elementType);
             auto ht = type->to<IR::Type_Header>();
             addHeaderType(ht);
             auto stack_type = stack->elementType->to<IR::Type_Header>();
@@ -230,7 +230,7 @@ void InspectDpdkProgram::addTypesAndInstances(const IR::Type_StructLike *type, b
                 structure->scalars_width += 32;
                 structure->scalarMetadataFields.emplace(f, newName);
             } else {
-                BUG("%1%: Unhandled type for %2%", ft, f);
+                BUG("{0}: Unhandled type for {1}", ft, f);
             }
         }
     }
@@ -257,7 +257,7 @@ bool InspectDpdkProgram::preorder(const IR::Declaration_Variable *dv) {
         LOG5("Adding " << dv << " into scalars map");
         structure->scalars.emplace(scalarsName, dv);
     } else {
-        BUG("Unhandled type %1%", dv);
+        BUG("Unhandled type {0}", dv);
     }
 
     return false;

@@ -21,22 +21,22 @@ EBPFRandomPSA::EBPFRandomPSA(const IR::Declaration_Instance *di)
 
     // verify type
     if (!di->type->is<IR::Type_Specialized>()) {
-        ::error(ErrorType::ERR_MODEL, "Missing specialization: %1%", di);
+        ::error(ErrorType::ERR_MODEL, "Missing specialization: {0}", di);
         return;
     }
     auto ts = di->type->to<IR::Type_Specialized>();
-    BUG_CHECK(ts->arguments->size() == 1, "%1%, Lack of specialization argument", ts);
+    BUG_CHECK(ts->arguments->size() == 1, "{0}, Lack of specialization argument", ts);
     auto type = ts->arguments->at(0);
     if (!type->is<IR::Type_Bits>()) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: %1%", ts);
+        ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: {0}", ts);
         return;
     }
     if (type->width_bits() > 32) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: up to 32 bits width is supported", ts);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: up to 32 bits width is supported", ts);
     }
 
     if (di->arguments->size() != 2) {
-        ::error(ErrorType::ERR_MODEL, "Expected 2 arguments to: %1%", di);
+        ::error(ErrorType::ERR_MODEL, "Expected 2 arguments to: {0}", di);
         return;
     }
 
@@ -47,10 +47,10 @@ EBPFRandomPSA::EBPFRandomPSA(const IR::Declaration_Instance *di)
             if (expr->fitsUint()) {
                 tmp[i] = expr->asUnsigned();
             } else {
-                ::error(ErrorType::ERR_OVERLIMIT, "%1%: size too large", expr);
+                ::error(ErrorType::ERR_OVERLIMIT, "{0}: size too large", expr);
             }
         } else {
-            ::error(ErrorType::ERR_UNSUPPORTED, "Must be constant value: %1%",
+            ::error(ErrorType::ERR_UNSUPPORTED, "Must be constant value: {0}",
                     di->arguments->at(i)->expression);
         }
     }
@@ -61,11 +61,11 @@ EBPFRandomPSA::EBPFRandomPSA(const IR::Declaration_Instance *di)
 
     // verify constructor parameters
     if (minValue > maxValue) {
-        ::error(ErrorType::ERR_INVALID, "%1%: Max value lower than min value", di);
+        ::error(ErrorType::ERR_INVALID, "{0}: Max value lower than min value", di);
     }
     if (minValue == maxValue) {
         ::warning(ErrorType::WARN_IGNORE,
-                  "%1%: No randomness, will always return the same value "
+                  "{0}: No randomness, will always return the same value "
                   "due to that the min value is equal to the max value",
                   di);
     }
@@ -75,7 +75,7 @@ void EBPFRandomPSA::processMethod(CodeBuilder *builder, const P4::ExternMethod *
     if (method->method->type->name == "read") {
         emitRead(builder);
     } else {
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Method not implemented yet", method->expr);
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Method not implemented yet", method->expr);
     }
 }
 

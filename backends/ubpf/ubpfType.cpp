@@ -48,7 +48,7 @@ EBPF::EBPFType *UBPFTypeFactory::create(const IR::Type *type) {
     } else if (auto tpl = type->to<IR::Type_List>()) {
         result = new UBPFListType(tpl);
     } else {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type %1% not supported", type);
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Type {0} not supported", type);
     }
     return result;
 }
@@ -211,7 +211,7 @@ UBPFListType::UBPFListType(const IR::Type_List *lst) : EBPFType(lst) {
                 elements.push_back(pad);
                 paddingIndex++;
             } else {
-                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Not supported bitwidth in %1%",
+                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Not supported bitwidth in {0}",
                         this->type->getNode());
             }
         }

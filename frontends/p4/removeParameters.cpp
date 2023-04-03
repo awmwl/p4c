@@ -51,8 +51,8 @@ class RemoveMethodCallArguments : public Transform {
 void FindActionParameters::postorder(const IR::ActionListElement *element) {
     auto path = element->getPath();
     auto decl = refMap->getDeclaration(path, true);
-    BUG_CHECK(decl->is<IR::P4Action>(), "%1%: not an action", element);
-    BUG_CHECK(element->expression->is<IR::MethodCallExpression>(), "%1%: expected a method call",
+    BUG_CHECK(decl->is<IR::P4Action>(), "{0}: not an action", element);
+    BUG_CHECK(element->expression->is<IR::MethodCallExpression>(), "{0}: expected a method call",
               element->expression);
     invocations->bind(decl->to<IR::P4Action>(), element->expression->to<IR::MethodCallExpression>(),
                       false);
@@ -106,7 +106,7 @@ class InsertBeforeExits : public Transform {
 const IR::Node *DoRemoveActionParameters::postorder(IR::P4Action *action) {
     LOG1("Visiting " << dbp(action));
     BUG_CHECK(getParent<IR::P4Control>() || getParent<IR::P4Program>(),
-              "%1%: unexpected parent %2%", getOriginal(), getContext()->node);
+              "{0}: unexpected parent {1}", getOriginal(), getContext()->node);
     auto result = new IR::IndexedVector<IR::Declaration>();
     auto leftParams = new IR::IndexedVector<IR::Parameter>();
     auto body = new IR::IndexedVector<IR::StatOrDecl>();
@@ -129,7 +129,7 @@ const IR::Node *DoRemoveActionParameters::postorder(IR::P4Action *action) {
             result->push_back(decl);
             auto arg = substitution.lookup(p);
             if (arg == nullptr) {
-                ::error(ErrorType::ERR_UNINITIALIZED, "action %1%: parameter %2% must be bound",
+                ::error(ErrorType::ERR_UNINITIALIZED, "action {0}: parameter {1} must be bound",
                         invocation, p);
                 continue;
             }

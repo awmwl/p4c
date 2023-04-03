@@ -40,14 +40,14 @@ void DirectMeterMap::setTable(const IR::IDeclaration *meter, const IR::P4Table *
     auto info = getInfo(meter);
     if (info == nullptr) {
         ::error(ErrorType::ERR_INVALID,
-                "%1%: table with direct meter %2% must have"
+                "{0}: table with direct meter {1} must have"
                 " at least one action with a read method call",
                 table, meter);
         return;
     }
     if (info->table != nullptr)
         ::error(ErrorType::ERR_INVALID,
-                "%1%: Direct meters cannot be attached to multiple tables %2% and %3%", meter,
+                "{0}: Direct meters cannot be attached to multiple tables {1} and {2}", meter,
                 table, info->table);
     info->table = table;
 }
@@ -64,7 +64,7 @@ static bool checkSame(const IR::Expression *expr0, const IR::Expression *expr1) 
         auto mem1 = expr1->to<IR::Member>();
         return checkSame(mem0->expr, mem1->expr) && mem0->member == mem1->member;
     }
-    BUG("%1%: unexpected expression for meter destination", expr0);
+    BUG("{0}: unexpected expression for meter destination", expr0);
 }
 
 /**
@@ -81,7 +81,7 @@ void DirectMeterMap::setDestination(const IR::IDeclaration *meter,
         if (!same)
             ::error(ErrorType::ERR_INVALID,
                     "all meter operations must write to the same destination,"
-                    " however %1% and %2% are different",
+                    " however {0} and {1} are different",
                     destination, info->destinationField);
     }
 }

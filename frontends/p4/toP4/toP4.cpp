@@ -416,7 +416,7 @@ bool ToP4::preorder(const IR::Method *m) {
 
     if (m->isAbstract) builder.append("abstract ");
     auto t = m->type;
-    BUG_CHECK(t != nullptr, "Method %1% has no type", m);
+    BUG_CHECK(t != nullptr, "Method {0} has no type", m);
     if (t->returnType != nullptr) {
         visit(t->returnType);
         builder.spc();
@@ -431,7 +431,7 @@ bool ToP4::preorder(const IR::Method *m) {
 bool ToP4::preorder(const IR::Function *function) {
     dump(1);
     auto t = function->type;
-    BUG_CHECK(t != nullptr, "Function %1% has no type", function);
+    BUG_CHECK(t != nullptr, "Function {0} has no type", function);
     if (t->returnType != nullptr) {
         visit(t->returnType);
         builder.spc();
@@ -461,7 +461,7 @@ bool ToP4::preorder(const IR::Type_Extern *t) {
 
     if (t->attributes.size() != 0)
         warn(ErrorType::WARN_UNSUPPORTED,
-             "%1%: extern has attributes, which are not supported "
+             "{0}: extern has attributes, which are not supported "
              "in P4-16, and thus are not emitted as P4-16",
              t);
 

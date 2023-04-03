@@ -24,7 +24,7 @@ bool TypeSpecializationMap::same(const TypeSpecialization *spec,
                                  const IR::Type_Specialized *right) const {
     if (!spec->specialized->baseType->equiv(*right->baseType)) return false;
     BUG_CHECK(spec->argumentTypes->size() == right->arguments->size(),
-              "Type %1% and %2% specialized with different number of arguments?", spec->specialized,
+              "Type {0} and {1} specialized with different number of arguments?", spec->specialized,
               right);
     for (size_t i = 0; i < spec->argumentTypes->size(); i++) {
         auto argl = spec->argumentTypes->at(i);
@@ -163,7 +163,7 @@ const IR::Node *ReplaceTypeUses::postorder(IR::StructExpression *expression) {
     auto st = getOriginal<IR::StructExpression>()->structType;
     if (!st) {
         ::error(ErrorType::ERR_TYPE_ERROR,
-                "%1%: could not infer a type for expression; "
+                "{0}: could not infer a type for expression; "
                 "please specify it explicitly",
                 expression);
         return expression;

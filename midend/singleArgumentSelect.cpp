@@ -33,9 +33,9 @@ static const IR::Expression *convertList(const IR::Expression *expression,
     }
     auto list = expression->to<IR::ListExpression>();
     if (list == nullptr) return expression;
-    BUG_CHECK(list->components.size() > 0, "%1%: No components", list);
+    BUG_CHECK(list->components.size() > 0, "{0}: No components", list);
     auto tt = selectListType->checkedTo<IR::Type_List>();
-    BUG_CHECK(list->size() == tt->components.size(), "%1% and %2% do not have the same size", list,
+    BUG_CHECK(list->size() == tt->components.size(), "{0} and {1} do not have the same size", list,
               tt);
     auto p = new DoSingleArgumentSelect::Pair(list->components.at(0), tt->components.at(0));
     auto hasMask = p->hasMask;
@@ -64,7 +64,7 @@ void DoSingleArgumentSelect::checkExpressionType(const IR::Expression *expressio
         }
     } else {
         ::error(ErrorType::ERR_UNSUPPORTED,
-                "%1%: expression type %2% not supported in select expression", expression, type);
+                "{0}: expression type {1} not supported in select expression", expression, type);
     }
 }
 

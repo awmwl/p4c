@@ -52,7 +52,7 @@ class EBPFPsaParser : public EBPFParser {
 
     EBPFChecksumPSA *getChecksum(cstring name) const {
         auto result = ::get(checksums, name);
-        BUG_CHECK(result != nullptr, "No checksum named %1%", name);
+        BUG_CHECK(result != nullptr, "No checksum named {0}", name);
         return result;
     }
 };

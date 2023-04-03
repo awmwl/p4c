@@ -85,7 +85,7 @@ const Type_Bits *Type_Bits::get(int width, bool isSigned) {
     auto &result = (*type_map)[std::make_pair(width, isSigned)];
     if (!result) result = new Type_Bits(width, isSigned);
     if (width > P4CContext::getConfig().maximumWidthSupported())
-        ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Compiler only supports widths up to %2%", result,
+        ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Compiler only supports widths up to {1}", result,
                 P4CContext::getConfig().maximumWidthSupported());
     return result;
 }
@@ -111,12 +111,12 @@ const Type_String *Type_String::get() {
 const Type::Bits *Type::Bits::get(Util::SourceInfo si, int sz, bool isSigned) {
     auto result = new IR::Type_Bits(si, sz, isSigned);
     if (sz < 0) {
-        ::error(ErrorType::ERR_INVALID, "%1%: Width of type cannot be negative", result);
+        ::error(ErrorType::ERR_INVALID, "{0}: Width of type cannot be negative", result);
         // Return a value that will not cause crashes later on
         return new IR::Type_Bits(si, 1024, isSigned);
     }
     if (sz == 0 && isSigned) {
-        ::error(ErrorType::ERR_INVALID, "%1%: Width of signed type cannot be zero", result);
+        ::error(ErrorType::ERR_INVALID, "{0}: Width of signed type cannot be zero", result);
         // Return a value that will not cause crashes later on
         return new IR::Type_Bits(si, 1024, isSigned);
     }
@@ -126,7 +126,7 @@ const Type::Bits *Type::Bits::get(Util::SourceInfo si, int sz, bool isSigned) {
 const Type::Varbits *Type::Varbits::get(Util::SourceInfo si, int sz) {
     auto result = new Type::Varbits(si, sz);
     if (sz < 0) {
-        ::error(ErrorType::ERR_INVALID, "%1%: Width cannot be negative or zero", result);
+        ::error(ErrorType::ERR_INVALID, "{0}: Width cannot be negative or zero", result);
         // Return a value that will not cause crashes later on
         return new IR::Type_Varbits(si, 1024);
     }
@@ -215,7 +215,7 @@ const Type *Type_SpecializedCanonical::getP4Type() const {
     auto bt = baseType->getP4Type();
     if (auto tn = bt->to<IR::Type_Name>()) return new IR::Type_Specialized(srcInfo, tn, args);
     auto st = baseType->to<IR::Type_StructLike>();
-    BUG_CHECK(st != nullptr, "%1%: expected a struct", baseType);
+    BUG_CHECK(st != nullptr, "{0}: expected a struct", baseType);
     return new IR::Type_Specialized(srcInfo, new IR::Type_Name(st->getName()), args);
 }
 

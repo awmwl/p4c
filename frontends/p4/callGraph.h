@@ -72,7 +72,7 @@ class CallGraph {
     }
     void remove(T node) {
         auto n = nodes.find(node);
-        BUG_CHECK(n != nodes.end(), "%1%: Node not in graph", node);
+        BUG_CHECK(n != nodes.end(), "{0}: Node not in graph", node);
         nodes.erase(n);
         auto in = in_edges.find(node);
         if (in != in_edges.end()) {

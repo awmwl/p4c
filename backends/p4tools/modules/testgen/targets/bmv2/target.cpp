@@ -51,7 +51,7 @@ const BMv2_V1ModelProgramInfo *BMv2_V1ModelTestgenTarget::initProgram_impl(
     argumentsToTypeDeclarations(ns, mainDecl->arguments, blocks);
 
     // We should have six arguments.
-    BUG_CHECK(blocks.size() == 6, "%1%: The BMV2 architecture requires 6 pipes. Received %2%.",
+    BUG_CHECK(blocks.size() == 6, "{0}: The BMV2 architecture requires 6 pipes. Received {1}.",
               mainDecl, blocks.size());
 
     ordered_map<cstring, const IR::Type_Declaration *> programmableBlocks;

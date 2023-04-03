@@ -18,7 +18,7 @@ std::optional<const P4ToolsTestCase> P4ToolsTestCase::create(
     const std::string &source) {
     // Initialize the target.
     ensureInit();
-    BUG_CHECK(P4Tools::Target::init(deviceName, archName), "Target %1%/%2% not supported",
+    BUG_CHECK(P4Tools::Target::init(deviceName, archName), "Target {0}/{1} not supported",
               deviceName, archName);
 
     // Set up the compilation context and set the source language.

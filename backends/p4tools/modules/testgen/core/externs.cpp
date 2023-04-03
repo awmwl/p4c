@@ -30,7 +30,7 @@ bool ExternMethodImpls::exec(const IR::MethodCallExpression *call, const IR::Exp
         externType = specType->substituted->checkedTo<IR::Type_Extern>();
     }
 
-    BUG_CHECK(externType, "Not an extern: %1%", receiver);
+    BUG_CHECK(externType, "Not an extern: {0}", receiver);
 
     cstring qualifiedMethodName = externType->name + "." + name;
     if (impls.count(qualifiedMethodName) == 0) {
@@ -49,7 +49,7 @@ bool ExternMethodImpls::exec(const IR::MethodCallExpression *call, const IR::Exp
         const auto &methodImpl = pair.second;
 
         if (matches(paramNames, args)) {
-            BUG_CHECK(!matchingImpl, "Ambiguous extern method call: %1%", name);
+            BUG_CHECK(!matchingImpl, "Ambiguous extern method call: {0}", name);
             matchingImpl = methodImpl;
         }
     }
@@ -98,7 +98,7 @@ ExternMethodImpls::ExternMethodImpls(const ImplList &inputImplList) {
         // This is a quadratic-time algorithm, but should be fine, since we expect the number of
         // overloads to be small in practice.
         for (auto &pair : tmpImplList) {
-            BUG_CHECK(pair.first != paramNames, "Multiple implementations of %1%(%2%)", name,
+            BUG_CHECK(pair.first != paramNames, "Multiple implementations of {0}({1})", name,
                       Utils::containerToString(paramNames));
         }
 

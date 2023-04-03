@@ -25,7 +25,7 @@ void RenameMap::setNewName(const IR::IDeclaration *decl, cstring name) {
     CHECK_NULL(decl);
     BUG_CHECK(!name.isNullOrEmpty(), "Empty name");
     LOG1("Will rename " << dbp(decl) << " to " << name);
-    if (newName.find(decl) != newName.end()) BUG("%1%: already renamed", decl);
+    if (newName.find(decl) != newName.end()) BUG("{0}: already renamed", decl);
     newName.emplace(decl, name);
 }
 
@@ -132,7 +132,7 @@ const IR::Node *RenameSymbols::postorder(IR::PathExpression *expression) {
     auto decl = refMap->getDeclaration(expression->path, true);
     if (!renameMap->toRename(decl)) return expression;
     // This should be a local name.
-    BUG_CHECK(!expression->path->absolute, "%1%: renaming absolute path", expression);
+    BUG_CHECK(!expression->path->absolute, "{0}: renaming absolute path", expression);
     auto newName = renameMap->getName(decl);
     auto name =
         IR::ID(expression->path->name.srcInfo, newName, expression->path->name.originalName);

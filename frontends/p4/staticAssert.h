@@ -46,7 +46,7 @@ class DoStaticAssert : public Transform {
                 auto subst = ef->substitution;
                 auto params = subst.getParametersInOrder();
                 if (!params->moveNext()) {
-                    ::warning(ErrorType::WARN_INVALID, "static_assert with no arguments: %1%",
+                    ::warning(ErrorType::WARN_INVALID, "static_assert with no arguments: {0}",
                               method);
                     return method;
                 }
@@ -66,7 +66,7 @@ class DoStaticAssert : public Transform {
                                 message = sl->value;
                             }
                         }
-                        ::error(ErrorType::ERR_EXPECTED, "%1%: %2%", method, message);
+                        ::error(ErrorType::ERR_EXPECTED, "{0}: {1}", method, message);
                         return method;
                     }
                     if (getContext()->node->is<IR::MethodCallStatement>()) {
@@ -76,7 +76,7 @@ class DoStaticAssert : public Transform {
                     return new IR::BoolLiteral(method->srcInfo, true);
                 } else {
                     ::error(ErrorType::ERR_UNEXPECTED,
-                            "Could not evaluate static_assert to a constant: %1%", arg);
+                            "Could not evaluate static_assert to a constant: {0}", arg);
                     return method;
                 }
             }

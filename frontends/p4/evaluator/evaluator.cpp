@@ -22,7 +22,7 @@ limitations under the License.
 namespace P4 {
 
 Visitor::profile_t Evaluator::init_apply(const IR::Node *node) {
-    BUG_CHECK(node->is<IR::P4Program>(), "Evaluation should be invoked on a program, not a %1%",
+    BUG_CHECK(node->is<IR::P4Program>(), "Evaluation should be invoked on a program, not a {0}",
               node);
     // In fact, some passes are intentionally run with stale maps...
     // refMap->validateMap(node);
@@ -43,7 +43,7 @@ void Evaluator::pushBlock(IR::Block *block) {
 void Evaluator::popBlock(IR::Block *block) {
     LOG2("Remove current block " << dbp(block));
     BUG_CHECK(!blockStack.empty(), "Empty stack");
-    BUG_CHECK(blockStack.back() == block, "%1%: incorrect block popped from stack: %2%", block,
+    BUG_CHECK(blockStack.back() == block, "{0}: incorrect block popped from stack: {1}", block,
               blockStack.back());
     blockStack.pop_back();
 }
@@ -119,7 +119,7 @@ std::vector<const IR::CompileTimeValue *> *Evaluator::evaluateArguments(
     for (auto p : parameters->parameters) {
         auto arg = substitution.lookup(p);
         if (arg == nullptr) {
-            BUG_CHECK(p->isOptional(), "Missing parameter %1%", p);
+            BUG_CHECK(p->isOptional(), "Missing parameter {0}", p);
             values->push_back(nullptr);
             continue;
         }
@@ -128,7 +128,7 @@ std::vector<const IR::CompileTimeValue *> *Evaluator::evaluateArguments(
         CHECK_NULL(folded);
         visit(folded);  // recursive evaluation
         if (!hasValue(folded)) {
-            ::error(ErrorType::ERR_INVALID, "%1%: Cannot evaluate to a compile-time constant",
+            ::error(ErrorType::ERR_INVALID, "{0}: Cannot evaluate to a compile-time constant",
                     arg->expression);
             popBlock(context);
             return nullptr;
@@ -161,7 +161,7 @@ const IR::Block *Evaluator::processConstructor(
             auto tn = type->to<IR::Type_Name>();
             decl = refMap->getDeclaration(tn->path, true);
         } else {
-            BUG_CHECK(type->is<IR::IDeclaration>(), "%1%: expected a type declaration", type);
+            BUG_CHECK(type->is<IR::IDeclaration>(), "{0}: expected a type declaration", type);
             decl = type->to<IR::IDeclaration>();
         }
     }
@@ -175,9 +175,9 @@ const IR::Block *Evaluator::processConstructor(
         auto canon = instanceType;
         if (canon->is<IR::Type_SpecializedCanonical>())
             canon = canon->to<IR::Type_SpecializedCanonical>()->substituted->to<IR::Type>();
-        BUG_CHECK(canon->is<IR::Type_Extern>(), "%1%: expected an extern", canon);
+        BUG_CHECK(canon->is<IR::Type_Extern>(), "{0}: expected an extern", canon);
         auto constructor = canon->to<IR::Type_Extern>()->lookupConstructor(arguments);
-        BUG_CHECK(constructor != nullptr, "Type %1% has no constructor with %2% arguments", exttype,
+        BUG_CHECK(constructor != nullptr, "Type {0} has no constructor with {1} arguments", exttype,
                   arguments->size());
         auto block = new IR::ExternBlock(node->srcInfo, node, instanceType, exttype, constructor);
         pushBlock(block);
@@ -218,7 +218,7 @@ const IR::Block *Evaluator::processConstructor(
         return block;
     }
 
-    BUG("Unhandled case %1%: type is %2%", node, type);
+    BUG("Unhandled case {0}: type is {1}", node, type);
     return nullptr;
 }
 

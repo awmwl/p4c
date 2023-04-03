@@ -80,25 +80,25 @@ class EBPFControlPSA : public EBPFControl {
 
     EBPFRandomPSA *getRandomExt(cstring name) const {
         auto result = ::get(randoms, name);
-        BUG_CHECK(result != nullptr, "No random generator named %1%", name);
+        BUG_CHECK(result != nullptr, "No random generator named {0}", name);
         return result;
     }
 
     EBPFRegisterPSA *getRegister(cstring name) const {
         auto result = ::get(registers, name);
-        BUG_CHECK(result != nullptr, "No register named %1%", name);
+        BUG_CHECK(result != nullptr, "No register named {0}", name);
         return result;
     }
 
     EBPFHashPSA *getHash(cstring name) const {
         auto result = ::get(hashes, name);
-        BUG_CHECK(result != nullptr, "No hash named %1%", name);
+        BUG_CHECK(result != nullptr, "No hash named {0}", name);
         return result;
     }
 
     EBPFMeterPSA *getMeter(cstring name) const {
         auto result = ::get(meters, name);
-        BUG_CHECK(result != nullptr, "No meter named %1%", name);
+        BUG_CHECK(result != nullptr, "No meter named {0}", name);
         return result;
     }
 };

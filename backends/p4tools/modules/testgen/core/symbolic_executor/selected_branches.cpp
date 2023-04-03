@@ -60,7 +60,7 @@ void SelectedBranches::run(const Callback &callback) {
 uint64_t getNumeric(const std::string &str) {
     char *leftString = nullptr;
     uint64_t number = strtoul(str.c_str(), &leftString, 10);
-    BUG_CHECK(!(*leftString), "Can't translate selected branch %1% into int", str);
+    BUG_CHECK(!(*leftString), "Can't translate selected branch {0} into int", str);
     return number;
 }
 

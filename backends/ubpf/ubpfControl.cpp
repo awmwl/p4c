@@ -59,7 +59,7 @@ void UBPFControlBodyTranslator::processFunction(const P4::ExternFunction *functi
             builder->appendFormat(" = ubpf_hash(&%s, sizeof(%s))", hashKeyInstanceName,
                                   hashKeyInstanceName);
         } else {
-            ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Not supported hash algorithm type",
+            ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Not supported hash algorithm type",
                     algorithmType);
         }
 
@@ -70,7 +70,7 @@ void UBPFControlBodyTranslator::processFunction(const P4::ExternFunction *functi
             visit(function->expr->arguments->at(0)->expression);
             builder->append(")");
         } else {
-            ::error(ErrorType::ERR_EXPECTED, "%1%: One argument expected", function->expr);
+            ::error(ErrorType::ERR_EXPECTED, "{0}: One argument expected", function->expr);
         }
         return;
     }
@@ -106,7 +106,7 @@ cstring UBPFControlBodyTranslator::createHashKeyInstance(const P4::ExternFunctio
 
     auto atype = UBPFTypeFactory::instance->create(dataArgument->type);
     if (!atype->is<UBPFListType>()) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "%1%: Unsupported argument type",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "{0}: Unsupported argument type",
                 dataArgument->type);
     }
     auto ubpfList = atype->to<UBPFListType>();
@@ -148,7 +148,7 @@ void UBPFControlBodyTranslator::processMethod(const P4::ExternMethod *method) {
 
     if (declType->name.name == p4lib.packetOut.name) {
         if (method->method->name.name == p4lib.packetOut.emit.name) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "%1%: Emit extern not supported in control block",
+            ::error(ErrorType::ERR_UNSUPPORTED, "{0}: Emit extern not supported in control block",
                     method->expr);
             return;
         }
@@ -163,12 +163,12 @@ void UBPFControlBodyTranslator::processMethod(const P4::ExternMethod *method) {
         pRegister->emitMethodInvocation(builder, method);
         return;
     }
-    ::error(ErrorType::ERR_UNEXPECTED, "%1%: Unexpected method call", method->expr);
+    ::error(ErrorType::ERR_UNEXPECTED, "{0}: Unexpected method call", method->expr);
 }
 
 void UBPFControlBodyTranslator::processApply(const P4::ApplyMethod *method) {
     auto table = control->getTable(method->object->getName().name);
-    BUG_CHECK(table != nullptr, "No table for %1%", method->expr);
+    BUG_CHECK(table != nullptr, "No table for {0}", method->expr);
 
     cstring actionVariableName;
     if (!saveAction.empty()) {
@@ -181,7 +181,7 @@ void UBPFControlBodyTranslator::processApply(const P4::ApplyMethod *method) {
     }
     builder->blockStart();
 
-    BUG_CHECK(method->expr->arguments->empty(), "%1%: table apply with arguments", method);
+    BUG_CHECK(method->expr->arguments->empty(), "{0}: table apply with arguments", method);
     cstring keyname = "key";
     if (table->keyGenerator != nullptr) {
         builder->emitIndent();
@@ -312,13 +312,13 @@ bool UBPFControlBodyTranslator::preorder(const IR::MethodCallExpression *express
 
     if (auto ac = mi->to<P4::ActionCall>()) {
         // Action arguments have been eliminated by the mid-end.
-        BUG_CHECK(expression->arguments->empty(), "%1%: unexpected arguments for action call",
+        BUG_CHECK(expression->arguments->empty(), "{0}: unexpected arguments for action call",
                   expression);
         visit(ac->action->body);
         return false;
     }
 
-    ::error(ErrorType::ERR_UNEXPECTED, "Unsupported method invocation %1%", expression);
+    ::error(ErrorType::ERR_UNEXPECTED, "Unsupported method invocation {0}", expression);
     return false;
 }
 
@@ -445,7 +445,7 @@ bool UBPFControlBodyTranslator::preorder(const IR::SwitchStatement *statement) {
     saveAction.push_back(newName);
     // This must be a table.apply().action_run
     auto mem = statement->expression->to<IR::Member>();
-    BUG_CHECK(mem != nullptr, "%1%: Unexpected expression in switch statement",
+    BUG_CHECK(mem != nullptr, "{0}: Unexpected expression in switch statement",
               statement->expression);
     visit(mem->expr);
     saveAction.pop_back();
@@ -467,7 +467,7 @@ bool UBPFControlBodyTranslator::preorder(const IR::SwitchStatement *statement) {
             builder->append("case ");
             auto pe = c->label->to<IR::PathExpression>();
             auto decl = control->program->refMap->getDeclaration(pe->path, true);
-            BUG_CHECK(decl->is<IR::P4Action>(), "%1%: expected an action", pe);
+            BUG_CHECK(decl->is<IR::P4Action>(), "{0}: expected an action", pe);
             auto act = decl->to<IR::P4Action>();
             auto tblName = mem->to<IR::Operation_Unary>()
                                ->expr->to<IR::Expression>()
@@ -520,7 +520,7 @@ bool UBPFControlBodyTranslator::comparison(const IR::Operation_Relation *b) {
         builder->append(")");
     } else {
         if (!et->is<EBPF::IHasWidth>())
-            BUG("%1%: Comparisons for type %2% not yet implemented", type);
+            BUG("{0}: Comparisons for type {1} not yet implemented", type);
         unsigned width = et->to<EBPF::IHasWidth>()->implementationWidthInBits();
         builder->append("memcmp(&");
         visit(b->left);
@@ -609,14 +609,14 @@ void UBPFControl::emitDeclaration(EBPF::CodeBuilder *builder, const IR::Declarat
         builder->emitIndent();
         etype->declareInit(builder, vd->name, false);
         builder->endOfStatement(true);
-        BUG_CHECK(vd->initializer == nullptr, "%1%: declarations with initializers not supported",
+        BUG_CHECK(vd->initializer == nullptr, "{0}: declarations with initializers not supported",
                   decl);
         return;
     } else if (decl->is<IR::P4Table>() || decl->is<IR::P4Action>() ||
                decl->is<IR::Declaration_Instance>()) {
         return;
     }
-    BUG("%1%: not yet handled", decl);
+    BUG("{0}: not yet handled", decl);
 }
 
 void UBPFControl::emitTableTypes(EBPF::CodeBuilder *builder) {

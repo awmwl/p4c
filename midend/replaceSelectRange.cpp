@@ -24,18 +24,18 @@ namespace P4 {
 static void expandRange(const IR::Range *r, std::vector<const IR::Mask *> *masks,
                         const IR::Type *maskType, big_int min, big_int max) {
     int width = r->type->width_bits();
-    BUG_CHECK(width > 0, "zero-width range is not allowed %1%", r->type);
+    BUG_CHECK(width > 0, "zero-width range is not allowed {0}", r->type);
     big_int size_mask = ((((big_int)1) << width) - 1);
     auto base = r->left->to<IR::Constant>()->base;
 
-    BUG_CHECK((min >= 0) == (max >= 0), "Wrong subrange %1%..%2% (going over zero)", min, max);
+    BUG_CHECK((min >= 0) == (max >= 0), "Wrong subrange {0}..{1} (going over zero)", min, max);
     if (min < 0) {
         // convert negative range to bit-corresponding positive range
         min = size_mask + min + 1;
         max = size_mask + max + 1;
     }
 
-    BUG_CHECK(min <= max, "range bounds inverted %1%..%2%", min, max);
+    BUG_CHECK(min <= max, "range bounds inverted {0}..{1}", min, max);
 
     big_int range_size_remaining = max - min + 1;
 
@@ -66,7 +66,7 @@ std::vector<const IR::Mask *> *DoReplaceSelectRange::rangeToMasks(const IR::Rang
     auto l = r->left->to<IR::Constant>();
     if (!l) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%: Range boundaries must be a compile-time constants.", r->left);
+                "{0}: Range boundaries must be a compile-time constants.", r->left);
         return nullptr;
     }
     auto left = l->value;
@@ -74,7 +74,7 @@ std::vector<const IR::Mask *> *DoReplaceSelectRange::rangeToMasks(const IR::Rang
     auto ri = r->right->to<IR::Constant>();
     if (!ri) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%: Range boundaries must be a compile-time constants.", r->right);
+                "{0}: Range boundaries must be a compile-time constants.", r->right);
         return nullptr;
     }
 
@@ -82,14 +82,14 @@ std::vector<const IR::Mask *> *DoReplaceSelectRange::rangeToMasks(const IR::Rang
     auto right = ri->value;
     if (right < left) {
         ::warning(ErrorType::WARN_INVALID,
-                  "%1%-%2%: Range with end less than start is "
+                  "{0}-{1}: Range with end less than start is "
                   "treated as an empty range",
                   r->left, r->right);
         return masks;
     }
 
     auto inType = r->left->type->to<IR::Type_Bits>();
-    BUG_CHECK(inType != nullptr, "Range type %1% is not fixed-width integer", r->left->type);
+    BUG_CHECK(inType != nullptr, "Range type {0} is not fixed-width integer", r->left->type);
     bool isSigned = inType->isSigned;
     auto maskType = isSigned ? new IR::Type_Bits(inType->srcInfo, inType->size, false) : inType;
 
@@ -139,7 +139,7 @@ std::vector<IR::Vector<IR::Expression>> DoReplaceSelectRange::cartesianAppend(
 }
 
 const IR::Node *DoReplaceSelectRange::postorder(IR::SelectExpression *e) {
-    BUG_CHECK(findContext<IR::SelectExpression>() == nullptr, "A select nested in select: %1%", e);
+    BUG_CHECK(findContext<IR::SelectExpression>() == nullptr, "A select nested in select: {0}", e);
     if (!signedIndicesToReplace.empty()) {
         IR::Vector<IR::Expression> newSelectList;
         size_t idx = 0;
@@ -148,7 +148,7 @@ const IR::Node *DoReplaceSelectRange::postorder(IR::SelectExpression *e) {
                 auto eType = expr->type->to<IR::Type_Bits>();
                 BUG_CHECK(eType,
                           "Cannot handle select on types other then fixed-width integeral "
-                          "types: %1%",
+                          "types: {0}",
                           expr->type);
                 auto unsignedType = new IR::Type_Bits(eType->srcInfo, eType->size, false);
 
@@ -168,7 +168,7 @@ const IR::Node *DoReplaceSelectRange::postorder(IR::SelectExpression *e) {
 
 const IR::Node *DoReplaceSelectRange::postorder(IR::SelectCase *sc) {
     BUG_CHECK(findContext<IR::SelectExpression>() != nullptr,
-              "A lone select case not inside select: %1%", sc);
+              "A lone select case not inside select: {0}", sc);
 
     auto newCases = new IR::Vector<IR::SelectCase>();
     auto keySet = sc->keyset;
@@ -208,7 +208,7 @@ const IR::Node *DoReplaceSelectRange::postorder(IR::SelectCase *sc) {
         }
         if (newCases->size() > MAX_CASES) {
             warn(ErrorType::ERR_OVERLIMIT,
-                 "select key set expression with a range expands into %2% "
+                 "select key set expression with a range expands into {1} "
                  "ternary key set expressions, which may lead to run-time "
                  "performance or parser configuration space issues in some"
                  " targets.",

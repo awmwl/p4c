@@ -44,7 +44,7 @@ void DoCheckCoreMethods::checkEmitType(const IR::Expression *emit, const IR::Typ
         return;
     }
 
-    typeError("%1%: argument must be a header, stack or union, or a struct or tuple of such types",
+    typeError("{0}: argument must be a header, stack or union, or a struct or tuple of such types",
               emit);
 }
 
@@ -58,7 +58,7 @@ void DoCheckCoreMethods::checkCorelibMethods(const ExternMethod *em) const {
         if (em->method->name == corelib.packetIn.extract.name) {
             if (argCount == 0) {
                 // core.p4 is corrupted.
-                typeError("%1%: Expected exactly 1 argument for %2% method", mce,
+                typeError("{0}: Expected exactly 1 argument for {1} method", mce,
                           corelib.packetIn.extract.name);
                 return;
             }
@@ -66,32 +66,32 @@ void DoCheckCoreMethods::checkCorelibMethods(const ExternMethod *em) const {
             auto arg0 = mce->arguments->at(0);
             auto argType = typeMap->getType(arg0, true);
             if (!argType->is<IR::Type_Header>() && !argType->is<IR::Type_Dontcare>()) {
-                typeError("%1%: argument must be a header", mce->arguments->at(0));
+                typeError("{0}: argument must be a header", mce->arguments->at(0));
                 return;
             }
 
             if (argCount == 1) {
                 if (hasVarbitsOrUnions(typeMap, argType))
                     // This will never have unions, but may have varbits
-                    typeError("%1%: argument cannot contain varbit fields", arg0);
+                    typeError("{0}: argument cannot contain varbit fields", arg0);
             } else if (argCount == 2) {
                 if (!hasVarbitsOrUnions(typeMap, argType))
-                    typeError("%1%: argument should contain a varbit field", arg0);
+                    typeError("{0}: argument should contain a varbit field", arg0);
             } else {
                 // core.p4 is corrupted.
-                typeError("%1%: Expected 1 or 2 arguments for '%2%' method", mce,
+                typeError("{0}: Expected 1 or 2 arguments for '{1}' method", mce,
                           corelib.packetIn.extract.name);
             }
         } else if (em->method->name == corelib.packetIn.lookahead.name) {
             // this is a call to packet_in.lookahead.
             if (mce->typeArguments->size() != 1) {
-                typeError("Expected 1 type parameter for %1%", em->method);
+                typeError("Expected 1 type parameter for {0}", em->method);
                 return;
             }
             auto targ = em->expr->typeArguments->at(0);
             auto typearg = typeMap->getTypeType(targ, true);
             if (hasVarbitsOrUnions(typeMap, typearg)) {
-                typeError("%1%: type argument must be a fixed-width type", targ);
+                typeError("{0}: type argument must be a fixed-width type", targ);
                 return;
             }
         }
@@ -103,7 +103,7 @@ void DoCheckCoreMethods::checkCorelibMethods(const ExternMethod *em) const {
                 checkEmitType(mce, argType);
             } else {
                 // core.p4 is corrupted.
-                typeError("%1%: Expected 1 argument for '%2%' method", mce,
+                typeError("{0}: Expected 1 argument for '{1}' method", mce,
                           corelib.packetOut.emit.name);
                 return;
             }
@@ -118,7 +118,7 @@ void DoCheckCoreMethods::postorder(const IR::MethodCallExpression *expression) {
     // Check that verify is only invoked from parsers.
     if (auto ef = mi->to<ExternFunction>()) {
         if (ef->method->name == IR::ParserState::verify && !findContext<IR::P4Parser>()) {
-            typeError("%1%: may only be invoked in parsers", ef->expr);
+            typeError("{0}: may only be invoked in parsers", ef->expr);
         }
     }
 }

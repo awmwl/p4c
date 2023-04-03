@@ -49,7 +49,7 @@ class ComplexValues final {
         const IR::Type *type;
         explicit FieldsMap(const IR::Type *type) : type(type) {
             CHECK_NULL(type);
-            BUG_CHECK(type->is<IR::Type_Struct>(), "%1%: expected a struct", type);
+            BUG_CHECK(type->is<IR::Type_Struct>(), "{0}: expected a struct", type);
         }
         const IR::Expression *convertToExpression() override {
             IR::IndexedVector<IR::NamedExpression> vec;

@@ -78,7 +78,7 @@ int Testgen::mainImpl(const IR::P4Program *program) {
     cstring testDirStr = testgenOptions.outputDir;
     auto seed = Utils::getCurrentSeed();
     if (seed) {
-        printFeature("test_info", 4, "============ Program seed %1% =============\n", *seed);
+        printFeature("test_info", 4, "============ Program seed {0} =============\n", *seed);
     }
 
     // Get the filename of the input file and remove the extension

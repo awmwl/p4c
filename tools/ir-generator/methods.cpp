@@ -345,7 +345,7 @@ void IrClass::generateMethods() {
             continue;
         }
         if (!IrMethod::Generate.count(m->name))
-            throw Util::CompilationError("Unrecognized predefined method %1%", m->name);
+            throw Util::CompilationError("Unrecognized predefined method {0}", m->name);
         auto &info = IrMethod::Generate.at(m->name);
         if (m->name) {
             if (info.rtype) {

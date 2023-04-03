@@ -29,8 +29,8 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
                                         bool incomplete) {
     auto mt = typeMap ? typeMap->getType(mce->method) : nullptr;
     if (mt == nullptr && useExpressionType) mt = mce->method->type;
-    BUG_CHECK(mt, "%1%: unknown type", mce->method);
-    BUG_CHECK(mt->is<IR::Type_MethodBase>(), "%1%: expected a MethodBase type", mt);
+    BUG_CHECK(mt, "{0}: unknown type", mce->method);
+    BUG_CHECK(mt->is<IR::Type_MethodBase>(), "{0}: expected a MethodBase type", mt);
     auto originalType = mt->to<IR::Type_MethodBase>();
     auto actualType = originalType;
     if (typeMap && !mce->typeArguments->empty()) {
@@ -50,7 +50,7 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
             if (useExpressionType)
                 basetype = mem->expr->type;
             else
-                BUG("Could not find type for %1%", mem->expr);
+                BUG("Could not find type for {0}", mem->expr);
         }
         if (auto sc = basetype->to<IR::Type_SpecializedCanonical>()) basetype = sc->baseType;
         if (basetype->is<IR::Type_HeaderUnion>()) {
@@ -83,9 +83,9 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
                 decl = cc->to<ExternConstructorCall>()->type;
                 type = typeMap ? typeMap->getTypeType(cce->constructedType, true) : cce->type;
             } else {
-                BUG("unexpected expression %1% resolving method instance", mem->expr);
+                BUG("unexpected expression {0} resolving method instance", mem->expr);
             }
-            BUG_CHECK(type != nullptr, "Could not resolve type for %1%", decl);
+            BUG_CHECK(type != nullptr, "Could not resolve type for {0}", decl);
             if (type->is<IR::Type_SpecializedCanonical>())
                 type = type->to<IR::Type_SpecializedCanonical>()->substituted->to<IR::Type>();
             if (type->is<IR::IApply>() && mem->member == IR::IApply::applyMethodName) {
@@ -119,7 +119,7 @@ MethodInstance *MethodInstance::resolve(const IR::MethodCallExpression *mce,
         }
     }
 
-    BUG("Unexpected method call %1%", mce);
+    BUG("Unexpected method call {0}", mce);
     return nullptr;  // unreachable
 }
 
@@ -153,19 +153,19 @@ ConstructorCall *ConstructorCall::resolve(const IR::ConstructorCallExpression *c
     if (ct->is<IR::Type_Extern>()) {
         auto decl = refMap->getDeclaration(type->path, true);
         auto ext = decl->to<IR::Type_Extern>();
-        BUG_CHECK(ext, "%1%: expected an extern type", dbp(decl));
+        BUG_CHECK(ext, "{0}: expected an extern type", dbp(decl));
         auto constr = ext->lookupConstructor(cce->arguments);
         result = new ExternConstructorCall(cce, ext->to<IR::Type_Extern>(), constr);
-        BUG_CHECK(constr, "%1%: constructor not found", ext);
+        BUG_CHECK(constr, "{0}: constructor not found", ext);
         constructorParameters = constr->type->parameters;
     } else if (ct->is<IR::IContainer>()) {
         auto decl = refMap->getDeclaration(type->path, true);
         auto cont = decl->to<IR::IContainer>();
-        BUG_CHECK(cont, "%1%: expected a container", dbp(decl));
+        BUG_CHECK(cont, "{0}: expected a container", dbp(decl));
         result = new ContainerConstructorCall(cce, cont);
         constructorParameters = cont->getConstructorParameters();
     } else {
-        BUG("Unexpected constructor call %1%; type is %2%", dbp(cce), dbp(ct));
+        BUG("Unexpected constructor call {0}; type is {1}", dbp(cce), dbp(ct));
     }
     result->typeArguments = typeArguments;
     result->constructorParameters = constructorParameters;
@@ -195,7 +195,7 @@ Instantiation *Instantiation::resolve(const IR::Declaration_Instance *instance, 
     } else if (auto ct = simpleType->to<IR::P4Control>()) {
         return new ControlInstantiation(instance, typeArguments, ct);
     }
-    BUG("Unexpected instantiation %1%", instance);
+    BUG("Unexpected instantiation {0}", instance);
     return nullptr;  // unreachable
 }
 

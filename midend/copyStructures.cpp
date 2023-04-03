@@ -79,7 +79,7 @@ const IR::Node *DoCopyStructures::postorder(IR::AssignmentStatement *statement) 
     if (statement->right->is<IR::MethodCallExpression>()) {
         if (errorOnMethodCall) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "%1%: functions or methods returning structures "
+                    "{0}: functions or methods returning structures "
                     "are not supported on this target",
                     statement->right);
         }
@@ -140,7 +140,7 @@ const IR::Node *DoCopyStructures::postorder(IR::AssignmentStatement *statement) 
         BUG_CHECK(statement->right->is<IR::PathExpression>() ||
                       statement->right->is<IR::HeaderStackExpression>() ||
                       statement->right->is<IR::Member>() || statement->right->is<IR::ArrayIndex>(),
-                  "%1%: Unexpected operation encountered while eliminating stack copying",
+                  "{0}: Unexpected operation encountered while eliminating stack copying",
                   statement->right);
 
         // Copy each stack element.
@@ -159,7 +159,7 @@ const IR::Node *DoCopyStructures::postorder(IR::AssignmentStatement *statement) 
         const auto *strct = ltype->checkedTo<IR::Type_StructLike>();
         BUG_CHECK(statement->right->is<IR::PathExpression>() ||
                       statement->right->is<IR::Member>() || statement->right->is<IR::ArrayIndex>(),
-                  "%1%: Unexpected operation when eliminating struct copying", statement->right);
+                  "{0}: Unexpected operation when eliminating struct copying", statement->right);
         for (const auto *f : strct->fields) {
             const auto *right = new IR::Member(statement->right, f->name);
             const auto *left = new IR::Member(statement->left, f->name);

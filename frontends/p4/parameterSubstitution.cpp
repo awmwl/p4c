@@ -25,7 +25,7 @@ void ParameterSubstitution::add(const IR::Parameter *parameter, const IR::Argume
     LOG2("Mapping " << dbp(parameter) << " to " << dbp(value));
     cstring name = parameter->name.name;
     auto par = get(parametersByName, name);
-    BUG_CHECK(par == nullptr, "Two parameters with the same name %1% in a substitution", name);
+    BUG_CHECK(par == nullptr, "Two parameters with the same name {0} in a substitution", name);
     parameterValues.emplace(name, value);
     parametersByName.emplace(name, parameter);
     parameters.push_back(parameter);
@@ -36,7 +36,7 @@ void ParameterSubstitution::populate(const IR::ParameterList *params,
     BUG_CHECK(paramList == nullptr, "Already populated");
     paramList = params;
     BUG_CHECK(params->size() >= args->size(),
-              "Incompatible number of arguments for parameter list: %1% and %2%", params, args);
+              "Incompatible number of arguments for parameter list: {0} and {1}", params, args);
 
     auto pe = params->getEnumerator();
     for (auto a : *args) {
@@ -44,7 +44,7 @@ void ParameterSubstitution::populate(const IR::ParameterList *params,
         if (a->name) {
             p = params->getParameter(a->name);
             if (p == nullptr) {
-                ::error(ErrorType::ERR_NOT_FOUND, "No parameter named %1%", a->name);
+                ::error(ErrorType::ERR_NOT_FOUND, "No parameter named {0}", a->name);
                 continue;
             }
         } else {

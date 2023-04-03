@@ -81,7 +81,7 @@ bool CFG::dfs(Node *node, std::set<Node *> &visited, std::set<const IR::P4Table 
         if (stack.find(table) != stack.end()) {
             ::error(ErrorType::ERR_INVALID,
                     "Program can not be implemented on this target since it contains a path from "
-                    "table %1% back to itself",
+                    "table {0} back to itself",
                     table);
             return false;
         }
@@ -134,7 +134,7 @@ bool CFG::checkMergeable(std::set<TableNode *> nodes) const {
         if (!same) {
             ::error(ErrorType::ERR_INVALID,
                     "Program is not supported by this target, because "
-                    "table %1% has multiple successors",
+                    "table {0} has multiple successors",
                     tn->table);
             return false;
         }
@@ -190,7 +190,7 @@ class CFGBuilder : public Inspector {
         if (!instance->is<P4::ApplyMethod>()) return false;
         auto am = instance->to<P4::ApplyMethod>();
         if (!am->object->is<IR::P4Table>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: apply method must be on a table", statement);
+            ::error(ErrorType::ERR_INVALID, "{0}: apply method must be on a table", statement);
             return false;
         }
         auto tc = am->object->to<IR::P4Table>();
@@ -250,7 +250,7 @@ class CFGBuilder : public Inspector {
     }
     bool preorder(const IR::SwitchStatement *statement) override {
         auto tc = P4::TableApplySolver::isActionRun(statement->expression, refMap, typeMap);
-        BUG_CHECK(tc != nullptr, "%1%: unexpected switch statement expression",
+        BUG_CHECK(tc != nullptr, "{0}: unexpected switch statement expression",
                   statement->expression);
         auto node = cfg->makeNode(tc, statement->expression);
         node->addPredecessors(live);

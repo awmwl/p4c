@@ -12,7 +12,7 @@ class ErrorOnInfInt : public Inspector {
     void postorder(const IR::Expression *expression) override {
         auto t = typeMap->getType(expression, true);
         if (t->is<IR::Type_InfInt>())
-            ::error(ErrorType::ERR_TYPE_ERROR, "%1%: could not infer a width", expression);
+            ::error(ErrorType::ERR_TYPE_ERROR, "{0}: could not infer a width", expression);
     }
 };
 
@@ -59,7 +59,7 @@ const IR::Type *DoBindTypeVariables::getVarValue(const IR::Type_Var *var,
                                                  const IR::Node *errorPosition) const {
     auto type = typeMap->getSubstitution(var);
     if (type == nullptr) {
-        ::error(ErrorType::ERR_TYPE_ERROR, "%1%: could not infer a type for variable %2%",
+        ::error(ErrorType::ERR_TYPE_ERROR, "{0}: could not infer a type for variable {1}",
                 errorPosition, var);
         return nullptr;
     }
@@ -80,7 +80,7 @@ const IR::Node *DoBindTypeVariables::postorder(IR::Declaration_Instance *decl) {
     if (decl->type->is<IR::Type_Specialized>()) return decl;
     auto type = typeMap->getType(getOriginal(), true);
     if (auto tsc = type->to<IR::Type_SpecializedCanonical>()) type = tsc->substituted;
-    BUG_CHECK(type->is<IR::IMayBeGenericType>(), "%1%: unexpected type %2% for declaration", decl,
+    BUG_CHECK(type->is<IR::IMayBeGenericType>(), "{0}: unexpected type {1} for declaration", decl,
               type);
     auto mt = type->to<IR::IMayBeGenericType>();
     if (mt->getTypeParameters()->empty()) return decl;
@@ -102,7 +102,7 @@ const IR::Node *DoBindTypeVariables::postorder(IR::MethodCallExpression *express
         typeMap->setCompileTimeConstant(expression);
     if (!expression->typeArguments->empty()) return expression;
     type = typeMap->getType(expression->method, true);
-    BUG_CHECK(type->is<IR::IMayBeGenericType>(), "%1%: unexpected type %2% for method",
+    BUG_CHECK(type->is<IR::IMayBeGenericType>(), "{0}: unexpected type {1} for method",
               expression->method, type);
     auto mt = type->to<IR::IMayBeGenericType>();
     if (mt->getTypeParameters()->empty()) return expression;
@@ -119,7 +119,7 @@ const IR::Node *DoBindTypeVariables::postorder(IR::MethodCallExpression *express
 const IR::Node *DoBindTypeVariables::postorder(IR::ConstructorCallExpression *expression) {
     if (expression->constructedType->is<IR::Type_Specialized>()) return expression;
     auto type = typeMap->getType(getOriginal(), true);
-    BUG_CHECK(type->is<IR::IMayBeGenericType>(), "%1%: unexpected type %2% for expression",
+    BUG_CHECK(type->is<IR::IMayBeGenericType>(), "{0}: unexpected type {1} for expression",
               expression, type);
     auto mt = type->to<IR::IMayBeGenericType>();
     if (mt->getTypeParameters()->empty()) return expression;

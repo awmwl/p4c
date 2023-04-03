@@ -134,7 +134,7 @@ SourceInfo objects smartly.  Here is an example:
 ```C++
 IR::NamedRef *ref;
 error(ErrorType::ERR_INVALID,
-      "%1%: No header or metadata named '%2%'", ref->srcInfo, ref->name);
+      "{0}: No header or metadata named '{1}'", ref->srcInfo, ref->name);
 ```
 
 output:
@@ -146,7 +146,7 @@ missing_decls1.p4(6): [-Werror=invalid] Error: No header or metadata named 'data
 ```
 
 To ease the transition to typed errors and warnings, free form
-messages whose first argument (`%1%`) is an `IR::Node` (or more
+messages whose first argument (`{0}`) is an `IR::Node` (or more
 precisely a class that implements `Util::IHasSourceInfo` interface),
 will be converted automatically to typed errors that use the format
 argument of the message rather than the error catalog predefined

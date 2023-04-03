@@ -180,7 +180,7 @@ const IR::Node *ReplaceLogMsg::postorder(IR::Type_Struct *typeStruct) {
     auto repl = findTypesInLogMsgInvocationToReplace->getReplacement(name);
     if (repl != nullptr) {
         LOG3("Replace " << typeStruct << " with " << repl);
-        BUG_CHECK(repl->is<IR::Type_Struct>(), "%1% not a struct", typeStruct);
+        BUG_CHECK(repl->is<IR::Type_Struct>(), "{0} not a struct", typeStruct);
         return repl;
     }
     return typeStruct;

@@ -124,23 +124,23 @@ bool FindRepeatedActionUses::preorder(const IR::PathExpression *expression) {
     if (actionUser == nullptr) actionUser = findContext<IR::MethodCallExpression>();
     if (actionUser == nullptr) actionUser = findContext<IR::SwitchStatement>();
     BUG_CHECK(actionUser != nullptr,
-              "%1%: action not within a table, method call or switch statement", expression);
+              "{0}: action not within a table, method call or switch statement", expression);
     if (actionUser->is<IR::SwitchStatement>()) {
         auto swstat = actionUser->to<IR::SwitchStatement>();
         // We must figure out which table is being invoked; that is the user
         auto mem = swstat->expression->to<IR::Member>();
         CHECK_NULL(mem);
-        BUG_CHECK(mem->member.name == IR::Type_Table::action_run, "%1%: unexpected expression",
+        BUG_CHECK(mem->member.name == IR::Type_Table::action_run, "{0}: unexpected expression",
                   mem);
         auto mce = mem->expr->to<IR::MethodCallExpression>();
         CHECK_NULL(mce);
         auto method = mce->method;
-        BUG_CHECK(method->is<IR::Member>(), "Unexpected method %1%", method);
+        BUG_CHECK(method->is<IR::Member>(), "Unexpected method {0}", method);
         auto methmem = method->to<IR::Member>();
-        BUG_CHECK(methmem->expr->is<IR::PathExpression>(), "Unexpected table %1%", methmem->expr);
+        BUG_CHECK(methmem->expr->is<IR::PathExpression>(), "Unexpected table {0}", methmem->expr);
         auto pathe = methmem->expr->to<IR::PathExpression>();
         auto tbl = refMap->getDeclaration(pathe->path, true);
-        BUG_CHECK(tbl->is<IR::P4Table>(), "%1%: expected a table", pathe);
+        BUG_CHECK(tbl->is<IR::P4Table>(), "{0}: expected a table", pathe);
         actionUser = tbl->to<IR::P4Table>();
     }
 

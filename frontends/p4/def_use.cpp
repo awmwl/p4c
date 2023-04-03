@@ -147,7 +147,7 @@ void ArrayLocation::addLastIndexField(LocationSet *result) const {
 }
 
 void IndexedLocation::addElement(unsigned index, LocationSet *result) const {
-    BUG_CHECK(index < elements.size(), "%1%: out of bounds index", index);
+    BUG_CHECK(index < elements.size(), "{0}: out of bounds index", index);
     result->add(elements.at(index));
 }
 
@@ -610,7 +610,7 @@ bool ComputeWriteSet::preorder(const IR::Mux *expression) {
 }
 
 bool ComputeWriteSet::preorder(const IR::SelectExpression *expression) {
-    BUG_CHECK(!lhs, "%1%: unexpected in lhs", expression);
+    BUG_CHECK(!lhs, "{0}: unexpected in lhs", expression);
     visit(expression->select);
     visit(&expression->selectCases);
     auto l = getWrites(expression->select);
@@ -662,7 +662,7 @@ bool ComputeWriteSet::preorder(const IR::MethodCallExpression *expression) {
             expressionWrites(expression, base);
             return false;
         } else {
-            BUG_CHECK(name == IR::Type_Header::isValid, "%1%: unexpected method", bim->name);
+            BUG_CHECK(name == IR::Type_Header::isValid, "{0}: unexpected method", bim->name);
             expressionWrites(expression, LocationSet::empty);
             return false;
         }
@@ -964,7 +964,7 @@ bool ComputeWriteSet::preorder(const IR::P4Table *table) {
     auto actions = table->getActionList();
     for (auto ale : actions->actionList) {
         BUG_CHECK(ale->expression->is<IR::MethodCallExpression>(),
-                  "%1%: unexpected entry in action list", ale);
+                  "{0}: unexpected entry in action list", ale);
         currentDefinitions = beforeTable;
         visit(ale->expression);
         after = after->joinDefinitions(currentDefinitions);

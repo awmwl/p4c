@@ -134,8 +134,8 @@ class UbpfActionTranslationVisitor : public EBPF::CodeGenInspector {
 }  // namespace
 
 void UBPFTableBase::emitInstance(EBPF::CodeBuilder *builder, EBPF::TableKind tableKind) {
-    BUG_CHECK(keyType != nullptr, "Key type of %1% is not set", instanceName);
-    BUG_CHECK(valueType != nullptr, "Value type of %1% is not set", instanceName);
+    BUG_CHECK(keyType != nullptr, "Key type of {0} is not set", instanceName);
+    BUG_CHECK(valueType != nullptr, "Value type of {0} is not set", instanceName);
 
     cstring keyTypeStr;
     if (keyType->is<IR::Type_Bits>()) {
@@ -146,7 +146,7 @@ void UBPFTableBase::emitInstance(EBPF::CodeBuilder *builder, EBPF::TableKind tab
         keyTypeStr = cstring("struct ") + keyTypeName.c_str();
     }
     // Key type is not null, but we didn't handle it
-    BUG_CHECK(!keyTypeStr.isNullOrEmpty(), "Key type %1% not supported", keyType->toString());
+    BUG_CHECK(!keyTypeStr.isNullOrEmpty(), "Key type {0} not supported", keyType->toString());
 
     cstring valueTypeStr;
     if (valueType->is<IR::Type_Bits>()) {
@@ -157,7 +157,7 @@ void UBPFTableBase::emitInstance(EBPF::CodeBuilder *builder, EBPF::TableKind tab
         valueTypeStr = cstring("struct ") + valueTypeName.c_str();
     }
     // Value type is not null, but we didn't handle it
-    BUG_CHECK(!valueTypeStr.isNullOrEmpty(), "Value type %1% not supported", valueType->toString());
+    BUG_CHECK(!valueTypeStr.isNullOrEmpty(), "Value type {0} not supported", valueType->toString());
 
     builder->target->emitTableDecl(builder, dataMapName, tableKind, keyTypeStr, valueTypeStr, size);
 }
@@ -229,7 +229,7 @@ void UBPFTable::setTableSize(const IR::TableBlock *table) {
 
     this->size = pConstant->asInt();
     if (this->size > UINT16_MAX) {
-        ::error(ErrorType::ERR_UNSUPPORTED, "size too large. Using default value (%2%).", pConstant,
+        ::error(ErrorType::ERR_UNSUPPORTED, "size too large. Using default value ({1}).", pConstant,
                 UINT16_MAX);
         return;
     }
@@ -251,7 +251,7 @@ void UBPFTable::emitKeyType(EBPF::CodeBuilder *builder) {
             auto ebpfType = UBPFTypeFactory::instance->create(type);
             cstring fieldName = c->expression->toString().replace('.', '_');
             if (!ebpfType->is<EBPF::IHasWidth>()) {
-                ::error(ErrorType::ERR_INVALID, "%1%: illegal type %2% for key field", c, type);
+                ::error(ErrorType::ERR_INVALID, "{0}: illegal type {1} for key field", c, type);
                 return;
             }
             unsigned width = ebpfType->to<EBPF::IHasWidth>()->widthInBits();
@@ -282,7 +282,7 @@ void UBPFTable::emitKeyType(EBPF::CodeBuilder *builder) {
             auto matchType = mtdecl->getNode()->to<IR::Declaration_ID>();
             if (matchType->name.name != P4::P4CoreLibrary::instance.exactMatch.name &&
                 matchType->name.name != P4::P4CoreLibrary::instance.lpmMatch.name)
-                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Match of type %1% not supported",
+                ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Match of type {0} not supported",
                         c->matchType);
             key_idx++;
         }
@@ -438,7 +438,7 @@ void UBPFTable::emitAction(EBPF::CodeBuilder *builder, cstring valueName) {
 void UBPFTable::emitInitializer(EBPF::CodeBuilder *builder) {
     const IR::P4Table *t = table->container;
     const IR::Expression *defaultAction = t->getDefaultAction();
-    BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(), "%1%: expected an action call",
+    BUG_CHECK(defaultAction->is<IR::MethodCallExpression>(), "{0}: expected an action call",
               defaultAction);
     auto mce = defaultAction->to<IR::MethodCallExpression>();
     auto mi = P4::MethodInstance::resolve(mce, program->refMap, program->typeMap);
@@ -449,12 +449,12 @@ void UBPFTable::emitInitializer(EBPF::CodeBuilder *builder) {
     // does not permit to modify default action by a control plane.
     if (defact->isConstant) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%: uBPF target does not allow 'const default_action'. "
+                "{0}: uBPF target does not allow 'const default_action'. "
                 "Use `default_action` instead.",
                 defact);
     }
     auto ac = mi->to<P4::ActionCall>();
-    BUG_CHECK(ac != nullptr, "%1%: expected an action call", mce);
+    BUG_CHECK(ac != nullptr, "{0}: expected an action call", mce);
     auto action = ac->action;
 
     cstring name = generateActionName(action);
@@ -496,7 +496,7 @@ void UBPFTable::emitInitializer(EBPF::CodeBuilder *builder) {
     auto entries = t->getEntries();
     if (entries != nullptr) {
         ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                "%1%: Immutable table entries cannot be configured by the uBPF target "
+                "{0}: Immutable table entries cannot be configured by the uBPF target "
                 "and should not be used.",
                 entries);
     }

@@ -24,7 +24,7 @@ namespace EBPF {
 EBPFHashAlgorithmPSA::ArgumentsList EBPFHashAlgorithmPSA::unpackArguments(
     const IR::MethodCallExpression *expr, int dataPos) {
     BUG_CHECK(expr->arguments->size() > ((size_t)dataPos),
-              "Data position %1% is outside of the arguments: %2%", dataPos, expr);
+              "Data position {0} is outside of the arguments: {1}", dataPos, expr);
 
     std::vector<const IR::Expression *> arguments;
 
@@ -180,17 +180,17 @@ void CRCChecksumAlgorithm::emitVariables(CodeBuilder *builder,
     builder->emitIndent();
 
     if (decl != nullptr) {
-        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "Must be a specialized type %1%", decl);
+        BUG_CHECK(decl->type->is<IR::Type_Specialized>(), "Must be a specialized type {0}", decl);
         auto ts = decl->type->to<IR::Type_Specialized>();
-        BUG_CHECK(ts->arguments->size() == 1, "Expected 1 specialized type %1%", decl);
+        BUG_CHECK(ts->arguments->size() == 1, "Expected 1 specialized type {0}", decl);
 
         auto otype = ts->arguments->at(0);
         if (!otype->is<IR::Type_Bits>()) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: %1%", ts);
+            ::error(ErrorType::ERR_UNSUPPORTED, "Must be bit or int type: {0}", ts);
             return;
         }
         if (otype->width_bits() != crcWidth) {
-            ::error(ErrorType::ERR_TYPE_ERROR, "Must be %1%-bits width: %2%", crcWidth, ts);
+            ::error(ErrorType::ERR_TYPE_ERROR, "Must be {0}-bits width: {1}", crcWidth, ts);
             return;
         }
 
@@ -202,7 +202,7 @@ void CRCChecksumAlgorithm::emitVariables(CodeBuilder *builder,
         else if (crcWidth == 32)
             builder->append("u32");
         else
-            BUG("Unsupported CRC width %1%", crcWidth);
+            BUG("Unsupported CRC width {0}", crcWidth);
     }
 
     builder->appendFormat(" %s = %s", registerVar.c_str(), initialValue.c_str());
@@ -245,7 +245,7 @@ void CRCChecksumAlgorithm::emitAddData(CodeBuilder *builder, const ArgumentsList
     for (auto field : arguments) {
         auto fieldType = field->type->to<IR::Type_Bits>();
         if (fieldType == nullptr) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "Only bits types are supported %1%", field);
+            ::error(ErrorType::ERR_UNSUPPORTED, "Only bits types are supported {0}", field);
             return;
         }
         const int width = fieldType->width_bits();
@@ -256,8 +256,8 @@ void CRCChecksumAlgorithm::emitAddData(CodeBuilder *builder, const ArgumentsList
             if (width > remainingBits) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
                         "Unable to concatenate fields into one byte. "
-                        "Last field(%1%) overflows one byte. "
-                        "There are %2% remaining bits but field (%1%) has %3% bits width.",
+                        "Last field({0}) overflows one byte. "
+                        "There are {1} remaining bits but field ({0}) has {2} bits width.",
                         field, remainingBits, width);
                 return;
             }
@@ -287,7 +287,7 @@ void CRCChecksumAlgorithm::emitAddData(CodeBuilder *builder, const ArgumentsList
             // fields larger than 8 bits
             if (width % 8 != 0) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
-                        "Fields larger than 8 bits have to be aligned to bytes %1%", field);
+                        "Fields larger than 8 bits have to be aligned to bytes {0}", field);
                 return;
             }
             builder->emitIndent();
@@ -373,7 +373,7 @@ void InternetChecksumAlgorithm::updateChecksum(CodeBuilder *builder, const Argum
     for (auto field : arguments) {
         auto fieldType = field->type->to<IR::Type_Bits>();
         if (fieldType == nullptr) {
-            ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported field type: %1%", field->type);
+            ::error(ErrorType::ERR_UNSUPPORTED, "Unsupported field type: {0}", field->type);
             return;
         }
         const int width = fieldType->width_bits();
@@ -382,13 +382,13 @@ void InternetChecksumAlgorithm::updateChecksum(CodeBuilder *builder, const Argum
         if (width > 64) {
             if (remainingBits != 16) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
-                        "%1%: field wider than 64 bits must be aligned to 16 bits in input data",
+                        "{0}: field wider than 64 bits must be aligned to 16 bits in input data",
                         field);
                 continue;
             }
             if (width % 16 != 0) {
                 ::error(ErrorType::ERR_UNSUPPORTED,
-                        "%1%: field wider than 64 bits must have size in bits multiply of 16 bits",
+                        "{0}: field wider than 64 bits must have size in bits multiply of 16 bits",
                         field);
                 continue;
             }
@@ -518,7 +518,7 @@ void InternetChecksumAlgorithm::emitGetInternalState(CodeBuilder *builder) {
 void InternetChecksumAlgorithm::emitSetInternalState(CodeBuilder *builder,
                                                      const IR::MethodCallExpression *expr) {
     if (expr->arguments->size() != 1) {
-        ::error(ErrorType::ERR_UNEXPECTED, "Expected exactly 1 argument %1%", expr);
+        ::error(ErrorType::ERR_UNEXPECTED, "Expected exactly 1 argument {0}", expr);
         return;
     }
     builder->emitIndent();

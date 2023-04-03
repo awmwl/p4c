@@ -37,7 +37,7 @@ inline unsigned diagnosticCount() {
 }
 
 // Errors (and warnings) are specified using boost::format format strings, i.e.,
-// %1%, %2%, etc (starting at 1, not at 0).
+// {0}, {1}, etc (starting at 1, not at 0).
 // Some compatibility for printf-style arguments is also supported.
 
 /// Report an error with the given message.

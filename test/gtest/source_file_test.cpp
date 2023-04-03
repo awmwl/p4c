@@ -30,7 +30,7 @@ TEST(UtilSourceFile, SourcePosition) {
     EXPECT_EQ("3:3", position.toString());
 
     auto& context = BaseCompileContext::get();
-    cstring str = context.errorReporter().format_message("%1% - %2%", position, position);
+    cstring str = context.errorReporter().format_message("{0} - {1}", position, position);
     EXPECT_EQ("3:3 - 3:3\n", str);
 
     SourcePosition next(3, 4);

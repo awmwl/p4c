@@ -41,18 +41,18 @@ UBPFRegister::UBPFRegister(const UBPFProgram *program, const IR::ExternBlock *bl
     auto sz = block->getParameterValue(program->model.registerModel.sizeParam.name);
     if (sz == nullptr || !sz->is<IR::Constant>()) {
         error(ErrorType::ERR_MODEL,
-              "Expected an integer argument for parameter %1% or %2%; is the model corrupted?",
+              "Expected an integer argument for parameter {0} or {1}; is the model corrupted?",
               program->model.registerModel.sizeParam.name, name);
         return;
     }
     auto cst = sz->to<IR::Constant>();
     if (!cst->fitsInt()) {
-        error(ErrorType::ERR_OVERLIMIT, "%1%: size too large", cst);
+        error(ErrorType::ERR_OVERLIMIT, "{0}: size too large", cst);
         return;
     }
     size = cst->asInt();
     if (size <= 0) {
-        error(ErrorType::ERR_UNEXPECTED, "%1%: negative size", cst);
+        error(ErrorType::ERR_UNEXPECTED, "{0}: negative size", cst);
         return;
     }
 }
@@ -70,13 +70,13 @@ void UBPFRegister::emitMethodInvocation(EBPF::CodeBuilder *builder,
         emitRegisterWrite(builder, method->expr);
         return;
     }
-    error(ErrorType::ERR_UNEXPECTED, "%1%: Unexpected method for %2%", method->expr,
+    error(ErrorType::ERR_UNEXPECTED, "{0}: Unexpected method for {1}", method->expr,
           program->model.registerModel.read.name);
 }
 
 void UBPFRegister::emitRegisterWrite(EBPF::CodeBuilder *builder,
                                      const IR::MethodCallExpression *expression) {
-    BUG_CHECK(expression->arguments->size() == 2, "Expected just 2 argument for %1%", expression);
+    BUG_CHECK(expression->arguments->size() == 2, "Expected just 2 argument for {0}", expression);
 
     auto arg_value = expression->arguments->at(1);
     auto target = reinterpret_cast<const UbpfTarget *>(builder->target);
@@ -109,7 +109,7 @@ cstring UBPFRegister::emitValueInstanceIfNeeded(EBPF::CodeBuilder *builder,
 
 void UBPFRegister::emitRegisterRead(EBPF::CodeBuilder *builder,
                                     const IR::MethodCallExpression *expression) {
-    BUG_CHECK(expression->arguments->size() == 1, "Expected 1 argument for %1%", expression);
+    BUG_CHECK(expression->arguments->size() == 1, "Expected 1 argument for {0}", expression);
     auto target = builder->target;
 
     target->emitTableLookup(builder, dataMapName, last_key_name, "");

@@ -53,7 +53,7 @@ void generateTDIBfrtJson(bool isTDI, const IR::P4Program *program, DPDK::DpdkOpt
     auto p4rt = new P4::BFRT::BFRuntimeSchemaGenerator(*p4Runtime.p4Info, isTDI, options);
     std::ostream *out = openFile(filename, false);
     if (!out) {
-        ::error(ErrorType::ERR_IO, "Could not open file: %1%", filename);
+        ::error(ErrorType::ERR_IO, "Could not open file: {0}", filename);
         return;
     }
     p4rt->serializeBFRuntimeSchema(out);

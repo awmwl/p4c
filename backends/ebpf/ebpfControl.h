@@ -80,12 +80,12 @@ class EBPFControl : public EBPFObject {
     virtual bool build();
     EBPFTable *getTable(cstring name) const {
         auto result = ::get(tables, name);
-        BUG_CHECK(result != nullptr, "No table named %1%", name);
+        BUG_CHECK(result != nullptr, "No table named {0}", name);
         return result;
     }
     EBPFCounterTable *getCounter(cstring name) const {
         auto result = ::get(counters, name);
-        BUG_CHECK(result != nullptr, "No counter named %1%", name);
+        BUG_CHECK(result != nullptr, "No counter named {0}", name);
         return result;
     }
 

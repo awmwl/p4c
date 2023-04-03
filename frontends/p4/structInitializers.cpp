@@ -41,7 +41,7 @@ const IR::Expression *convert(const IR::Expression *expression, const IR::Type *
         } else if (auto sli = expression->to<IR::StructExpression>()) {
             for (auto f : st->fields) {
                 auto ne = sli->components.getDeclaration<IR::NamedExpression>(f->name.name);
-                BUG_CHECK(ne != nullptr, "%1%: no initializer for %2%", expression, f);
+                BUG_CHECK(ne != nullptr, "{0}: no initializer for {1}", expression, f);
                 auto convNe = convert(ne->expression, f->type);
                 if (convNe != ne->expression) modified = true;
                 ne = new IR::NamedExpression(ne->srcInfo, f->name, convNe);
@@ -89,7 +89,7 @@ const IR::Node *CreateStructInitializers::postorder(IR::ReturnStatement *stateme
     if (func == nullptr) return statement;
 
     auto ftype = typeMap->getType(func);
-    BUG_CHECK(ftype->is<IR::Type_Method>(), "%1%: expected a method type for function", ftype);
+    BUG_CHECK(ftype->is<IR::Type_Method>(), "{0}: expected a method type for function", ftype);
     auto mt = ftype->to<IR::Type_Method>();
     auto returnType = mt->returnType;
     CHECK_NULL(returnType);

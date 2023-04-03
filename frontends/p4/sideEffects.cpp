@@ -116,7 +116,7 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::Member *expression) {
             } else if (getParent<IR::AssignmentStatement>()) {
                 /* already assigning it somewhere -- no need to add another copy */
             } else {
-                BUG_CHECK(type->is<IR::Type_Boolean>(), "%1%: not boolean", type);
+                BUG_CHECK(type->is<IR::Type_Boolean>(), "{0}: not boolean", type);
                 auto tmp = createTemporary(type);
                 auto path = new IR::PathExpression(IR::ID(tmp, nullptr));
                 auto stat = new IR::AssignmentStatement(path, expression);
@@ -384,7 +384,7 @@ const IR::Expression *GetWrittenExpressions::everything = new IR::Constant(0);
 }  // namespace
 
 const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
-    // BUG_CHECK(!isWrite(), "%1%: method on left hand side?", mce);
+    // BUG_CHECK(!isWrite(), "{0}: method on left hand side?", mce);
     // isWrite is too conservative, so this check may fail for something like f().isValid()
     LOG3("Visiting " << dbp(mce));
     auto orig = getOriginal<IR::MethodCallExpression>();
@@ -468,7 +468,7 @@ const IR::Node *DoSimplifyExpressions::preorder(IR::MethodCallExpression *mce) {
                                             << dbp(e));
                 if (p->hasOut())
                     warn(ErrorType::WARN_ORDERING,
-                         "%1%: 'out' argument has fields in common with %2%", arg, e);
+                         "{0}: 'out' argument has fields in common with {1}", arg, e);
                 useTemporary.emplace(p);
                 break;
             }

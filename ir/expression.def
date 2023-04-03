@@ -361,7 +361,7 @@ class Cast : Operation_Unary {
     precedence = DBPrint::Prec_Prefix;
     stringOp = "(cast)";
     toString{ return "cast"; }
-    validate{ BUG_CHECK(!destType->is<Type_Unknown>(), "%1%: Cannot cast to unknown type", this); }
+    validate{ BUG_CHECK(!destType->is<Type_Unknown>(), "{0}: Cannot cast to unknown type", this); }
 }
 
 class SelectCase {
@@ -402,7 +402,7 @@ class ConstructorCallExpression : Expression {
     toString{ return constructedType->toString(); }
     validate{ BUG_CHECK(constructedType->is<Type_Name>() ||
                         constructedType->is<Type_Specialized>(),
-                        "%1%: unexpected type", constructedType);
+                        "{0}: unexpected type", constructedType);
         arguments->check_null(); }
 }
 
@@ -445,7 +445,7 @@ class StructExpression : Expression {
         components.check_null(); components.validate();
         BUG_CHECK(structType == nullptr || structType->is<IR::Type_Name>() ||
                   structType->is<IR::Type_Specialized>(),
-                  "%1%: unexpected struct type", this);
+                  "{0}: unexpected struct type", this);
     }
     size_t size() const { return components.size(); }
 }
@@ -479,7 +479,7 @@ class ListCompileTimeValue : CompileTimeValue {
     inline Vector<Node> components;
     validate {
         for (auto v : components)
-            BUG_CHECK(v->is<CompileTimeValue>(), "%1%: not a compile-time value", v); }
+            BUG_CHECK(v->is<CompileTimeValue>(), "{0}: not a compile-time value", v); }
 #nodbprint
 }
 
@@ -489,7 +489,7 @@ class P4ListCompileTimeValue : CompileTimeValue {
     inline Vector<Node> components;
     validate {
         for (auto v : components)
-            BUG_CHECK(v->is<CompileTimeValue>(), "%1%: not a compile-time value", v); }
+            BUG_CHECK(v->is<CompileTimeValue>(), "{0}: not a compile-time value", v); }
 #nodbprint
 }
 
@@ -499,7 +499,7 @@ class StructCompileTimeValue : CompileTimeValue {
     inline Vector<Node> components;
     validate {
         for (auto v : components)
-            BUG_CHECK(v->is<CompileTimeValue>(), "%1%: not a compile-time value", v); }
+            BUG_CHECK(v->is<CompileTimeValue>(), "{0}: not a compile-time value", v); }
 #nodbprint
 }
 
@@ -509,7 +509,7 @@ class CompileTimeMethodCall : MethodCallExpression, CompileTimeValue {
     CompileTimeMethodCall(MethodCallExpression e) : MethodCallExpression(*e) {}
     validate {
         for (auto v : *arguments)
-            BUG_CHECK(v->is<CompileTimeValue>(), "%1%: not a compile-time value", v); }
+            BUG_CHECK(v->is<CompileTimeValue>(), "{0}: not a compile-time value", v); }
 #nodbprint
 }
 

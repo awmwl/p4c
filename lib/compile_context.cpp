@@ -40,8 +40,8 @@ ICompileContext::~ICompileContext() {}
               "Reporting a CompileContext type mismatch, but the "
               "CompileContext stack is empty");
     auto *topContext = getStack().back();
-    BUG("The top of the CompileContextStack has type %1% but we attempted to "
-        "find a context of type %2%",
+    BUG("The top of the CompileContextStack has type {0} but we attempted to "
+        "find a context of type {1}",
         typeid(*topContext).name(), desiredContextType);
 }
 

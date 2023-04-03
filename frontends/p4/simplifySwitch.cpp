@@ -24,14 +24,14 @@ bool DoSimplifySwitch::matches(const IR::Expression *left, const IR::Expression 
     auto type = typeMap->getType(right);
     if (auto cr = right->to<IR::Constant>()) {
         if (auto cl = left->to<IR::Constant>()) return cr->value == cl->value;
-        BUG("Unexpected comparison %1% with %2%", left, right);
+        BUG("Unexpected comparison {0} with {1}", left, right);
     } else if (type->is<IR::Type_Enum>() || type->is<IR::Type_SerEnum>()) {
         // We expect both left and right to be Member expressions.
         return left->equiv(*right);
     } else if (auto br = right->to<IR::BoolLiteral>()) {
         if (auto bl = left->to<IR::BoolLiteral>()) return bl->value == br->value;
     }
-    BUG("Unexpected expression %1%", right);
+    BUG("Unexpected expression {0}", right);
     return false;
 }
 

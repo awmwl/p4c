@@ -85,13 +85,13 @@ void StateTranslationVisitor::compileAdvance(const P4::ExternMethod *extMethod) 
 }
 
 void StateTranslationVisitor::compileVerify(const IR::MethodCallExpression *expression) {
-    BUG_CHECK(expression->arguments->size() == 2, "Expected 2 arguments: %1%", expression);
+    BUG_CHECK(expression->arguments->size() == 2, "Expected 2 arguments: {0}", expression);
 
     auto errorExpr = expression->arguments->at(1)->expression;
     auto errorMember = errorExpr->to<IR::Member>();
     auto type = typeMap->getType(errorExpr, true);
     if (!type->is<IR::Type_Error>() || errorMember == nullptr) {
-        ::error(ErrorType::ERR_UNEXPECTED, "%1%: not accessing a member error type", errorExpr);
+        ::error(ErrorType::ERR_UNEXPECTED, "{0}: not accessing a member error type", errorExpr);
         return;
     }
 
@@ -122,7 +122,7 @@ bool StateTranslationVisitor::preorder(const IR::AssignmentStatement *statement)
         auto mi = P4::MethodInstance::resolve(mce, state->parser->program->refMap,
                                               state->parser->program->typeMap);
         auto extMethod = mi->to<P4::ExternMethod>();
-        if (extMethod == nullptr) BUG("Unhandled method %1%", mce);
+        if (extMethod == nullptr) BUG("Unhandled method {0}", mce);
 
         auto decl = extMethod->object;
         if (decl == state->parser->packet) {
@@ -163,7 +163,7 @@ bool StateTranslationVisitor::preorder(const IR::ParserState *parserState) {
     } else {
         // must be a PathExpression which is a state name
         if (!parserState->selectExpression->is<IR::PathExpression>())
-            BUG("Expected a PathExpression, got a %1%", parserState->selectExpression);
+            BUG("Expected a PathExpression, got a {0}", parserState->selectExpression);
         builder->emitIndent();
         builder->append(" goto ");
         visit(parserState->selectExpression);
@@ -175,12 +175,12 @@ bool StateTranslationVisitor::preorder(const IR::ParserState *parserState) {
 }
 
 bool StateTranslationVisitor::preorder(const IR::SelectExpression *expression) {
-    BUG_CHECK(expression->select->components.size() == 1, "%1%: tuple not eliminated in select",
+    BUG_CHECK(expression->select->components.size() == 1, "{0}: tuple not eliminated in select",
               expression->select);
     selectValue = state->parser->program->refMap->newName("select");
     auto type = state->parser->program->typeMap->getType(expression->select, true);
     if (auto list = type->to<IR::Type_List>()) {
-        BUG_CHECK(list->components.size() == 1, "%1% list type with more than 1 element", list);
+        BUG_CHECK(list->components.size() == 1, "{0} list type with more than 1 element", list);
         type = list->components.at(0);
     }
     auto etype = EBPFTypeFactory::instance->create(type);
@@ -200,7 +200,7 @@ bool StateTranslationVisitor::preorder(const IR::SelectExpression *expression) {
             if (pvs != nullptr)
                 pvs->emitKeyInitializer(builder, expression, pvsKeyVarName);
             else
-                ::error(ErrorType::ERR_UNKNOWN, "%1%: expected a value_set instance", e->keyset);
+                ::error(ErrorType::ERR_UNKNOWN, "{0}: expected a value_set instance", e->keyset);
         }
     }
 
@@ -329,7 +329,7 @@ void StateTranslationVisitor::compileExtractField(const IR::Expression *expr,
             // nikss-ctl (and the nikss library) don't consume P4info.txt to have such knowledge.
             // There is also a bug in (de)parser causing such fields to be deparsed incorrectly.
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "%1%: fields wider than 64 bits must have a size multiple of 8 bits (1 byte) "
+                    "{0}: fields wider than 64 bits must have a size multiple of 8 bits (1 byte) "
                     "due to ambiguous padding in the LSB byte when the condition is not met",
                     field);
         }
@@ -402,7 +402,7 @@ void StateTranslationVisitor::compileExtract(const IR::Expression *destination) 
     auto type = state->parser->typeMap->getType(destination);
     auto ht = type->to<IR::Type_StructLike>();
     if (ht == nullptr) {
-        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot extract to a non-struct type %1%",
+        ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET, "Cannot extract to a non-struct type {0}",
                 destination);
         return;
     }
@@ -466,7 +466,7 @@ void StateTranslationVisitor::compileExtract(const IR::Expression *destination) 
         auto et = dynamic_cast<IHasWidth *>(etype);
         if (et == nullptr) {
             ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                    "Only headers with fixed widths supported %1%", f);
+                    "Only headers with fixed widths supported {0}", f);
             return;
         }
         compileExtractField(destination, f, alignment, etype);
@@ -490,7 +490,7 @@ void StateTranslationVisitor::processFunction(const P4::ExternFunction *function
     if (function->method->name.name == IR::ParserState::verify) {
         compileVerify(function->expr);
     } else {
-        ::error(ErrorType::ERR_UNEXPECTED, "Unexpected extern function call in parser %1%",
+        ::error(ErrorType::ERR_UNEXPECTED, "Unexpected extern function call in parser {0}",
                 function->expr);
     }
 }
@@ -503,7 +503,7 @@ void StateTranslationVisitor::processMethod(const P4::ExternMethod *method) {
         if (method->method->name.name == p4lib.packetIn.extract.name) {
             if (expression->arguments->size() != 1) {
                 ::error(ErrorType::ERR_UNSUPPORTED_ON_TARGET,
-                        "Variable-sized header fields not yet supported %1%", expression);
+                        "Variable-sized header fields not yet supported {0}", expression);
                 return;
             }
             compileExtract(expression->arguments->at(0)->expression);
@@ -515,10 +515,10 @@ void StateTranslationVisitor::processMethod(const P4::ExternMethod *method) {
             compileAdvance(method);
             return;
         }
-        BUG("Unhandled packet method %1%", expression->method);
+        BUG("Unhandled packet method {0}", expression->method);
     }
 
-    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected extern method call in parser %1%", expression);
+    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected extern method call in parser {0}", expression);
 }
 
 bool StateTranslationVisitor::preorder(const IR::MethodCallExpression *expression) {
@@ -574,7 +574,7 @@ bool StateTranslationVisitor::preorder(const IR::MethodCallExpression *expressio
         }
     }
 
-    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected method call in parser %1%", expression);
+    ::error(ErrorType::ERR_UNEXPECTED, "Unexpected method call in parser {0}", expression);
     return false;
 }
 
@@ -611,13 +611,13 @@ void EBPFParser::emitDeclaration(CodeBuilder *builder, const IR::Declaration *de
         builder->emitIndent();
         etype->declare(builder, vd->name, false);
         builder->endOfStatement(true);
-        BUG_CHECK(vd->initializer == nullptr, "%1%: declarations with initializers not supported",
+        BUG_CHECK(vd->initializer == nullptr, "{0}: declarations with initializers not supported",
                   decl);
         return;
     } else if (decl->is<IR::P4ValueSet>()) {
         return;
     }
-    BUG("%1%: not yet handled", decl);
+    BUG("{0}: not yet handled", decl);
 }
 
 void EBPFParser::emit(CodeBuilder *builder) {

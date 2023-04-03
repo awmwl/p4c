@@ -31,13 +31,13 @@ const IR::Type *ExpressionConverter::getFieldType(const IR::Type_StructLike *ht,
                                                   cstring fieldName) {
     auto field = ht->getField(fieldName);
     if (field != nullptr) return field->type;
-    BUG("Cannot find field %1% in type %2%", fieldName, ht);
+    BUG("Cannot find field {0} in type {1}", fieldName, ht);
 }
 
 // These can only come from the key of a table.
 const IR::Node *ExpressionConverter::postorder(IR::Mask *expression) {
     if (!expression->right->is<IR::Constant>()) {
-        ::error(ErrorType::ERR_INVALID, "%1%: Mask must be a constant", expression->right);
+        ::error(ErrorType::ERR_INVALID, "{0}: Mask must be a constant", expression->right);
         return expression;
     }
 
@@ -45,7 +45,7 @@ const IR::Node *ExpressionConverter::postorder(IR::Mask *expression) {
     auto cst = expression->right->to<IR::Constant>();
     big_int value = cst->value;
     if (value == 0) {
-        warn(ErrorType::WARN_INVALID, "%1%: zero mask", expression->right);
+        warn(ErrorType::WARN_INVALID, "{0}: zero mask", expression->right);
         return cst;
     }
     auto range = Util::findOnes(value);
@@ -89,17 +89,17 @@ const IR::Node *ExpressionConverter::postorder(IR::ActionArg *arg) {
 const IR::Node *ExpressionConverter::postorder(IR::Primitive *primitive) {
     if (primitive->name == "current") {
         // current(a, b) => packet.lookahead<bit<a+b>>()[b-1,0]
-        BUG_CHECK(primitive->operands.size() == 2, "Expected 2 operands for %1%", primitive);
+        BUG_CHECK(primitive->operands.size() == 2, "Expected 2 operands for {0}", primitive);
         auto a = primitive->operands.at(0);
         auto b = primitive->operands.at(1);
         if (!a->is<IR::Constant>() || !b->is<IR::Constant>()) {
-            ::error(ErrorType::ERR_INVALID, "%1%: must have constant arguments", primitive);
+            ::error(ErrorType::ERR_INVALID, "{0}: must have constant arguments", primitive);
             return primitive;
         }
         auto aval = a->to<IR::Constant>()->asInt();
         auto bval = b->to<IR::Constant>()->asInt();
         if (aval < 0 || bval <= 0) {
-            ::error(ErrorType::ERR_INVALID, "%1%: negative offsets?", primitive);
+            ::error(ErrorType::ERR_INVALID, "{0}: negative offsets?", primitive);
             return primitive;
         }
 
@@ -114,7 +114,7 @@ const IR::Node *ExpressionConverter::postorder(IR::Primitive *primitive) {
         result->type = IR::Type_Bits::get(bval);
         return result;
     } else if (primitive->name == "valid") {
-        BUG_CHECK(primitive->operands.size() == 1, "Expected 1 operand for %1%", primitive);
+        BUG_CHECK(primitive->operands.size() == 1, "Expected 1 operand for {0}", primitive);
         auto base = primitive->operands.at(0);
         auto method = new IR::Member(primitive->srcInfo, base, IR::ID(IR::Type_Header::isValid));
         auto result =
@@ -132,7 +132,7 @@ const IR::Node *ExpressionConverter::postorder(IR::Primitive *primitive) {
 const IR::Node *ExpressionConverter::postorder(IR::PathExpression *ref) {
     if (ref->path->name.name == "latest") {
         if (structure->latest == nullptr) {
-            ::error(ErrorType::ERR_INVALID, "%1%: latest not yet defined", ref);
+            ::error(ErrorType::ERR_INVALID, "{0}: latest not yet defined", ref);
             return ref;
         }
         return structure->latest;
@@ -212,7 +212,7 @@ const IR::Node *ExpressionConverter::postorder(IR::HeaderStackItemRef *ref) {
     }
 
     ::error(ErrorType::ERR_UNSUPPORTED,
-            "Illegal array index %1%: must be a constant, 'last', or 'next'.", ref);
+            "Illegal array index {0}: must be a constant, 'last', or 'next'.", ref);
     return ref;
 }
 
@@ -303,11 +303,11 @@ const IR::Node *StatementConverter::preorder(IR::Apply *apply) {
         for (auto a : apply->actions) {
             if (a.first == "hit") {
                 if (hit != nullptr)
-                    ::error(ErrorType::ERR_DUPLICATE, "%1%: Duplicate 'hit' label", hit);
+                    ::error(ErrorType::ERR_DUPLICATE, "{0}: Duplicate 'hit' label", hit);
                 hit = a.second;
             } else if (a.first == "miss") {
                 if (miss != nullptr)
-                    ::error(ErrorType::ERR_DUPLICATE, "%1%: Duplicate 'miss' label", hit);
+                    ::error(ErrorType::ERR_DUPLICATE, "{0}: Duplicate 'miss' label", hit);
                 miss = a.second;
             } else {
                 otherLabels = true;
@@ -315,7 +315,7 @@ const IR::Node *StatementConverter::preorder(IR::Apply *apply) {
         }
 
         if ((hit != nullptr || miss != nullptr) && otherLabels)
-            ::error(ErrorType::ERR_INVALID, "%1%: Cannot mix 'hit'/'miss' and other labels", apply);
+            ::error(ErrorType::ERR_INVALID, "{0}: Cannot mix 'hit'/'miss' and other labels", apply);
 
         if (!otherLabels) {
             StatementConverter conv(structure, renameMap);
@@ -380,7 +380,7 @@ const IR::Node *StatementConverter::preorder(IR::If *cond) {
     StatementConverter conv(structure, renameMap);
 
     auto pred = apply_visitor(cond->pred)->to<IR::Expression>();
-    BUG_CHECK(pred != nullptr, "Expected to get an expression when converting %1%", cond->pred);
+    BUG_CHECK(pred != nullptr, "Expected to get an expression when converting {0}", cond->pred);
     const IR::Statement *t, *f;
     if (cond->ifTrue == nullptr)
         t = new IR::EmptyStatement();
@@ -441,11 +441,11 @@ class ValidateLenExpr : public Inspector {
         }
     }
     void postorder(const IR::PathExpression *expression) override {
-        BUG_CHECK(!expression->path->absolute, "%1%: absolute path", expression);
+        BUG_CHECK(!expression->path->absolute, "{0}: absolute path", expression);
         cstring name = expression->path->name.name;
         if (prior.find(name) == prior.end())
             ::error(ErrorType::ERR_INVALID,
-                    "%1%: header length must depend only on fields prior to the varbit field %2%",
+                    "{0}: header length must depend only on fields prior to the varbit field {1}",
                     expression, varbitField);
     }
 };
@@ -669,7 +669,7 @@ Converter::Converter() {
 }
 
 Visitor::profile_t Converter::init_apply(const IR::Node *node) {
-    if (!node->is<IR::V1Program>()) BUG("Converter only accepts IR::Globals, not %1%", node);
+    if (!node->is<IR::V1Program>()) BUG("Converter only accepts IR::Globals, not {0}", node);
     return PassManager::init_apply(node);
 }
 

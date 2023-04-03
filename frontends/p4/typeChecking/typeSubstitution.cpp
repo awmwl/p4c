@@ -33,8 +33,8 @@ cstring TypeVariableSubstitution::compose(const IR::ITypeVar *var, const IR::Typ
             substitution = substitution->to<IR::Type_Newtype>()->type;
         if (auto se = substitution->to<IR::Type_SerEnum>()) substitution = se->type;
         if (!substitution->is<IR::Type_InfInt>() && !substitution->is<IR::Type_Bits>()) {
-            return "'%1%' type can only be unified with 'int', 'bit<>', or 'signed<>' types, "
-                   "not with '%2%'";
+            return "'{0}' type can only be unified with 'int', 'bit<>', or 'signed<>' types, "
+                   "not with '{1}'";
         }
     }
 
@@ -42,12 +42,12 @@ cstring TypeVariableSubstitution::compose(const IR::ITypeVar *var, const IR::Typ
     // It is not if var occurs in substitution
     TypeOccursVisitor occurs(var);
     substitution->apply(occurs);
-    if (occurs.occurs) return "'%1%' cannot be replaced with '%2%' which already contains it";
+    if (occurs.occurs) return "'{0}' cannot be replaced with '{1}' which already contains it";
 
     // Check to see whether we already have a binding for this variable
     if (containsKey(var)) {
         const IR::Type *bound = lookup(var);
-        BUG("Two bindings for the same variable %1%: %2% and %3%", var->toString(),
+        BUG("Two bindings for the same variable {0}: {1} and {2}", var->toString(),
             substitution->toString(), bound->toString());
     }
 
@@ -61,7 +61,7 @@ cstring TypeVariableSubstitution::compose(const IR::ITypeVar *var, const IR::Typ
     for (auto &bound : binding) {
         const IR::Type *type = bound.second;
         const IR::Node *newType = type->apply(visitor);
-        if (newType == nullptr) return "Could not replace '%1%' with '%2%'";
+        if (newType == nullptr) return "Could not replace '{0}' with '{1}'";
         if (newType == type) continue;
 
         if (bound.first->asType() == newType) {
@@ -89,7 +89,7 @@ void TypeVariableSubstitution::simpleCompose(const TypeVariableSubstitution *oth
         const IR::Type *subst = v.second;
         auto it = binding.find(v.first);
         if (it != binding.end())
-            BUG("Changing binding for %1% from %2% to %3%", v.first, it->second, subst);
+            BUG("Changing binding for {0} from {1} to {2}", v.first, it->second, subst);
         LOG3("Setting substitution for " << v.first->getNode() << " to " << subst);
         binding[v.first] = subst;
     }
@@ -102,7 +102,7 @@ bool TypeVariableSubstitution::setBindings(const IR::Node *errorLocation,
     if (params == nullptr || args == nullptr) BUG("Nullptr argument to setBindings");
 
     if (params->parameters.size() != args->size()) {
-        ::error(ErrorType::ERR_TYPE_ERROR, "%1% has %2% type parameters, invoked with %3%",
+        ::error(ErrorType::ERR_TYPE_ERROR, "{0} has {1} type parameters, invoked with {2}",
                 errorLocation, params->parameters.size(), args->size());
         return false;
     }
@@ -114,7 +114,7 @@ bool TypeVariableSubstitution::setBindings(const IR::Node *errorLocation,
 
         bool success = setBinding(tp, t);
         if (!success) {
-            ::error(ErrorType::ERR_TYPE_ERROR, "%1%: Cannot bind %2% to %3%", errorLocation, tp, t);
+            ::error(ErrorType::ERR_TYPE_ERROR, "{0}: Cannot bind {1} to {2}", errorLocation, tp, t);
             return false;
         }
     }
@@ -130,7 +130,7 @@ void TypeVariableSubstitution::debugValidate() {
         TypeOccursVisitor occurs(v.first);
         subst->apply(occurs);
         BUG_CHECK(!occurs.occurs,
-                  "'%1%' occurs in '%2%' which replaces it", v.first, v.second);
+                  "'{0}' occurs in '{1}' which replaces it", v.first, v.second);
     }
 #endif
 }

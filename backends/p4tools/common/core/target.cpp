@@ -68,7 +68,7 @@ bool Target::setArch(std::string archName) {
 Target::Target(std::string toolName, std::string deviceName, std::string archName)
     : toolName(toolName), spec(deviceName, archName) {
     // Register this instance.
-    BUG_CHECK(!registry[spec].count(toolName), "Already registered %1%/%2% instance for %3%",
+    BUG_CHECK(!registry[spec].count(toolName), "Already registered {0}/{1} instance for {2}",
               deviceName, archName, toolName);
     registry[spec][toolName] = this;
 

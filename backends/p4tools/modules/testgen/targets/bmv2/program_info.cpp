@@ -50,7 +50,7 @@ BMv2_V1ModelProgramInfo::BMv2_V1ModelProgramInfo(
     // Iterate through the (ordered) pipes of the target architecture.
     const auto *archSpec = TestgenTarget::getArchSpec();
     BUG_CHECK(archSpec->getArchVectorSize() == programmableBlocks.size(),
-              "The BMV2 architecture requires %1% pipes (provided %2% pipes).",
+              "The BMV2 architecture requires {0} pipes (provided {1} pipes).",
               archSpec->getArchVectorSize(), programmableBlocks.size());
 
     /// Compute the series of nodes corresponding to the in-order execution of top-level

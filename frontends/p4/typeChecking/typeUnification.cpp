@@ -34,11 +34,11 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
     for (auto tv : dest->typeParameters->parameters) constraints->addUnifiableTypeVariable(tv);
     if (dest->returnType == nullptr) {
         auto c = constraint->create(IR::Type_Void::get(), src->returnType);
-        c->setError("Return type is '%1%' instead of 'void'", {src->returnType});
+        c->setError("Return type is '{0}' instead of 'void'", {src->returnType});
         constraints->add(c);
     } else {
         auto c = constraint->create(dest->returnType, src->returnType);
-        c->setError("Return type '%1%' cannot be used for '%2%'",
+        c->setError("Return type '{0}' cannot be used for '{1}'",
                     {dest->returnType, src->returnType});
         constraints->add(c);
     }
@@ -50,7 +50,7 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
 
     if (dest->parameters->size() < src->arguments->size())
         return constraint->reportError(constraints->getCurrentSubstitution(),
-                                       "%1%: %2% arguments supplied while %3% are expected", dest,
+                                       "{0}: {1} arguments supplied while {2} are expected", dest,
                                        src->arguments->size(), dest->parameters->size());
 
     auto paramIt = dest->parameters->begin();
@@ -67,7 +67,7 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
             param = dest->parameters->getParameter(argName);
             if (param == nullptr)
                 return constraint->reportError(constraints->getCurrentSubstitution(),
-                                               "No parameter named '%1%'", arg->argument->name);
+                                               "No parameter named '{0}'", arg->argument->name);
         } else {
             if (paramIt == dest->parameters->end())
                 return constraint->reportError(constraints->getCurrentSubstitution(),
@@ -77,28 +77,28 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
 
         auto leftIt = left.find(param->name.name);
         // This shold have been checked by the CheckNamedArgs pass.
-        BUG_CHECK(leftIt != left.end(), "%1%: Duplicate argument name?", param->name);
+        BUG_CHECK(leftIt != left.end(), "{0}: Duplicate argument name?", param->name);
         left.erase(leftIt);
 
         if (arg->type->is<IR::Type_Dontcare>() && param->direction != IR::Direction::Out)
             return constraint->reportError(
                 constraints->getCurrentSubstitution(),
-                "%1%: don't care argument is only allowed for out parameters", arg->srcInfo);
+                "{0}: don't care argument is only allowed for out parameters", arg->srcInfo);
         if ((param->direction == IR::Direction::Out || param->direction == IR::Direction::InOut) &&
             (!arg->leftValue))
             return constraint->reportError(
                 constraints->getCurrentSubstitution(),
-                "%1%: Read-only value used for out/inout parameter '%2%'", arg->srcInfo, param);
+                "{0}: Read-only value used for out/inout parameter '{1}'", arg->srcInfo, param);
         else if (param->direction == IR::Direction::None && !arg->compileTimeConstant)
             return constraint->reportError(constraints->getCurrentSubstitution(),
-                                           "%1%: argument used for directionless parameter '%2%' "
+                                           "{0}: argument used for directionless parameter '{1}' "
                                            "must be a compile-time constant",
                                            arg->argument, param);
 
         if (param->direction != IR::Direction::None && param->type->is<IR::Type_Extern>()) {
             if (optarg) continue;
             return constraint->reportError(constraints->getCurrentSubstitution(),
-                                           "%1%: extern values cannot be passed in/out/inout",
+                                           "{0}: extern values cannot be passed in/out/inout",
                                            param);
         }
 
@@ -107,7 +107,7 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
             c = new CanBeImplicitlyCastConstraint(param->type, arg->type, constraint);
         else
             c = constraint->create(param->type, arg->type);
-        c->setError("Type of argument '%1%' (%2%) does not match type of parameter '%3%' (%4%)",
+        c->setError("Type of argument '{0}' ({1}) does not match type of parameter '{2}' ({3})",
                     {arg, arg->type, param, param->type});
         constraints->add(c);
         if (!named) ++paramIt;
@@ -118,14 +118,14 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
         bool opt = p.second->isOptional() || p.second->defaultValue != nullptr;
         if (opt) continue;
         return constraint->reportError(constraints->getCurrentSubstitution(),
-                                       "%1%: No argument supplied for parameter", p.second);
+                                       "{0}: No argument supplied for parameter", p.second);
     }
 
     if (src->typeArguments->size() != 0) {
         if (dest->typeParameters->size() != src->typeArguments->size())
             return constraint->reportError(
                 constraints->getCurrentSubstitution(),
-                "%1%: %2% type parameters expected, but %3% type arguments supplied", dest,
+                "{0}: {1} type parameters expected, but {2} type arguments supplied", dest,
                 dest->typeParameters->size(), src->typeArguments->size());
 
         size_t i = 0;
@@ -135,7 +135,7 @@ bool TypeUnification::unifyCall(const BinaryConstraint *constraint) {
             // written beetween angle brackets, and tv should be replaced
             // with type of an actual argument
             auto c = constraint->create(type, tv);
-            c->setError("Type parameter '%1%' substituted with type argument '%2%'", {type, tv});
+            c->setError("Type parameter '{0}' substituted with type argument '{1}'", {type, tv});
             constraints->add(c);
         }
     }
@@ -158,7 +158,7 @@ bool TypeUnification::unifyFunctions(const BinaryConstraint *constraint, bool sk
     if ((src->returnType == nullptr) != (dest->returnType == nullptr))
         return constraint->reportError(
             constraints->getCurrentSubstitution(),
-            "Cannot unify functions with different return types '%1%' and '%2%'", dest, src);
+            "Cannot unify functions with different return types '{0}' and '{1}'", dest, src);
     if (!skipReturnValues && src->returnType != nullptr)
         constraints->add(constraint->create(dest->returnType, src->returnType));
 
@@ -169,12 +169,12 @@ bool TypeUnification::unifyFunctions(const BinaryConstraint *constraint, bool sk
             if (dit->defaultValue != nullptr) continue;
             return constraint->reportError(
                 constraints->getCurrentSubstitution(),
-                "Cannot unify functions with different number of arguments: %1% to %2%", src, dest);
+                "Cannot unify functions with different number of arguments: {0} to {1}", src, dest);
         }
         if ((*sit)->direction != dit->direction)
             return constraint->reportError(
                 constraints->getCurrentSubstitution(),
-                "Cannot unify '%1%' parameter '%2%' with '%3%' parameter '%4%' "
+                "Cannot unify '{0}' parameter '{1}' with '{2}' parameter '{3}' "
                 "because they have different directions",
                 IR::directionToString((*sit)->direction), *sit,
                 IR::directionToString(dit->direction), dit);
@@ -192,7 +192,7 @@ bool TypeUnification::unifyFunctions(const BinaryConstraint *constraint, bool sk
         }
         return constraint->reportError(constraints->getCurrentSubstitution(),
                                        "Cannot unify functions with different number of arguments: "
-                                       "%1% to %2%",
+                                       "{0} to {1}",
                                        src, dest);
     }
     return true;
@@ -244,7 +244,7 @@ bool TypeUnification::unify(const BinaryConstraint *constraint) {
             if (dsc->arguments->size() != ssc->arguments->size())
                 return constraint->reportError(
                     constraints->getCurrentSubstitution(),
-                    "Type argument lists %1% and %2% have different lengths", dsc->arguments,
+                    "Type argument lists {0} and {1} have different lengths", dsc->arguments,
                     ssc->arguments);
             constraints->add(constraint->create(dsc->baseType, ssc->baseType));
             for (size_t i = 0; i < dsc->arguments->size(); i++) {
@@ -283,14 +283,14 @@ bool TypeUnification::unify(const BinaryConstraint *constraint) {
         if (src->is<IR::Type_MethodBase>()) return unifyFunctions(constraint);
         return constraint->reportError(
             constraints->getCurrentSubstitution(),
-            "Cannot unify non-function type '%1%' to function type '%2%'", src, dest);
+            "Cannot unify non-function type '{0}' to function type '{1}'", src, dest);
     } else if (auto td = dest->to<IR::Type_BaseList>()) {
         if (!src->is<IR::Type_BaseList>())
             return constraint->reportError(constraints->getCurrentSubstitution());
         auto ts = src->to<IR::Type_BaseList>();
         if (td->components.size() != ts->components.size())
             return constraint->reportError(constraints->getCurrentSubstitution(),
-                                           "Tuples with different sizes %1% vs %2%",
+                                           "Tuples with different sizes {0} vs {1}",
                                            td->components.size(), ts->components.size());
         for (size_t i = 0; i < td->components.size(); i++) {
             auto si = ts->components.at(i);
@@ -304,8 +304,8 @@ bool TypeUnification::unify(const BinaryConstraint *constraint) {
             if (strct->fields.size() != tpl->components.size())
                 return constraint->reportError(
                     constraints->getCurrentSubstitution(),
-                    "Number of fields %1% in initializer %2% is different "
-                    "than number of fields %3% in '%4%'",
+                    "Number of fields {0} in initializer {1} is different "
+                    "than number of fields {2} in '{3}'",
                     tpl->components.size(), tpl, strct->fields.size(), strct);
             int index = 0;
             for (const IR::StructField *f : strct->fields) {
@@ -319,24 +319,24 @@ bool TypeUnification::unify(const BinaryConstraint *constraint) {
             if (typeMap->strictStruct && strct->name != st->name &&
                 !st->is<IR::Type_UnknownStruct>() && !strct->is<IR::Type_UnknownStruct>())
                 return constraint->reportError(constraints->getCurrentSubstitution(),
-                                               "Cannot unify '%1%' with '%2%'", st->name,
+                                               "Cannot unify '{0}' with '{1}'", st->name,
                                                strct->name);
             // There is another case, in which each field of the source is unifiable with the
             // corresponding field of the destination, e.g., a struct containing tuples.
             if (strct->fields.size() != st->fields.size())
                 return constraint->reportError(constraints->getCurrentSubstitution(),
-                                               "Number of fields %1% in initializer different "
-                                               "than number of fields in structure %2%: %3% to %4%",
+                                               "Number of fields {0} in initializer different "
+                                               "than number of fields in structure {1}: {2} to {3}",
                                                st->fields.size(), strct->fields.size(), st, strct);
 
             for (const IR::StructField *f : strct->fields) {
                 auto stField = st->getField(f->name);
                 if (stField == nullptr)
                     return constraint->reportError(constraints->getCurrentSubstitution(),
-                                                   "No initializer for field %1%", f);
+                                                   "No initializer for field {0}", f);
                 auto c = constraint->create(f->type, stField->type);
                 c->setError(
-                    "Type of initializer '%1%' does not match type '%2%' of field '%3%' in '%4%'",
+                    "Type of initializer '{0}' does not match type '{1}' of field '{2}' in '{3}'",
                     {stField->type, f->type, f, strct});
                 constraints->add(c);
             }
@@ -382,7 +382,7 @@ bool TypeUnification::unify(const BinaryConstraint *constraint) {
         if (dstack->getSize() != sstack->getSize())
             return constraint->reportError(
                 constraints->getCurrentSubstitution(),
-                "cannot unify header stack '%1%' and '%2%' since they have different sizes", dstack,
+                "cannot unify header stack '{0}' and '{1}' since they have different sizes", dstack,
                 sstack);
         constraints->add(constraint->create(dstack->elementType, sstack->elementType));
         return true;

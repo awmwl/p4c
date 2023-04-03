@@ -51,7 +51,7 @@ void ExprStepper::handleHitMissActionRun(const IR::Member *member) {
     auto &nextState = state.clone();
     std::vector<Continuation::Command> replacements;
     const auto *method = member->expr->to<IR::MethodCallExpression>();
-    BUG_CHECK(method->method->is<IR::Member>(), "Method apply has unexpected format: %1%", method);
+    BUG_CHECK(method->method->is<IR::Member>(), "Method apply has unexpected format: {0}", method);
     replacements.emplace_back(new IR::MethodCallStatement(Util::SourceInfo(), method));
     const auto *methodName = method->method->to<IR::Member>();
     const auto *table = state.getTableType(methodName);
@@ -82,7 +82,7 @@ bool ExprStepper::preorder(const IR::Member *member) {
     // TODO: Do we need to handle non-numeric, non-boolean expressions?
     BUG_CHECK(member->type->is<IR::Type::Bits>() || member->type->is<IR::Type::Boolean>() ||
                   member->type->is<IR::Extracted_Varbits>(),
-              "Non-numeric, non-boolean member expression: %1% Type: %2%", member,
+              "Non-numeric, non-boolean member expression: {0} Type: {1}", member,
               member->type->node_type_name());
 
     // Check our assumption that this is a chain of member expressions terminating in a
@@ -99,7 +99,7 @@ bool ExprStepper::preorder(const IR::Member *member) {
 
 void ExprStepper::evalActionCall(const IR::P4Action *action, const IR::MethodCallExpression *call) {
     const auto *actionNameSpace = action->to<IR::INamespace>();
-    BUG_CHECK(actionNameSpace, "Does not instantiate an INamespace: %1%", actionNameSpace);
+    BUG_CHECK(actionNameSpace, "Does not instantiate an INamespace: {0}", actionNameSpace);
     auto &nextState = state.clone();
     // If the action has arguments, these are usually directionless control plane input.
     // We introduce a zombie variable that takes the argument value. This value is either
@@ -110,7 +110,7 @@ void ExprStepper::evalActionCall(const IR::P4Action *action, const IR::MethodCal
         const auto *paramType = param->type;
         const auto paramName = param->name;
         BUG_CHECK(param->direction == IR::Direction::None,
-                  "%1%: Only directionless action parameters are supported at this point. ",
+                  "{0}: Only directionless action parameters are supported at this point. ",
                   action);
         const auto &tableActionDataVar = Utils::getZombieVar(paramType, 0, paramName);
         const auto *curArg = call->arguments->at(argIdx)->expression;
@@ -143,7 +143,7 @@ bool ExprStepper::preorder(const IR::MethodCallExpression *call) {
             // Case where call->method is a Member expression. For table invocations, the
             // qualifier of the member determines the table being invoked. For extern calls,
             // the qualifier determines the extern object containing the method being invoked.
-            BUG_CHECK(method->expr, "Method call has unexpected format: %1%", call);
+            BUG_CHECK(method->expr, "Method call has unexpected format: {0}", call);
 
             // Handle table calls.
             if (const auto *table = state.getTableType(method)) {
@@ -175,7 +175,7 @@ bool ExprStepper::preorder(const IR::MethodCallExpression *call) {
                     return stepSetHeaderValidity(method->expr, true);
                 }
 
-                BUG("Unknown method call on header instance: %1%", call);
+                BUG("Unknown method call on header instance: {0}", call);
             }
 
             if (method->expr->type->is<IR::Type_Stack>()) {
@@ -187,14 +187,14 @@ bool ExprStepper::preorder(const IR::MethodCallExpression *call) {
                     return stepStackPushPopFront(method->expr, call->arguments, false);
                 }
 
-                BUG("Unknown method call on stack instance: %1%", call);
+                BUG("Unknown method call on stack instance: {0}", call);
             }
 
-            BUG("Unknown method member expression: %1% of type %2%", method->expr,
+            BUG("Unknown method member expression: {0} of type {1}", method->expr,
                 method->expr->type);
         }
 
-        BUG("Unknown method call: %1% of type %2%", call->method, call->method->node_type_name());
+        BUG("Unknown method call: {0} of type {1}", call->method, call->method->node_type_name());
         // Handle action calls. Actions are called by tables and are not inlined, unlike
         // functions.
     } else if (const auto *action = state.getActionDecl(call->method)) {
@@ -202,7 +202,7 @@ bool ExprStepper::preorder(const IR::MethodCallExpression *call) {
         return false;
     }
 
-    BUG("Unknown method call expression: %1%", call);
+    BUG("Unknown method call expression: {0}", call);
 }
 
 bool ExprStepper::preorder(const IR::P4Table *table) {
@@ -399,7 +399,7 @@ bool ExprStepper::preorder(const IR::SelectExpression *selectExpression) {
         // In the worst case, this means the entire parser is tainted.
         if (state.hasTaint(matchCondition)) {
             TESTGEN_UNIMPLEMENTED(
-                "The SelectExpression %1% is trying to match on a tainted key set."
+                "The SelectExpression {0} is trying to match on a tainted key set."
                 " This means it is matching on uninitialized data."
                 " P4Testgen currently does not support this case.",
                 selectExpression);

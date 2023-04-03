@@ -40,7 +40,7 @@ class ActionInvocation {
     void bind(const IR::P4Action *action, const IR::MethodCallExpression *invocation,
               bool allParams) {
         CHECK_NULL(action);
-        BUG_CHECK(invocations.find(action) == invocations.end(), "%1%: action called twice",
+        BUG_CHECK(invocations.find(action) == invocations.end(), "{0}: action called twice",
                   action);
         invocations.emplace(action, invocation);
         if (allParams) all.emplace(action);
