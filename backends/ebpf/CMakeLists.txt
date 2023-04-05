@@ -15,7 +15,29 @@
 # CMakefile for the EBPF P4-16 back-end.
 # To be included in the main P4C compiler CMakefile
 
-message(STATUS "Start configuring eBPF back end")
+message(STATUS "Start configuring the eBPF back end")
+
+if (NOT APPLE)
+# Fetch and declare the libbpf library.
+FetchContent_Declare(
+  bpfrepo
+  URL https://github.com/libbpf/libbpf/archive/refs/tags/v0.6.1.tar.gz
+  URL_HASH SHA256=ce3a8eb32d85ac48490256597736d8b27e0a5e947a0731613b7aba6b4ae43ac0
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/runtime/contrib/libbpf
+)
+Set(FETCHCONTENT_QUIET FALSE)
+FetchContent_MakeAvailable(bpfrepo)
+Set(FETCHCONTENT_QUIET TRUE)
+
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/runtime/usr/lib64/libbpf.a)
+  # Build libbpf.
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/runtime/usr/lib64/libbpf.a
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build_libbpf
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Building libbpf..."
+  )
+endif()
+endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.h.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/version.h" @ONLY)

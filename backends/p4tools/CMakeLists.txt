@@ -53,7 +53,8 @@ set(BUILD_BENCHMARK OFF CACHE BOOL "Build benchmark.")
 FetchContent_Declare(
   inja
   GIT_REPOSITORY https://github.com/pantor/inja.git
-  GIT_TAG        3741c73ba78babd2ed88f2acf2fcd6dafdb878e8
+  GIT_TAG        9e92a7c0fa50861f1206a24635b8dc14f10e3335
+  GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(inja)

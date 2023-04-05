@@ -5,8 +5,8 @@
 #include <string>
 
 #include "frontends/common/options.h"
+#include "gtest/gtest.h"
 #include "ir/ir.h"
-#include "test/frameworks/gtest/googletest/include/gtest/gtest.h"
 
 namespace Test {
 

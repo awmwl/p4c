@@ -132,7 +132,6 @@ if [[ "${DISTRIB_RELEASE}" == "18.04" ]] ; then
 fi
 ccache --set-config max_size=1G
 
-
 # Install add-ons to communicate with simple_switch_grpc via P4Runtime.
 # These packages are necessary because of a protobuf version mismatch in more recent Ubuntu distributions.
 if [[ "${DISTRIB_RELEASE}" == "22.04" ]] ; then
@@ -140,11 +139,6 @@ if [[ "${DISTRIB_RELEASE}" == "22.04" ]] ; then
   sudo pip3 install --upgrade googleapis-common-protos==1.50.0
   sudo pip3 install --upgrade grpcio==1.51.1
 fi
-
-# Build libbpf for eBPF tests.
-pushd ${P4C_DIR}
-backends/ebpf/build_libbpf
-popd
 
 # ! ------  BEGIN PTF_EBPF -----------------------------------------------
 function install_ptf_ebpf_test_deps() (

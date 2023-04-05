@@ -233,13 +233,13 @@ add_cxx_compiler_option ("-Wextra")
 add_cxx_compiler_option ("-Wno-overloaded-virtual")
 add_cxx_compiler_option ("-Wno-deprecated")
 add_cxx_compiler_option ("-Wno-deprecated-declarations")
-# Make compiler follow the standard and not be too lenient. The increases
-# likelyhood that compilation will not break with other compilers (mainly clang)
+# Make compiler follow the standard and not be too lenient. The increases the
+# likelihood that compilation will not break with other compilers (mainly clang)
 # or in future versions of GCC.
 add_cxx_compiler_option ("-pedantic")
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # The ##__VA_ARGS__ GNU extension is needed for IR. But clang compains about it.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  # The ##__VA_ARGS__ GNU extension is needed for IR. But clang complains about it.
   # FIXME: with C++20 we would be able to use standard __VA_OPT__
   add_cxx_compiler_option ("-Wno-gnu-zero-variadic-macro-arguments")
 endif()
@@ -328,7 +328,6 @@ include_directories (
   ${P4C_SOURCE_DIR}
   ${P4C_BINARY_DIR}
   )
-include_directories(SYSTEM ${P4C_SOURCE_DIR}/test/frameworks/gtest/googletest/include)
 add_definitions (-DCONFIG_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions (-DCONFIG_PKGDATADIR="${CMAKE_INSTALL_PREFIX}/${P4C_ARTIFACTS_OUTPUT_DIRECTORY}")
 
@@ -370,15 +369,24 @@ if(ENABLE_IWYU)
   message("IWYU command: ${iwyu_path}")
 endif()
 
-# the order of adding subdirectories matters because of target dependencies
+# component libraries: must be defined before being used in the
+# backend executables
+set (P4C_LIBRARIES controlplane midend frontend ir p4ctoolkit)
+
+# The order of adding subdirectories matters because of target dependencies.
+if (ENABLE_GTESTS)
+  # Configure GTest to disable support for SEH (which is irrelevant for p4c since
+  # we don't currently support Windows) and pthreads (which prevents GTest from
+  # using its internal TLS implementation, which interacts badly with libgc).
+  add_definitions(-UGTEST_HAS_SEH)
+  add_definitions(-UGTEST_HAS_PTHREAD)
+  add_subdirectory (test)
+endif ()
+
 add_subdirectory (tools/driver)
 add_subdirectory (lib)
 add_subdirectory (tools/ir-generator)
 add_subdirectory (ir)
-
-# component libraries: must be defined before being used in the
-# backend executables
-set (P4C_LIBRARIES controlplane midend frontend ir p4ctoolkit)
 
 # add extensions - before the frontends as they produce IR and extra frontend sources
 set(EXTENSION_FRONTEND_SOURCES)
@@ -434,9 +442,6 @@ if (ENABLE_TEST_TOOLS)
 endif ()
 if (ENABLE_P4C_GRAPHS AND HAVE_LIBBOOST_GRAPH EQUAL 1)
   add_subdirectory (backends/graphs)
-endif ()
-if (ENABLE_GTESTS)
-  add_subdirectory (test)
 endif ()
 
 # IR Generation

@@ -124,11 +124,6 @@ add_dependencies(p4testgen linkp4testgen)
 
 if(ENABLE_GTESTS)
   add_executable(testgen-gtest ${TESTGEN_GTEST_SOURCES})
-  target_include_directories(
-    testgen-gtest
-    PRIVATE ${P4C_SOURCE_DIR}/test/frameworks/gtest/googlemock/include
-    PRIVATE ${P4C_SOURCE_DIR}/test/frameworks/gtest/googletest/include
-  )
   target_link_libraries(
     testgen-gtest
     PRIVATE testgen

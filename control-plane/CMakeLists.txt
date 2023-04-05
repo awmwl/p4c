@@ -12,9 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Fetch and declare the p4runtime library.
+FetchContent_Declare(
+  p4runtime
+  GIT_REPOSITORY https://github.com/p4lang/p4runtime.git
+  GIT_TAG        d85e95de0aa0ee5905478b05eb5ce961491082eb
+  GIT_PROGRESS TRUE
+)
+Set(FETCHCONTENT_QUIET FALSE)
+FetchContent_MakeAvailable(p4runtime)
+Set(FETCHCONTENT_QUIET TRUE)
+include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
+
 # The standard P4Runtime protocol buffers message definitions live in the PI
 # repo, which is included in this repo as a submodule.
-set (P4RUNTIME_STD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/p4runtime/proto)
+set (P4RUNTIME_STD_DIR ${p4runtime_SOURCE_DIR}/proto)
 set (P4RUNTIME_INFO_PROTO ${P4RUNTIME_STD_DIR}/p4/config/v1/p4info.proto)
 set (P4RUNTIME_INFO_GEN_SRCS ${CMAKE_CURRENT_BINARY_DIR}/p4/config/v1/p4info.pb.cc)
 set (P4RUNTIME_INFO_GEN_HDRS ${CMAKE_CURRENT_BINARY_DIR}/p4/config/v1/p4info.pb.h)
@@ -98,7 +110,6 @@ set (CONTROLPLANE_HDRS
   bfruntime.h
   )
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 # Silence -Warray-bounds as the root issue is out of our control: https://github.com/protocolbuffers/protobuf/issues/7140
 set_source_files_properties (${P4RUNTIME_GEN_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-array-bounds")
 
