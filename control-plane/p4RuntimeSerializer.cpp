@@ -57,12 +57,9 @@ limitations under the License.
 #include "ir/ir.h"
 #include "lib/log.h"
 #include "lib/nullstream.h"
-#include "lib/ordered_set.h"
-#include "p4RuntimeAnnotations.h"
-#include "p4RuntimeArchHandler.h"
-#include "p4RuntimeArchStandard.h"
-#include "p4RuntimeSymbolTable.h"
-#include "typeSpecConverter.h"
+#include "p4/config/v1/p4info.pb.h"
+#include "p4/config/v1/p4types.pb.h"
+#include "p4/v1/p4runtime.pb.h"
 
 namespace p4v1 = ::p4::v1;
 namespace p4configv1 = ::p4::config::v1;

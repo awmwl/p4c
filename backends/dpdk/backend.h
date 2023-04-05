@@ -16,7 +16,10 @@ limitations under the License.
 
 #ifndef BACKENDS_DPDK_BACKEND_H_
 #define BACKENDS_DPDK_BACKEND_H_
+#include <iosfwd>
+
 #include "p4/config/v1/p4info.pb.h"
+#include "p4/config/v1/p4types.pb.h"
 
 namespace p4configv1 = ::p4::config::v1;
 #undef setbit
