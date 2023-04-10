@@ -178,13 +178,16 @@ if (ENABLE_GC)
     set(enable_threads OFF CACHE BOOL "Support threads.")
   else()
     # Try to enable thread-local-storage for better performance.
+    add_definitions("-DGC_THREADS")
+    add_definitions("-D_REENTRANT")
+    add_definitions("-DTHREAD_LOCAL_ALLOC")
     add_definitions("-DUSE_COMPILER_TLS")
   endif()
   set(LIBGC_LIBRARIES gc gccpp cord)
   FetchContent_Declare(
     bdwgc
     GIT_REPOSITORY https://github.com/ivmai/bdwgc.git
-    GIT_TAG        441698c68a90caa1670e9b46275c5db12668d171
+    GIT_TAG        d80ce053ff9701ccac04506267bbdf30be350481
     GIT_PROGRESS TRUE
   )
   FetchContent_MakeAvailable(bdwgc)

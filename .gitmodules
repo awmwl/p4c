@@ -9,6 +9,3 @@
 	path = backends/ebpf/runtime/contrib/libbpf
 	url = https://github.com/libbpf/libbpf
 	ignore = dirty
-[submodule "tools/bdwgc"]
-	path = tools/bdwgc
-	url = https://github.com/ivmai/bdwgc
