@@ -93,12 +93,17 @@ include(UnifiedBuild)
 # CMake Utilities to fetch dependencies.
 include(FetchContent)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+# More utilities.
+include (CheckIncludeFile)
+include (CheckIncludeFileCXX)
+include (CheckFunctionExists)
+include (FindPythonModule)
+INCLUDE(CPack)
 
 # # search in /usr/local first
 # set (CMAKE_FIND_ROOT_PATH "/usr/local/bin" "${CMAKE_FIND_ROOT_PATH}")
 set (P4C_CXX_FLAGS "")
 set (P4C_LIB_DEPS)
-
 
 # Support the legacy unified build option.
 if(ENABLE_UNIFIED_COMPILATION)
@@ -159,6 +164,7 @@ if (ENABLE_GC)
   set(enable_docs ${ENABLE_DOCS} CACHE BOOL "Build and install documentation.")
   # We may have to compile very large programs which allocate a lot on the heap.
   set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
+  set(with_libatomic_ops OFF CACHE BOOL "Use an external libatomic_ops")
 
   # MacOS has problems with threads and malloc redirect. Disable it for now.
   # We still use the C++ new/delete etc garbage collection.
@@ -178,10 +184,9 @@ if (ENABLE_GC)
     set(enable_threads OFF CACHE BOOL "Support threads.")
   else()
     # Try to enable thread-local-storage for better performance.
-    add_definitions("-DGC_THREADS")
-    add_definitions("-D_REENTRANT")
-    add_definitions("-DTHREAD_LOCAL_ALLOC")
+    set(enable_thread_local_alloc ON CACHE BOOL "Turn on thread-local allocation optimization")
     add_definitions("-DUSE_COMPILER_TLS")
+    add_definitions("-DNO_PROC_FOR_LIBRARIES")
   endif()
   set(LIBGC_LIBRARIES gc gccpp cord)
   FetchContent_Declare(
@@ -192,12 +197,14 @@ if (ENABLE_GC)
   )
   FetchContent_MakeAvailable(bdwgc)
   include_directories(SYSTEM ${gc_SOURCE_DIR}/include)
-  set (HAVE_LIBGC 1)
   message("Patching bdwgc.")
   execute_process(
     COMMAND git apply ${CMAKE_SOURCE_DIR}/tools/silence_gc_warnings.patch
     WORKING_DIRECTORY ${gc_SOURCE_DIR}
   )
+  # Now, enable it to be used in the code.
+  add_definitions("-DHAVE_LIBGC")
+  add_definitions("-DHAVE_GC_PRINT_STATS")
 endif ()
 
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${CMAKE_THREAD_LIBS_INIT}")
@@ -214,10 +221,8 @@ endif ()
 p4c_add_library (rt clock_gettime HAVE_CLOCK_GETTIME)
 
 # check includes
-include (CheckIncludeFile)
 check_include_file (execinfo.h HAVE_EXECINFO_H)
 check_include_file (ucontext.h HAVE_UCONTEXT_H)
-include (CheckIncludeFileCXX)
 check_include_file_cxx (cxxabi.h HAVE_CXXABI_H)
 
 # check functions
@@ -228,16 +233,13 @@ if (ENABLE_GC)
   set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${LIBGC_LIBRARIES})
 endif ()
 
-include (CheckFunctionExists)
 check_function_exists (memchr HAVE_MEMCHR)
 check_function_exists (pipe2 HAVE_PIPE2)
-check_function_exists (GC_print_stats HAVE_GC_PRINT_STATS)
 
 # restore CMAKE_REQUIRED_LIBRARIES
 set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_PRECHECK})
 
 # python modules
-include (FindPythonModule)
 find_python_module (difflib REQUIRED)
 find_python_module (shutil REQUIRED)
 find_python_module (tempfile REQUIRED)
@@ -604,7 +606,6 @@ SET(CPACK_SOURCE_PACKAGE_FILE_NAME
    "p4c-${P4C_SEM_VERSION_STRING}")
 SET(CPACK_SOURCE_IGNORE_FILES
    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}-*;${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}_*;/build/;/.git/;/config.log;/CMakeFiles/;CMakeCache.txt$;.tar.gz$;/_CPack_Packages;/Makefile$;~$;/build-deb;/clean-deb;/filter-empty-entries;/make-symbols;/make-ppa;/make-deb;/debian.conf;/make-rpm;/rpm.conf;${CPACK_SOURCE_IGNORE_FILES}")
-INCLUDE(CPack)
 
 ADD_CUSTOM_TARGET(dist COMMAND ${CMAKE_MAKE_PROGRAM} clean package_source)
 
