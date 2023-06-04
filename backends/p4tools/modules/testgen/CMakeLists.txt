@@ -150,6 +150,9 @@ if(ENABLE_GTESTS)
     PRIVATE testgen
     PRIVATE gtest
     ${TESTGEN_LIBS}
+    ${P4C_LIBRARIES}
+    ${P4C_LIB_DEPS}
+    ${CMAKE_THREAD_LIBS_INIT}
   )
 
   if(ENABLE_TESTING)

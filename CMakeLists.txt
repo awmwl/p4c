@@ -83,13 +83,9 @@ else()
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   set (P4C_VERSION "${P4C_SEM_VERSION_STRING} (SHA: ${P4C_GIT_SHA} BUILD: ${CMAKE_BUILD_TYPE})")
 endif()
+
 # P4 General Utilities
 include(P4CUtils)
-# CMake Utilities to fetch dependencies.
-include(FetchContent)
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-# TODO: Remove this deprecated include eventually.
-include(UnifiedBuild)
 # CMake Utilities to fetch dependencies.
 include(FetchContent)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
@@ -99,6 +95,8 @@ include (CheckIncludeFileCXX)
 include (CheckFunctionExists)
 include (FindPythonModule)
 INCLUDE(CPack)
+# TODO: Remove this deprecated include eventually.
+include(UnifiedBuild)
 
 # # search in /usr/local first
 # set (CMAKE_FIND_ROOT_PATH "/usr/local/bin" "${CMAKE_FIND_ROOT_PATH}")
@@ -156,15 +154,16 @@ add_definitions ("-DBOOST_NO_ARGUMENT_DEPENDENT_LOOKUP")
 
 # Compile with the Boehm garbage collector (https://github.com/ivmai/bdwgc), if requested.
 if (ENABLE_GC)
+  include(CheckSymbolExists)
   # We need to enable position independent code to make the malloc redirect work.
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   # Turn on C++ support. We do not need the headers and documentation.
   set(enable_cplusplus ON CACHE BOOL "C++ support")
-  set(install_headers OFF CACHE BOOL "Install header and pkg-config metadata files.")
+  set(install_headers ON CACHE BOOL "Install header and pkg-config metadata files.")
   set(enable_docs ${ENABLE_DOCS} CACHE BOOL "Build and install documentation.")
   # We may have to compile very large programs which allocate a lot on the heap.
   set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set.")
-  set(with_libatomic_ops OFF CACHE BOOL "Use an external libatomic_ops")
+  set(without_libatomic_ops OFF CACHE BOOL "Use atomic_ops.h in libatomic_ops/src" )
 
   # MacOS has problems with threads and malloc redirect. Disable it for now.
   # We still use the C++ new/delete etc garbage collection.
@@ -176,23 +175,17 @@ if (ENABLE_GC)
     # For any other distribution we redirect all malloc calls in the program.
     set(enable_redirect_malloc ON CACHE BOOL "Redirect malloc and friends to GC routines.")
     add_definitions("-DREDIRECT_REALLOC=GC_REALLOC")
-    add_definitions("-DREDIRECT_FREE=GC_FREE")
-  endif()
-
-  if(BUILD_STATIC_RELEASE)
-    # Static builds do not work with libpthread (yet).
-    set(enable_threads OFF CACHE BOOL "Support threads.")
-  else()
     # Try to enable thread-local-storage for better performance.
     set(enable_thread_local_alloc ON CACHE BOOL "Turn on thread-local allocation optimization")
     add_definitions("-DUSE_COMPILER_TLS")
     add_definitions("-DNO_PROC_FOR_LIBRARIES")
   endif()
+
   set(LIBGC_LIBRARIES gc gccpp cord)
   FetchContent_Declare(
     bdwgc
     GIT_REPOSITORY https://github.com/ivmai/bdwgc.git
-    GIT_TAG        d80ce053ff9701ccac04506267bbdf30be350481
+    GIT_TAG        d1ff06cc503a74dca0150d5e988f2c93158b0cdf
     GIT_PROGRESS TRUE
   )
   FetchContent_MakeAvailable(bdwgc)
@@ -204,7 +197,7 @@ if (ENABLE_GC)
   )
   # Now, enable it to be used in the code.
   add_definitions("-DHAVE_LIBGC")
-  add_definitions("-DHAVE_GC_PRINT_STATS")
+  check_symbol_exists(GC_print_stats "gc.h" HAVE_GC_PRINT_STATS)
 endif ()
 
 set (P4C_LIB_DEPS "${P4C_LIB_DEPS};${CMAKE_THREAD_LIBS_INIT}")

@@ -82,8 +82,3 @@ set (LIBP4CTOOLKIT_HDRS
 )
 
 add_library(p4ctoolkit STATIC ${LIBP4CTOOLKIT_SRCS})
-
-# Disable libcall (realloc, malloc) optimizations which may cause infinite loops.
-if (ENABLE_GC)
-    set_target_properties(p4ctoolkit PROPERTIES COMPILE_FLAGS -fno-builtin)
-endif()

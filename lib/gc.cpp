@@ -19,8 +19,7 @@ limitations under the License.
 #if HAVE_LIBGC
 #include <gc.h>
 #include <gc_cpp.h>
-
-#include <gc/gc_mark.h>
+#include <gc_mark.h>
 #endif /* HAVE_LIBGC */
 #include <sys/mman.h>
 
