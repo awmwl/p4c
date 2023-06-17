@@ -87,6 +87,21 @@ class STFLexer:
         "REMOVE",
         "SETDEFAULT",
         "WAIT",
+        "MIRRORING_ADD",
+        "MIRRORING_ADD_MC",
+        "MIRRORING_DELETE",
+        "MIRRORING_GET",
+        "MC_MGRP_CREATE",
+        "MC_NODE_CREATE",
+        "MC_NODE_ASSOCIATE",
+        "COUNTER_READ",
+        "COUNTER_WRITE",
+        "REGISTER_READ",
+        "REGISTER_WRITE",
+        "REGISTER_RESET",
+        "METER_GET_RATES",
+        "METER_SET_RATES",
+        "METER_ARRAY_SET_RATES",
     )
 
     keywords_map = {}
@@ -102,6 +117,7 @@ class STFLexer:
         "DATA_DEC",
         "DATA_HEX",
         "DATA_TERN",
+        "DATA_EXACT",
         "DOT",
         "ID",
         "INT_CONST_BIN",
@@ -226,6 +242,10 @@ class STFLexer:
 
     def t_packetdata_DATA_TERN(self, t):
         r"\*"
+        return t
+
+    def t_packetdata_DATA_EXACT(self, t):
+        r"\$"
         return t
 
     def t_packetdata_newline(self, t):
