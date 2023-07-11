@@ -65,7 +65,7 @@ p4tools_add_xfail_reason(
   # Running simple_switch_CLI: Exception  Unexpected key field &
   match-on-exprs2-bmv2.p4
   # Running simple_switch_CLI: Exception  Unexpected key field :
-  dash-pipeline.p4
+  dash-pipeline-bmv2.p4
   # Could not find table
   nonstandard_table_names-bmv2.p4
 )
