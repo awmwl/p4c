@@ -536,6 +536,14 @@ extern void update_checksum_with_payload<T, O>(in bool condition, in T data, ino
  */
 extern void clone(in CloneType type, in bit<32> session);
 
+#define PKT_INSTANCE_TYPE_NORMAL 0
+#define PKT_INSTANCE_TYPE_INGRESS_CLONE 1
+#define PKT_INSTANCE_TYPE_EGRESS_CLONE 2
+#define PKT_INSTANCE_TYPE_COALESCED 3
+#define PKT_INSTANCE_TYPE_INGRESS_RECIRC 4
+#define PKT_INSTANCE_TYPE_REPLICATION 5
+#define PKT_INSTANCE_TYPE_RESUBMIT 6
+
 @deprecated("Please use 'resubmit_preserving_field_list' instead")
 extern void resubmit<T>(in T data);
 /***
